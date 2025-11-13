@@ -1,2 +1,15 @@
 # Standard .gitignore for this workspace
-# Intentionally left blank; vendor-specific ignores removed.
+# Intentionally left blank; vendor-specific ignores removed.# Auto-generated cleanup patterns
+# Ignore archived rotated logs
+archive/*.tar.gz
+# Ignore runtime PIDs
+logs/*.pid
+# Ignore compiled python files and caches
+__pycache__/
+**/__pycache__/
+*.pyc
+# Ignore long/rotated logs (keep current ones)
+logs/*-2025*.log
+# Ignore editor backups
+*~
+*.swp
