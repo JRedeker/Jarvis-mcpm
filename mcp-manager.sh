@@ -419,7 +419,8 @@ start_cipher() {
         set -a  # Automatically export all variables
         source "$MCP_DIR/.env"
         set +a
-        log_success "Loaded .env file (OPENAI_API_KEY present: $([ -n "$OPENAI_API_KEY" ] && echo 'yes' || echo 'no'))"
+        # Use safe parameter expansion to avoid unbound variable errors under 'set -u'
+        log_success "Loaded .env file (OPENAI_API_KEY present: $([ -n \"${OPENAI_API_KEY:-}\" ] && echo 'yes' || echo 'no'))"
     else
         log_warning ".env file not found at $MCP_DIR/.env"
     fi
