@@ -1,0 +1,152 @@
+#!/usr/bin/env python3
+"""
+Test script for cipher-aggregator MCP tools
+Tests workspace memory and morph-llm functionality
+"""
+
+import json
+import requests
+import time
+import sys
+
+def test_sse_connection():
+    """Test SSE connection to cipher-aggregator"""
+    try:
+        response = requests.get('http://localhost:3020/sse', timeout=10)
+        print(f"✅ SSE Connection: Status {response.status_code}")
+        return True
+    except Exception as e:
+        print(f"❌ SSE Connection failed: {e}")
+        return False
+
+def test_workspace_memory():
+    """Test workspace memory functionality"""
+    try:
+        # Test by checking if workspace memory directory exists and has content
+        import os
+        ws_dir = "/home/jrede/dev/MCP/data/workspace-memory"
+
+        if os.path.exists(ws_dir):
+            files = os.listdir(ws_dir)
+            print(f"✅ Workspace memory directory exists: {ws_dir}")
+            print(f"   Files: {files}")
+
+            # Check cipher.yml configuration
+            with open('/home/jrede/dev/MCP/cipher.yml', 'r') as f:
+                import yaml
+                config = yaml.safe_load(f)
+                if 'workspaceMemory' in config:
+                    wm = config['workspaceMemory']
+                    print(f"✅ Workspace memory config:")
+                    print(f"   Root: {wm['root']}")
+                    print(f"   Scope: {wm['scope']}")
+                    print(f"   Auto-capture: {wm['autoCapture']}")
+                    return True
+                else:
+                    print("❌ No workspaceMemory config found")
+                    return False
+        else:
+            print(f"❌ Workspace memory directory not found: {ws_dir}")
+            return False
+    except Exception as e:
+        print(f"❌ Workspace memory test failed: {e}")
+        return False
+
+def test_morph_llm_config():
+    """Test morph-llm configuration"""
+    try:
+        with open('/home/jrede/dev/MCP/cipher.yml', 'r') as f:
+            import yaml
+            config = yaml.safe_load(f)
+
+            morph_server = None
+            for name, server in config.get('mcpServers', {}).items():
+                if 'morph' in name:
+                    morph_server = server
+                    break
+
+            if morph_server:
+                print(f"✅ Morph-llm configuration found:")
+                print(f"   Command: {morph_server['command']}")
+                print(f"   Args: {morph_server['args']}")
+                print(f"   Timeout: {morph_server['timeout']}ms")
+                print(f"   Enabled: {morph_server['enabled']}")
+
+                # Check environment variables
+                env = morph_server.get('env', {})
+                if 'MORPH_API_KEY' in env:
+                    print(f"   MORPH_API_KEY: {'✅ Set' if env['MORPH_API_KEY'] == '$MORPH_API_KEY' else '❌ Not configured'}")
+                else:
+                    print(f"   MORPH_API_KEY: ⚠️ Environment variable not found")
+
+                if 'ALL_TOOLS' in env:
+                    print(f"   ALL_TOOLS: {env['ALL_TOOLS']}")
+
+                return True
+            else:
+                print("❌ Morph-llm server not found in configuration")
+                return False
+    except Exception as e:
+        print(f"❌ Morph-llm configuration test failed: {e}")
+        return False
+
+def test_tool_limits():
+    """Test tool execution limits configuration"""
+    try:
+        with open('/home/jrede/dev/MCP/cipher.yml', 'r') as f:
+            import yaml
+            config = yaml.safe_load(f)
+
+            tool_exec = config.get('toolExecution', {})
+            if tool_exec:
+                print(f"✅ Tool execution limits configured:")
+                print(f"   Max parallel calls: {tool_exec['maxParallelCalls']}")
+                print(f"   Call timeout: {tool_exec['callTimeout']}ms ({tool_exec['callTimeout']/1000:.0f}s)")
+                print(f"   Max calls per task: {tool_exec['maxCallsPerTask']}")
+                return True
+            else:
+                print("❌ No toolExecution limits found")
+                return False
+    except Exception as e:
+        print(f"❌ Tool limits test failed: {e}")
+        return False
+
+def main():
+    """Run all tests"""
+    print("🔍 Testing Cipher-Aggregator Configuration\n")
+
+    tests = [
+        ("SSE Connection", test_sse_connection),
+        ("Workspace Memory", test_workspace_memory),
+        ("Morph-llm Config", test_morph_llm_config),
+        ("Tool Execution Limits", test_tool_limits),
+    ]
+
+    results = []
+    for test_name, test_func in tests:
+        print(f"\n🧪 Testing {test_name}:")
+        result = test_func()
+        results.append((test_name, result))
+
+    print("\n" + "="*50)
+    print("📊 Test Results Summary:")
+    print("="*50)
+
+    passed = 0
+    for test_name, result in results:
+        status = "✅ PASS" if result else "❌ FAIL"
+        print(f"{test_name:<20} {status}")
+        if result:
+            passed += 1
+
+    print(f"\n🎯 Overall: {passed}/{len(results)} tests passed")
+
+    if passed == len(results):
+        print("🎉 All tests passed! Configuration is working correctly.")
+        return 0
+    else:
+        print("⚠️ Some tests failed. Check configuration.")
+        return 1
+
+if __name__ == "__main__":
+    sys.exit(main())

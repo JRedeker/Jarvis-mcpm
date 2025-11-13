@@ -1,0 +1,97 @@
+# OpenTelemetry Collector Configuration for Loki Backend
+# Receives OTLP logs from Cipher MCP servers and forwards to Grafana Loki
+# 
+# Reference: https://opentelemetry.io/docs/collector/configuration/
+# Loki exporter: https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/exporter/lokiexporter
+
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  # Batch logs to reduce network overhead
+  batch:
+    timeout: 2s
+    send_batch_size: 512
+    send_batch_max_size: 1024
+
+  # Add/modify resource attributes
+  resource:
+    attributes:
+      - key: deployment.environment
+        value: dev
+        action: upsert
+
+  # Filter or transform attributes if needed
+  attributes:
+    actions:
+      # Redact sensitive fields (example)
+      - key: http.request.header.authorization
+        action: delete
+      - key: http.request.header.cookie
+        action: delete
+
+  # Memory limiter to prevent OOM
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 512
+
+exporters:
+  loki:
+    endpoint: http://localhost:3100/loki/api/v1/push
+    # Optional tenant ID for multi-tenant Loki
+    # tenant_id: "cipher-dev"
+    
+    # Map OTel attributes to Loki labels
+    # Keep labels low-cardinality to avoid index explosion
+    labels:
+      resource:
+        # Service metadata as labels
+        service.name: "service_name"
+        service.version: "service_version"
+        deployment.environment: "env"
+      attributes:
+        # Bounded labels from log attributes
+        level: "level"
+        tier_id: "tier"
+        model: "model"
+        # Session ID only if cardinality is acceptable (<1000 unique/day)
+        # session_id: "session"
+      
+    # Default labels for all logs
+    default_labels_enabled:
+      exporter: "otlp"
+      job: "cipher-mcp"
+
+  # Debug: log to console (disable in prod)
+  logging:
+    verbosity: normal
+    sampling_initial: 5
+    sampling_thereafter: 200
+
+service:
+  pipelines:
+    logs:
+      receivers: [otlp]
+      processors: [memory_limiter, batch, resource, attributes]
+      exporters: [loki, logging]
+
+  # Observability for the collector itself
+  telemetry:
+    logs:
+      level: info
+    metrics:
+      address: :8888
+
+# Extensions
+extensions:
+  health_check:
+    endpoint: :13133
+  pprof:
+    endpoint: :1777
+  zpages:
+    endpoint: :55679

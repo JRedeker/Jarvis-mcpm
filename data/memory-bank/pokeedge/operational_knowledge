@@ -1,0 +1,117 @@
+PokeEdge Operational Knowledge Base: Production Deployment & Performance
+
+## Runtime Performance Optimization
+
+### Memory Management Excellence
+**Efficient Memory Usage Patterns:**
+- **Async/Await Patterns**: Optimal I/O-bound operation handling
+- **Connection Pooling**: HTTP client connection reuse and optimization
+- **Memory Leak Prevention**: Proper resource cleanup and context management
+- **Garbage Collection**: Understanding Python GC impact on long-running processes
+
+**Performance Monitoring:**
+- **Memory Usage Tracking**: Monitor across TUI, CLI, API interfaces
+- **Connection Pool Utilization**: Track HTTP client connections
+- **Memory Profiling**: Performance bottleneck identification
+- **Cache Optimization**: API response caching strategies
+
+### CPU Optimization Strategies
+**Async I/O Operations:**
+- **FastAPI Async Endpoints**: Non-blocking request handling
+- **HTTPX Async Clients**: Concurrent API calls with error handling
+- **Background Tasks**: Celery-like patterns for long-running operations
+- **Event Loop Management**: Optimal async context handling
+
+**Resource Management:**
+- **Thread Pool Management**: Proper worker thread utilization
+- **Process Pool Usage**: CPU-bound task separation
+- **Context Switching**: Minimize blocking operations
+- **Scalability Planning**: Horizontal and vertical scaling patterns
+
+## Production Deployment Patterns
+
+### Environment Configuration Management
+**Multi-Environment Setup:**
+- **Development**: Local debugging with hot reload
+- **Staging**: Production-like environment for testing
+- **Production**: Optimized for performance and security
+
+**Configuration Hierarchy:**
+```yaml
+development:
+  debug: true
+  caching: minimal
+  logging: verbose
+staging:
+  debug: false
+  caching: enabled
+  monitoring: enabled
+production:
+  debug: false
+  caching: aggressive
+  monitoring: comprehensive
+  security: enhanced
+```
+
+### Container Orchestration Patterns
+**Docker Deployment:**
+- **Multi-stage Builds**: Optimized image sizes
+- **Health Checks**: Container health monitoring
+- **Resource Limits**: CPU and memory constraints
+- **Security Scanning**: Vulnerability management
+
+**Kubernetes Patterns:**
+- **Pod Disruption Budgets**: Maintain availability during updates
+- **Horizontal Pod Autoscaling**: Automatic scaling based on metrics
+- **Service Mesh**: Inter-service communication patterns
+- **ConfigMap/Secret Management**: Configuration and sensitive data handling
+
+## Monitoring and Observability
+
+### Comprehensive Observability Stack
+**Metrics Collection:**
+- **Application Metrics**: Response times, throughput, error rates
+- **Infrastructure Metrics**: CPU, memory, disk, network utilization
+- **Business Metrics**: Pokemon price tracking accuracy, user engagement
+- **Custom Metrics**: Domain-specific performance indicators
+
+**Logging Architecture:**
+- **Structured Logging**: JSON-formatted logs for analysis
+- **Log Correlation**: Request tracing across services
+- **Log Retention**: Appropriate storage and archival policies
+- **Security Logging**: Authentication and authorization events
+
+**Distributed Tracing:**
+- **Request Flow Tracking**: End-to-end request visualization
+- **Performance Bottleneck Identification**: Slow operation detection
+- **Service Dependency Mapping**: Understanding service interactions
+- **Error Propagation Tracking**: Error flow analysis
+
+### Health Check Implementation
+**Application Health Monitoring:**
+- **Service Health**: API endpoint availability
+- **Database Health**: Connection pool status
+- **External Service Health**: API integration status
+- **Cache Health**: Redis/database cache validation
+
+## Cache Performance Management Excellence
+
+### Systematic Cache Monitoring
+**Performance Thresholds:**
+- **Size Thresholds**: Flag caches exceeding 50MB
+- **Impact Assessment**: Cache size as percentage of project size
+- **Automated Alerts**: Notify when caches exceed 10% of project size
+- **Pre-task Cleanup**: Remove caches before large-scale operations
+
+**Cache Strategy Patterns:**
+- **API Response Caching**: Redis-backed caching for external API calls
+- **Database Query Caching**: In-memory caching for frequent database queries
+- **Session State Caching**: User session and theme preferences
+- **Configuration Caching**: Application configuration caching
+
+### Performance Metrics Tracking
+**Operational Metrics:**
+- **Task Completion Metrics**: Error count reduction, file size changes
+- **Tool Execution Times**: Track ruff/mypy performance across codebase
+- **Payload Optimization**: Measure percentage reduction in project size
+- **Success Indicators**: MB saved, errors fixed, time taken

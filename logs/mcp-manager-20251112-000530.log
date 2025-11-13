@@ -1,0 +1,6 @@
+[0;31m[00:05:30 ERROR][0m ❌ Cipher-aggregator is not running
+
+[1;33mRecent errors from logs:[0m
+/home/jrede/dev/MCP/logs/cipher-aggregator-20251111-225419.log:22:55:21 ERROR: MCP Manager: Failed to list resources from schemathesis
+/home/jrede/dev/MCP/logs/cipher-aggregator-20251111-225419.log:22:55:21 ERROR: MCP Resource: Failed to list resources
+/home/jrede/dev/MCP/logs/cipher-aggregator-20251111-225419.log:22:55:21 ERROR: MCP Manager: Failed to list resources from httpie

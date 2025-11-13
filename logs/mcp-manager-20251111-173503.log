@@ -1,0 +1,6 @@
+[0;31m[17:35:03 ERROR][0m ❌ Cipher-aggregator is not running
+
+[1;33mRecent errors from logs:[0m
+/home/jrede/dev/MCP/logs/cipher-aggregator-20251111-164730.log:npm error A complete log of this run can be found in: /home/jrede/.npm/_logs/2025-11-11T21_47_31_355Z-debug-0.log
+/home/jrede/dev/MCP/logs/cipher-aggregator-20251111-164730.log:16:47:32 ERROR: MCP Connection: Failed to connect to MCP server: server-web
+/home/jrede/dev/MCP/logs/cipher-aggregator-20251111-164730.log:16:47:32 ERROR: MCP Manager: Failed to connect to server: server-web

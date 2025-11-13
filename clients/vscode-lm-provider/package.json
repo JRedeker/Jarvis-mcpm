@@ -1,0 +1,79 @@
+{
+  "name": "vscode-lm-provider-cipher",
+  "displayName": "Cipher LM Provider",
+  "version": "0.0.1",
+  "description": "VS Code LM Provider that routes LM calls to Cipher Aggregator with SSE readiness and POST fallback",
+  "main": "./dist/extension.js",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run build",
+    "build": "tsc -p ./",
+    "watch": "tsc -w -p ./",
+    "lint": "eslint src --ext .ts",
+    "test": "mocha -r ts-node/register \"src/__tests__/**/*.test.ts\""
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:vscode-lm-provider-cipher.activate",
+    "onLanguage:plaintext"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "vscode-lm-provider-cipher.activate",
+        "title": "Activate Cipher LM Provider"
+      },
+      {
+        "command": "vscode-lm-provider-cipher.modelInfo",
+        "title": "Cipher: Model info"
+      }
+    ],
+    "configuration": {
+      "type": "object",
+      "title": "Cipher LM Provider",
+      "properties": {
+        "vscode-lm-provider-cipher.cipherAggregatorUrl": {
+          "type": "string",
+          "default": "http://localhost:3020/sse",
+          "description": "Cipher Aggregator URL used by the provider (SSE endpoint)"
+        },
+        "vscode-lm-provider-cipher.sessionId": {
+          "type": "string",
+          "default": "",
+          "description": "Optional sessionId to send to Cipher; if empty a session is generated per window"
+        },
+        "vscode-lm-provider-cipher.defaultModel": {
+          "type": "string",
+          "default": "auto-cipher",
+          "description": "Default model label shown in the provider UI"
+        },
+        "vscode-lm-provider-cipher.allowTierOverride": {
+          "type": "boolean",
+          "default": true,
+          "description": "Allow per-request tier override via quick pick"
+        },
+        "vscode-lm-provider-cipher.telemetryEnabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable anonymized telemetry events for the provider"
+        }
+      }
+    }
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0",
+    "@types/node": "^20.0.0",
+    "eslint": "^8.0.0",
+    "@types/mocha": "^10.0.0",
+    "mocha": "^10.2.0",
+    "ts-node": "^10.9.1"
+  },
+  "dependencies": {
+    "eventsource": "^2.0.0",
+    "node-fetch": "^3.0.0"
+  }
+}

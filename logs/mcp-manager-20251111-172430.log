@@ -1,0 +1,14 @@
+[0;34m=== MCP System Health Check ===[0m
+✅ Cipher-Aggregator: Running
+[0;35m[17:24:30 DEBUG][0m Testing SSE server (attempt 1/5)...
+[0;35m[17:24:30 DEBUG][0m SSE port is reachable
+[0;35m[17:24:33 DEBUG][0m Health endpoint responds
+✅ SSE Server: Responding
+❌ Port 3020: Occupied by other process
+your 131072x1 screen size is bogus. expect trouble
+[0;35m[17:24:33 DEBUG][0m Found conflict: PID 6520 (mcp-server-memory-bank)
+[0;35m[17:24:33 DEBUG][0m Found conflict: PID 6533 (mcp-server-filesystem)
+❌ Conflicts Found: 2 MCP servers
+
+[0;34mHealth Score: 50/100[0m
+[0;31m❌ System has issues that need attention[0m

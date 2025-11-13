@@ -1,0 +1,61 @@
+PokeEdge Application Architecture Knowledge Base
+
+## Multi-Interface Pokemon Card Price Tracking System
+
+### Core Architecture Overview
+Sophisticated Pokemon card price tracking application with three distinct interfaces serving different user needs:
+
+#### 1. TUI (Textual User Interface)
+- **UnifiedThemeManager**: Pokemon-themed and professional themes
+- **Navigation Manager**: Session integration and keyboard shortcuts (t, [, ], 1-5, 0, ?)
+- **Color Support**: Automatic detection and graceful degradation
+- **Session Management**: State persistence and recovery
+- **Rich Terminal Experience**: 894-line comprehensive TUI application
+
+#### 2. CLI (Command Line Interface) 
+- **Click Framework**: Modern command registry with metadata-driven dispatch
+- **Presenter Injection**: Clean separation of concerns
+- **JSON Output**: Structured output for programmatic use
+- **Command Registry**: 191-line CLI entry point with metadata systems
+
+#### 3. FastAPI RESTful API
+- **Bearer Token Authentication**: Secure API access
+- **Rate Limiting**: Protection against abuse
+- **Security Middleware**: Comprehensive protection layers
+- **AI Endpoints**: Market analysis capabilities
+- **OpenAPI Documentation**: Automatic API documentation
+- **897-line AI endpoints module** with FastAPI integration
+
+### Technical Stack Mastery
+**Modern Python 3.13+ Implementation:**
+- **FastAPI**: High-performance async API framework with automatic validation
+- **httpx/requests**: HTTP client with sophisticated retry policies and connection pooling
+- **Pydantic**: Type validation across all interfaces with shared models
+- **Click**: CLI framework with command registration and metadata systems  
+- **Textual**: Rich TUI with theme management and navigation systems
+
+### BaseAPIClient Framework Architecture
+**Abstract HTTP Client (329 lines):**
+- **Unified Retry Policy**: Exponential backoff with service-specific configurations
+- **Connection Pooling**: HTTP client connection reuse and optimization
+- **Authentication Handling**: Bearer tokens, API keys, service-specific patterns
+- **Error Handling**: Graceful degradation and sophisticated error recovery
+- **Service-Specific Optimizations**: Tailored configurations per client
+
+#### Service Integration Patterns:
+- **Pokemon Price Tracker**: Credit-based API with sophisticated error handling
+- **eBay API**: Search and pricing data with pagination support  
+- **PriceCharting**: Historical pricing with Playwright automation
+- **OpenAI**: AI-powered analysis with token management
+
+### Configuration Management Excellence
+**Unified Configuration Architecture (172 lines):**
+- **3-System Consolidation**: Successfully merged three separate configuration systems
+- **Environment Variable Management**: Multi-source configuration handling
+- **Atomic Updates**: ConfigWriter for safe configuration changes
+- **Security Framework**: API key rotation and validation patterns
+
+**Configuration Interfaces:**
+- **FastAPI Integration**: Dependency injection for configuration
+- **CLI Access**: Configuration access through presenter patterns
+- **TUI Integration**: Theme and session configuration management

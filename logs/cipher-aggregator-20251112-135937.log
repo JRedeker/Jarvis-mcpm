@@ -1,0 +1,405 @@
+[CIPHER-MCP] Log redirection activated: /tmp/cipher-mcp.log
+13:59:38 INFO: MCP Manager: MCPManager initialized
+13:59:38 INFO: MCP Manager: Initializing 22 servers (2 disabled)
+13:59:38 INFO: MCP Manager: Connecting to server: morph
+13:59:38 INFO: MCP Manager: Registered client: morph
+13:59:38 INFO: MCP Connection: Connecting to morph (stdio)
+13:59:38 INFO: MCP Manager: Connecting to server: memory-bank
+13:59:38 INFO: MCP Manager: Registered client: memory-bank
+13:59:38 INFO: MCP Connection: Connecting to memory-bank (stdio)
+13:59:38 INFO: MCP Manager: Connecting to server: context7
+13:59:38 INFO: MCP Manager: Registered client: context7
+13:59:38 INFO: MCP Connection: Connecting to context7 (stdio)
+13:59:38 INFO: MCP Manager: Connecting to server: firecrawl
+13:59:38 INFO: MCP Manager: Registered client: firecrawl
+13:59:38 INFO: MCP Connection: Connecting to firecrawl (stdio)
+13:59:38 INFO: MCP Manager: Connecting to server: filesystem
+13:59:38 INFO: MCP Manager: Registered client: filesystem
+13:59:38 INFO: MCP Connection: Connecting to filesystem (stdio)
+13:59:38 INFO: MCP Manager: Connecting to server: textual-devtools
+13:59:38 INFO: MCP Manager: Registered client: textual-devtools
+13:59:38 INFO: MCP Connection: Connecting to textual-devtools (stdio)
+13:59:38 INFO: MCP Manager: Connecting to server: svelte
+13:59:38 INFO: MCP Manager: Registered client: svelte
+13:59:38 INFO: MCP Connection: Connecting to svelte (stdio)
+13:59:38 INFO: MCP Manager: Connecting to server: code-index
+13:59:38 INFO: MCP Manager: Registered client: code-index
+13:59:38 INFO: MCP Connection: Connecting to code-index (stdio)
+13:59:38 INFO: MCP Manager: Connecting to server: github
+13:59:38 INFO: MCP Manager: Registered client: github
+13:59:38 INFO: MCP Connection: Connecting to github (stdio)
+13:59:38 INFO: MCP Manager: Connecting to server: brave-search
+13:59:38 INFO: MCP Manager: Registered client: brave-search
+13:59:38 INFO: MCP Connection: Connecting to brave-search (stdio)
+13:59:38 INFO: MCP Manager: Skipping disabled server: server-web
+13:59:38 INFO: MCP Manager: Connecting to server: magic-mcp
+13:59:38 INFO: MCP Manager: Registered client: magic-mcp
+13:59:38 INFO: MCP Connection: Connecting to magic-mcp (stdio)
+13:59:38 INFO: MCP Manager: Connecting to server: playwright
+13:59:38 INFO: MCP Manager: Registered client: playwright
+13:59:38 INFO: MCP Connection: Connecting to playwright (stdio)
+13:59:38 INFO: MCP Manager: Skipping disabled server: docker
+13:59:38 INFO: MCP Manager: Connecting to server: file-batch
+13:59:38 INFO: MCP Manager: Registered client: file-batch
+13:59:38 INFO: MCP Connection: Connecting to file-batch (stdio)
+13:59:38 INFO: MCP Manager: Connecting to server: fetch
+13:59:38 INFO: MCP Manager: Registered client: fetch
+13:59:38 INFO: MCP Connection: Connecting to fetch (stdio)
+13:59:38 INFO: MCP Manager: Connecting to server: schemathesis
+13:59:38 INFO: MCP Manager: Registered client: schemathesis
+13:59:38 INFO: MCP Connection: Connecting to schemathesis (stdio)
+13:59:38 INFO: MCP Manager: Connecting to server: httpie
+13:59:38 INFO: MCP Manager: Registered client: httpie
+13:59:38 INFO: MCP Connection: Connecting to httpie (stdio)
+13:59:38 INFO: MCP Manager: Connecting to server: sql
+13:59:38 INFO: MCP Manager: Registered client: sql
+13:59:38 INFO: MCP Connection: Connecting to sql (stdio)
+13:59:38 INFO: MCP Manager: Connecting to server: prometheus
+13:59:38 INFO: MCP Manager: Registered client: prometheus
+13:59:38 INFO: MCP Connection: Connecting to prometheus (stdio)
+13:59:38 INFO: MCP Manager: Connecting to server: pytest
+13:59:38 INFO: MCP Manager: Registered client: pytest
+13:59:38 INFO: MCP Connection: Connecting to pytest (stdio)
+13:59:38 INFO: MCP Manager: Connecting to server: llm-inference
+13:59:38 INFO: MCP Manager: Registered client: llm-inference
+13:59:38 INFO: MCP Connection: Connecting to llm-inference (stdio)
+13:59:38 INFO: MCP Manager: Connecting to server: routing-metadata
+13:59:38 INFO: MCP Manager: Registered client: routing-metadata
+13:59:38 INFO: MCP Connection: Connecting to routing-metadata (stdio)
+13:59:38 INFO: MCP Manager: Connecting to server: time
+13:59:38 INFO: MCP Manager: Registered client: time
+13:59:38 INFO: MCP Connection: Connecting to time (stdio)
+time=2025-11-12T13:59:38.081-05:00 level=INFO msg="starting server" version=version host="" dynamicToolsets=false readOnly=false lockdownEnabled=false
+GitHub MCP Server running on stdio
+13:59:38 INFO: MCP Connection: Successfully connected to file-batch
+13:59:38 INFO: MCP Manager: Successfully connected to server: file-batch
+13:59:38 INFO: MCP Connection: Successfully connected to github
+13:59:38 INFO: MCP Manager: Successfully connected to server: github
+13:59:38 INFO: MCP Connection: Successfully connected to filesystem
+13:59:38 INFO: MCP Manager: Successfully connected to server: filesystem
+13:59:38 INFO: MCP Connection: Successfully connected to schemathesis
+13:59:38 INFO: MCP Manager: Successfully connected to server: schemathesis
+INFO:routing_enforcement_system:Loaded cipher configuration from /home/jrede/dev/MCP/cipher.yml
+INFO:routing_enforcement_system:Loaded cipher configuration from /home/jrede/dev/MCP/cipher.yml
+INFO:routing_enforcement_system:Parsed 10 routing rules from system prompt
+Enhanced Textual Devtools MCP server v0.2.0 running on stdio - Testing automation and coverage enforcement enabled
+INFO:routing_enforcement_system:Parsed 10 routing rules from system prompt
+INFO:routing_enforcement_system:Initialized routing decisions database at /home/jrede/dev/MCP/data/routing_decisions.db
+INFO:routing_enforcement_system:Initialized routing decisions database at /home/jrede/dev/MCP/data/routing_decisions.db
+INFO:routing_enforcement_system:Cipher Routing Engine initialized with 10 routing rules
+INFO:routing_enforcement_system:Cipher Routing Engine initialized with 10 routing rules
+INFO:cipher_routing_middleware:Cipher Routing Middleware initialized
+INFO:agent_configuration_system:Agent Configuration System initialized
+INFO:cipher_routing_middleware:Enforcement mode: warn
+INFO:__main__:Routing Metadata MCP Server starting...
+13:59:38 INFO: MCP Connection: Successfully connected to textual-devtools
+13:59:38 INFO: MCP Manager: Successfully connected to server: textual-devtools
+13:59:38 ERROR: MCP Connection: Failed to connect to MCP server: routing-metadata
+13:59:38 ERROR: MCP Manager: Failed to connect to server: routing-metadata
+INFO:llm-inference-mcp:Starting LLM Inference MCP Server (OpenRouter)
+INFO:llm-inference-mcp:Available tiers: l0, m1, m2, m3, m4
+INFO:llm-inference-mcp:Total model configurations: 5
+13:59:38 INFO: MCP Connection: Successfully connected to llm-inference
+13:59:38 INFO: MCP Manager: Successfully connected to server: llm-inference
+INFO:mcp.server.lowlevel.server:Processing request of type ListToolsRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListPromptsRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListResourcesRequest
+npm error code E404
+npm error 404 Not Found - GET https://registry.npmjs.org/@modelcontextprotocol%2fserver-time - Not found
+npm error 404
+npm error 404  '@modelcontextprotocol/server-time@*' is not in this registry.
+npm error 404
+npm error 404 Note that you can also install from a
+npm error 404 tarball, folder, http url, or git url.
+npm error A complete log of this run can be found in: /home/jrede/.npm/_logs/2025-11-12T18_59_38_175Z-debug-0.log
+13:59:38 ERROR: MCP Connection: Failed to connect to MCP server: time
+13:59:38 ERROR: MCP Manager: Failed to connect to server: time
+13:59:38 INFO: MCP Connection: Successfully connected to code-index
+13:59:38 INFO: MCP Manager: Successfully connected to server: code-index
+INFO:mcp.server.lowlevel.server:Processing request of type ListToolsRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListPromptsRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListResourcesRequest
+13:59:39 INFO: MCP Connection: Successfully connected to brave-search
+13:59:39 INFO: MCP Manager: Successfully connected to server: brave-search
+INFO:mcp.server.lowlevel.server:Processing request of type ListToolsRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListPromptsRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListResourcesRequest
+npm error code E404
+npm error 404 Not Found - GET https://registry.npmjs.org/@21stdev%2fmagic-mcp - Not found
+npm error 404
+npm error 404  '@21stdev/magic-mcp@*' is not in this registry.
+npm error 404
+npm error 404 Note that you can also install from a
+npm error 404 tarball, folder, http url, or git url.
+Context7 Documentation MCP Server running on stdio
+npm error A complete log of this run can be found in: /home/jrede/.npm/_logs/2025-11-12T18_59_38_146Z-debug-0.log
+13:59:39 INFO: MCP Connection: Successfully connected to context7
+13:59:39 INFO: MCP Manager: Successfully connected to server: context7
+INFO:mcp.server.lowlevel.server:Processing request of type ListToolsRequest
+13:59:39 ERROR: MCP Connection: Failed to connect to MCP server: magic-mcp
+13:59:39 ERROR: MCP Manager: Failed to connect to server: magic-mcp
+INFO:mcp.server.lowlevel.server:Processing request of type ListPromptsRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListResourcesRequest
+MORPH_API_KEY status: present
+13:59:39 INFO: MCP Connection: Successfully connected to memory-bank
+13:59:39 INFO: MCP Manager: Successfully connected to server: memory-bank
+Workspace mode enabled: Using /home/jrede/dev/MCP as allowed directory
+INFO:mcp.server.lowlevel.server:Processing request of type ListToolsRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListPromptsRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListResourcesRequest
+Secure MCP Filesystem Server running on stdio
+13:59:39 INFO: MCP Connection: Successfully connected to firecrawl
+13:59:39 INFO: MCP Manager: Successfully connected to server: firecrawl
+INFO:mcp.server.lowlevel.server:Processing request of type ListToolsRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListPromptsRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListResourcesRequest
+13:59:39 INFO: MCP Connection: Successfully connected to morph
+13:59:39 INFO: MCP Manager: Successfully connected to server: morph
+INFO:mcp.server.lowlevel.server:Processing request of type ListToolsRequest
+Client does not support MCP Roots, using allowed directories set from server args: [ '/home/jrede/dev/MCP' ]
+INFO:mcp.server.lowlevel.server:Processing request of type ListPromptsRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListResourcesRequest
+Configuration loaded successfully.
+Starting MCP server application...
+Skipping SSH tunnel connection as USE_SSH_TUNNEL is not true.
+Initializing database connection pool...
+Failed to initialize database connection pool: Error: connect ECONNREFUSED 127.0.0.1:3306
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16) {
+  errno: -111,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 3306,
+  fatal: true
+}
+Application failed during startup or runtime: Error: Database initialization failed: connect ECONNREFUSED 127.0.0.1:3306
+    at initializeDbPool (file:///home/jrede/.npm/_npx/f14f2f9307d1864a/node_modules/sql-mcp-server/dist/index.js:152:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async main (file:///home/jrede/.npm/_npx/f14f2f9307d1864a/node_modules/sql-mcp-server/dist/index.js:443:5)
+13:59:39 INFO: MCP Connection: Successfully connected to playwright
+13:59:39 INFO: MCP Manager: Successfully connected to server: playwright
+INFO:mcp.server.lowlevel.server:Processing request of type ListToolsRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListPromptsRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListResourcesRequest
+13:59:39 ERROR: MCP Connection: Failed to connect to MCP server: sql
+13:59:39 ERROR: MCP Manager: Failed to connect to server: sql
+{"level":"INFO","time":1762973979581,"pid":4313,"hostname":"WumBox","msg":"connecting to stdio transport"}
+13:59:39 INFO: MCP Connection: Successfully connected to prometheus
+13:59:39 INFO: MCP Manager: Successfully connected to server: prometheus
+INFO:mcp.server.lowlevel.server:Processing request of type ListToolsRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListPromptsRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListResourcesRequest
+13:59:39 INFO: MCP Connection: Successfully connected to fetch
+13:59:39 INFO: MCP Manager: Successfully connected to server: fetch
+INFO:mcp.server.lowlevel.server:Processing request of type ListToolsRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListPromptsRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListResourcesRequest
+13:59:39 INFO: MCP Connection: Successfully connected to svelte
+13:59:39 INFO: MCP Manager: Successfully connected to server: svelte
+INFO:mcp.server.lowlevel.server:Processing request of type ListToolsRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListPromptsRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListResourcesRequest
+14:00:38 ERROR: MCP Connection: Failed to connect to MCP server: httpie
+14:00:38 ERROR: MCP Manager: Failed to connect to server: httpie
+14:00:38 ERROR: MCP Connection: Failed to connect to MCP server: pytest
+14:00:38 ERROR: MCP Manager: Failed to connect to server: pytest
+14:00:38 INFO: MCP Manager: Retrieved 0 total prompts
+14:00:38 INFO: MCP Manager: Retrieved 0 total resources
+14:00:38 INFO: MCP Manager: Retrieved 2 total prompts
+14:00:38 INFO: MCP Manager: Retrieved 0 total resources
+14:00:38 INFO: MCP Manager: Retrieved 2 total prompts
+14:00:38 INFO: MCP Manager: Retrieved 0 total resources
+14:00:38 ERROR: MCP Prompt: Failed to list prompts
+14:00:38 ERROR: MCP Manager: Failed to list prompts from schemathesis
+14:00:38 INFO: MCP Manager: Retrieved 2 total prompts
+14:00:38 ERROR: MCP Resource: Failed to list resources
+14:00:38 ERROR: MCP Manager: Failed to list resources from schemathesis
+14:00:38 INFO: MCP Manager: Retrieved 0 total resources
+14:00:38 ERROR: MCP Prompt: Failed to list prompts
+14:00:38 ERROR: MCP Manager: Failed to list prompts from schemathesis
+14:00:38 INFO: MCP Manager: Retrieved 2 total prompts
+14:00:38 ERROR: MCP Resource: Failed to list resources
+14:00:38 ERROR: MCP Manager: Failed to list resources from schemathesis
+14:00:38 INFO: MCP Manager: Retrieved 0 total resources
+14:00:38 ERROR: MCP Prompt: Failed to list prompts
+14:00:38 ERROR: MCP Manager: Failed to list prompts from schemathesis
+14:00:38 INFO: MCP Manager: Retrieved 2 total prompts
+14:00:38 ERROR: MCP Resource: Failed to list resources
+14:00:38 ERROR: MCP Manager: Failed to list resources from schemathesis
+14:00:38 INFO: MCP Manager: Retrieved 0 total resources
+14:00:38 ERROR: MCP Prompt: Failed to list prompts
+14:00:38 ERROR: MCP Manager: Failed to list prompts from schemathesis
+14:00:38 INFO: MCP Manager: Retrieved 2 total prompts
+14:00:38 ERROR: MCP Resource: Failed to list resources
+14:00:38 ERROR: MCP Manager: Failed to list resources from schemathesis
+14:00:38 INFO: MCP Manager: Retrieved 0 total resources
+14:00:39 ERROR: MCP Prompt: Failed to list prompts
+14:00:39 ERROR: MCP Manager: Failed to list prompts from schemathesis
+14:00:39 INFO: MCP Manager: Retrieved 2 total prompts
+14:00:39 ERROR: MCP Resource: Failed to list resources
+14:00:39 ERROR: MCP Manager: Failed to list resources from schemathesis
+14:00:39 INFO: MCP Manager: Retrieved 0 total resources
+14:00:39 ERROR: MCP Prompt: Failed to list prompts
+14:00:39 ERROR: MCP Manager: Failed to list prompts from schemathesis
+14:00:39 INFO: MCP Manager: Retrieved 2 total prompts
+14:00:39 ERROR: MCP Resource: Failed to list resources
+14:00:39 ERROR: MCP Manager: Failed to list resources from schemathesis
+14:00:39 INFO: MCP Manager: Retrieved 0 total resources
+14:00:39 ERROR: MCP Prompt: Failed to list prompts
+14:00:39 ERROR: MCP Manager: Failed to list prompts from schemathesis
+14:00:39 INFO: MCP Manager: Retrieved 2 total prompts
+14:00:39 ERROR: MCP Resource: Failed to list resources
+14:00:39 ERROR: MCP Manager: Failed to list resources from schemathesis
+14:00:39 INFO: MCP Manager: Retrieved 0 total resources
+14:00:39 ERROR: MCP Prompt: Failed to list prompts
+14:00:39 ERROR: MCP Manager: Failed to list prompts from schemathesis
+14:00:39 INFO: MCP Manager: Retrieved 2 total prompts
+14:00:39 ERROR: MCP Resource: Failed to list resources
+14:00:39 ERROR: MCP Manager: Failed to list resources from schemathesis
+14:00:39 INFO: MCP Manager: Retrieved 0 total resources
+14:00:39 ERROR: MCP Prompt: Failed to list prompts
+14:00:39 ERROR: MCP Manager: Failed to list prompts from schemathesis
+14:00:39 INFO: MCP Manager: Retrieved 2 total prompts
+14:00:39 ERROR: MCP Resource: Failed to list resources
+14:00:39 ERROR: MCP Manager: Failed to list resources from schemathesis
+14:00:39 INFO: MCP Manager: Retrieved 0 total resources
+14:00:39 ERROR: MCP Prompt: Failed to list prompts
+14:00:39 ERROR: MCP Manager: Failed to list prompts from schemathesis
+14:00:39 INFO: MCP Manager: Retrieved 2 total prompts
+14:00:39 ERROR: MCP Resource: Failed to list resources
+14:00:39 ERROR: MCP Manager: Failed to list resources from schemathesis
+14:00:39 INFO: MCP Manager: Retrieved 1 total resources
+14:00:39 ERROR: MCP Prompt: Failed to list prompts
+14:00:39 ERROR: MCP Manager: Failed to list prompts from schemathesis
+14:00:39 INFO: MCP Manager: Retrieved 2 total prompts
+14:00:39 ERROR: MCP Resource: Failed to list resources
+14:00:39 ERROR: MCP Manager: Failed to list resources from schemathesis
+14:00:39 INFO: MCP Manager: Retrieved 1 total resources
+14:00:39 ERROR: MCP Prompt: Failed to list prompts
+14:00:39 ERROR: MCP Manager: Failed to list prompts from schemathesis
+14:00:39 INFO: MCP Manager: Retrieved 2 total prompts
+14:00:39 ERROR: MCP Resource: Failed to list resources
+14:00:39 ERROR: MCP Manager: Failed to list resources from schemathesis
+14:00:39 INFO: MCP Manager: Retrieved 1 total resources
+14:00:39 ERROR: MCP Prompt: Failed to list prompts
+14:00:39 ERROR: MCP Manager: Failed to list prompts from schemathesis
+14:00:39 INFO: MCP Manager: Retrieved 3 total prompts
+14:00:39 ERROR: MCP Resource: Failed to list resources
+14:00:39 ERROR: MCP Manager: Failed to list resources from schemathesis
+14:00:39 INFO: MCP Manager: Retrieved 1 total resources
+14:00:39 INFO: MCP Manager: Initialization complete
+14:00:39 INFO: [VectorStoreFactory] Creating multi collection vector storage from environment
+storeType chroma
+14:00:39 INFO: MultiCollectionVectorManager: Initialized with multiple collections
+14:00:39 INFO: [VectorStoreManager] Vector storage system connected
+14:00:39 INFO: [VectorStoreManager] Vector storage system connected
+14:00:39 INFO: [VectorStoreManager] Vector storage system connected
+14:00:39 INFO: MultiCollectionVectorManager: Connection completed
+14:00:39 INFO: [VectorStoreFactory] Multi collection vector storage created successfully
+14:00:39 INFO: [KG-Factory] Creating knowledge graph from environment
+14:00:39 DEBUG: [KG-Manager] Initialized with backend type: in-memory
+14:00:39 INFO: [KG-Manager] Connecting to in-memory backend...
+14:00:39 DEBUG: [KG-Manager] Loading in-memory backend module...
+14:00:39 DEBUG: [KG-Memory] Initialized with config:
+14:00:39 INFO: [KG-Memory] Connected successfully
+14:00:39 DEBUG: [KG-Manager] Started health monitoring (interval: 5000ms)
+14:00:39 INFO: [KG-Manager] Connected successfully to in-memory backend
+14:00:39 INFO: [KG-Factory] Knowledge graph system created successfully
+14:00:39 INFO: [StorageManager] Initialized with configuration
+14:00:39 INFO: [StorageManager] Starting connection attempt 1
+14:00:39 INFO: InMemoryBackend connected
+14:00:39 INFO: [StorageManager:Cache] Connected successfully
+14:00:39 INFO: SQLite backend connected successfully
+14:00:39 INFO: [StorageManager:Database] Connected successfully
+14:00:39 INFO: [StorageManager] Storage system connected
+No embeddingManager found in agent.services
+INFO:mcp.server.lowlevel.server:Processing request of type ListToolsRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListToolsRequest
+14:09:55 INFO: MCP Manager: Executing tool: memory_bank_write
+14:09:55 INFO: MCP Tool: Calling tool: memory_bank_write
+14:09:55 INFO: MCP Tool: Tool executed successfully: memory_bank_write
+14:09:55 INFO: MCP Manager: Tool executed successfully: memory_bank_write
+14:32:58 INFO: MCP Manager: Executing tool: list_directory
+14:32:58 INFO: MCP Tool: Calling tool: list_directory
+14:32:58 INFO: MCP Tool: Tool executed successfully: list_directory
+14:32:58 INFO: MCP Manager: Tool executed successfully: list_directory
+15:24:39 INFO: MCP Manager: Executing tool: brave_web_search
+15:24:39 INFO: MCP Tool: Calling tool: brave_web_search
+15:24:40 INFO: MCP Tool: Tool executed successfully: brave_web_search
+15:24:40 INFO: MCP Manager: Tool executed successfully: brave_web_search
+15:24:50 INFO: MCP Manager: Executing tool: brave_web_search
+15:24:50 INFO: MCP Tool: Calling tool: brave_web_search
+15:24:51 INFO: MCP Tool: Tool executed successfully: brave_web_search
+15:24:51 INFO: MCP Manager: Tool executed successfully: brave_web_search
+15:24:57 INFO: MCP Manager: Executing tool: brave_web_search
+15:24:57 INFO: MCP Tool: Calling tool: brave_web_search
+15:24:58 INFO: MCP Tool: Tool executed successfully: brave_web_search
+15:24:58 INFO: MCP Manager: Tool executed successfully: brave_web_search
+15:25:05 INFO: MCP Manager: Executing tool: brave_web_search
+15:25:05 INFO: MCP Tool: Calling tool: brave_web_search
+15:25:05 INFO: MCP Tool: Tool executed successfully: brave_web_search
+15:25:05 INFO: MCP Manager: Tool executed successfully: brave_web_search
+15:27:35 INFO: MCP Manager: Executing tool: brave_web_search
+15:27:35 INFO: MCP Tool: Calling tool: brave_web_search
+15:27:35 INFO: MCP Tool: Tool executed successfully: brave_web_search
+15:27:35 INFO: MCP Manager: Tool executed successfully: brave_web_search
+15:28:39 INFO: MCP Manager: Executing tool: brave_web_search
+15:28:39 INFO: MCP Tool: Calling tool: brave_web_search
+15:28:40 INFO: MCP Tool: Tool executed successfully: brave_web_search
+15:28:40 INFO: MCP Manager: Tool executed successfully: brave_web_search
+15:29:45 INFO: MCP Manager: Executing tool: firecrawl_search
+15:29:45 INFO: MCP Tool: Calling tool: firecrawl_search
+15:29:46 INFO: MCP Tool: Tool executed successfully: firecrawl_search
+15:29:46 INFO: MCP Manager: Tool executed successfully: firecrawl_search
+15:30:52 INFO: MCP Manager: Executing tool: fetch_markdown
+15:30:52 INFO: MCP Tool: Calling tool: fetch_markdown
+15:30:53 INFO: MCP Tool: Tool executed successfully: fetch_markdown
+15:30:53 INFO: MCP Manager: Tool executed successfully: fetch_markdown
+15:31:56 INFO: MCP Manager: Executing tool: write_file
+15:31:56 INFO: MCP Tool: Calling tool: write_file
+15:31:56 INFO: MCP Tool: Tool executed successfully: write_file
+15:31:56 INFO: MCP Manager: Tool executed successfully: write_file
+15:35:45 INFO: MCP Manager: Executing tool: brave_web_search
+15:35:45 INFO: MCP Tool: Calling tool: brave_web_search
+15:35:46 INFO: MCP Tool: Tool executed successfully: brave_web_search
+15:35:46 INFO: MCP Manager: Tool executed successfully: brave_web_search
+15:35:54 INFO: MCP Manager: Executing tool: brave_web_search
+15:35:54 INFO: MCP Tool: Calling tool: brave_web_search
+15:35:55 INFO: MCP Tool: Tool executed successfully: brave_web_search
+15:35:55 INFO: MCP Manager: Tool executed successfully: brave_web_search
+15:37:11 INFO: MCP Manager: Executing tool: brave_web_search
+15:37:11 INFO: MCP Tool: Calling tool: brave_web_search
+15:37:12 INFO: MCP Tool: Tool executed successfully: brave_web_search
+15:37:12 INFO: MCP Manager: Tool executed successfully: brave_web_search
+16:02:38 INFO: MCP Manager: Executing tool: brave_web_search
+16:02:38 INFO: MCP Tool: Calling tool: brave_web_search
+16:02:39 INFO: MCP Tool: Tool executed successfully: brave_web_search
+16:02:39 INFO: MCP Manager: Tool executed successfully: brave_web_search
+16:02:57 INFO: MCP Manager: Executing tool: firecrawl_scrape
+16:02:57 INFO: MCP Tool: Calling tool: firecrawl_scrape
+16:03:05 INFO: MCP Tool: Tool executed successfully: firecrawl_scrape
+16:03:05 INFO: MCP Manager: Tool executed successfully: firecrawl_scrape
+16:04:40 INFO: MCP Manager: Executing tool: brave_web_search
+16:04:40 INFO: MCP Tool: Calling tool: brave_web_search
+16:04:41 INFO: MCP Tool: Tool executed successfully: brave_web_search
+16:04:41 INFO: MCP Manager: Tool executed successfully: brave_web_search
+16:04:53 INFO: MCP Manager: Executing tool: firecrawl_scrape
+16:04:53 INFO: MCP Tool: Calling tool: firecrawl_scrape
+16:04:54 INFO: MCP Tool: Tool executed successfully: firecrawl_scrape
+16:04:54 INFO: MCP Manager: Tool executed successfully: firecrawl_scrape
+16:05:09 INFO: MCP Manager: Executing tool: firecrawl_scrape
+16:05:09 INFO: MCP Tool: Calling tool: firecrawl_scrape
+16:05:10 INFO: MCP Tool: Tool executed successfully: firecrawl_scrape
+16:05:10 INFO: MCP Manager: Tool executed successfully: firecrawl_scrape
+16:05:23 INFO: MCP Manager: Executing tool: firecrawl_search
+16:05:23 INFO: MCP Tool: Calling tool: firecrawl_search
+16:05:23 ERROR: MCP Tool: Tool execution failed: firecrawl_search
+16:05:23 ERROR: MCP Manager: Tool execution failed: firecrawl_search
+16:05:34 INFO: MCP Manager: Executing tool: firecrawl_scrape
+16:05:34 INFO: MCP Tool: Calling tool: firecrawl_scrape
+16:06:34 ERROR: MCP Tool: Tool execution failed: firecrawl_scrape
+16:06:34 ERROR: MCP Manager: Tool execution failed: firecrawl_scrape
+16:07:14 INFO: MCP Manager: Executing tool: brave_web_search
+16:07:14 INFO: MCP Tool: Calling tool: brave_web_search
+16:07:14 INFO: MCP Tool: Tool executed successfully: brave_web_search
+16:07:14 INFO: MCP Manager: Tool executed successfully: brave_web_search

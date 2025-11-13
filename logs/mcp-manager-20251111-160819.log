@@ -1,0 +1,13 @@
+[0;34m=== MCP System Health Check ===[0m
+❌ Cipher-Aggregator: Not running
+[0;35m[16:08:19 DEBUG][0m Testing SSE server (attempt 1/3)...
+[0;35m[16:08:21 DEBUG][0m Testing SSE server (attempt 2/3)...
+[0;35m[16:08:23 DEBUG][0m Testing SSE server (attempt 3/3)...
+[1;33m[16:08:23 WARNING][0m SSE server not responding after 3 attempts
+❌ SSE Server: Not responding
+✅ Port 3020: Available
+your 131072x1 screen size is bogus. expect trouble
+✅ No Conflicts: Clean environment
+
+[0;34mHealth Score: 50/100[0m
+[0;31m❌ System has issues that need attention[0m

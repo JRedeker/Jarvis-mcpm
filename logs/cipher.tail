@@ -1,0 +1,17 @@
+  textual-devtools:
+    type: stdio
+    command: node
+    args:
+      - "/home/jrede/.local/share/Kilo-Code/MCP/textual-devtools/build/index.js"
+    enabled: true
+    timeout: 60000
+    connectionMode: lenient
+evalLlm:
+  provider: openai
+  model: gpt-4.1
+  apiKey: $OPENAI_API_KEY
+
+evalllm:
+  provider: openai
+  model: gpt-4.1
+  apiKey: $OPENAI_API_KEY

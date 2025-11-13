@@ -1,0 +1,27 @@
+MCP Server Management Script v2.0
+Usage: mcp-manager.sh <command> [options]
+
+Commands:
+  start         Start cipher-aggregator
+  stop          Stop cipher-aggregator
+  restart       Restart cipher-aggregator
+  status        Show detailed status
+  health        Run system health check
+  cleanup       Kill conflicts and clean logs
+  monitor       Auto-monitor and recover
+  list          List available MCP tools
+  config        Show configuration
+
+Options:
+  -d, --debug   Enable debug output
+  -q, --quiet   Suppress non-error output
+  -h, --help    Show this help
+
+Examples:
+  mcp-manager.sh start                    # Start cipher-aggregator
+  mcp-manager.sh health                   # Check system health
+  mcp-manager.sh monitor                  # Auto-recovery mode
+  mcp-manager.sh status                   # Detailed status
+  mcp-manager.sh cleanup                  # Clean conflicts
+
+For more information, see /home/jrede/dev/MCP/README.md

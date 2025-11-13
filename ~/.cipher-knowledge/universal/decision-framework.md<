@@ -1,0 +1,305 @@
+# Universal Decision Framework
+
+*Applies to ALL projects - systematic approach to decision making and problem solving*
+
+## 🎯 Decision Making Principles
+
+### When to Clarify vs Proceed
+
+**ASK FOR CLARIFICATION when:**
+- **Requirements are ambiguous** - multiple interpretations possible
+- **Security implications unclear** - could affect safety/data protection
+- **Architecture decisions** - will impact long-term maintainability
+- **Integration points** - dependencies on other systems/services
+- **Performance requirements** - unclear SLAs or constraints
+- **Budget/timeline constraints** - resource limitations not defined
+
+**PROCEED CONFIDENTLY when:**
+- **Well-defined task** - clear inputs, outputs, and success criteria
+- **Following established patterns** - using proven solutions
+- **Local scope** - changes are isolated and reversible
+- **Standard implementations** - common libraries/frameworks
+- **Refactoring** - improving existing code without changing behavior
+
+## 🔍 Root Cause Investigation
+
+### Before Fixing Any Problem
+
+**Step 1: Understand the Problem**
+```bash
+# Ask these questions first:
+- What exactly is broken?
+- When did it start breaking?
+- What changed recently?
+- How does it fail consistently?
+- What error messages appear?
+```
+
+**Step 2: Reproduce the Issue**
+```python
+# ✅ GOOD - Reproduce and isolate
+def test_reproduce_bug():
+    """Test that reproduces the reported bug."""
+    # Set up exact conditions
+    # Execute the failing operation
+    # Verify the failure occurs
+    # This gives us a controlled way to test fixes
+
+# ❌ BAD - Assume you know the cause
+# "It's probably a race condition" without evidence
+```
+
+**Step 3: Trace the Code Path**
+```python
+# Add strategic logging to understand execution flow
+def problematic_function(input_data):
+    logger.info(f"Starting with input: {input_data[:50]}...")  # Redact if sensitive
+
+    try:
+        result = complex_operation(input_data)
+        logger.info(f"Operation completed, result: {result}")
+        return result
+    except Exception as e:
+        logger.error(f"Operation failed with: {e}")
+        logger.error(f"Input that failed: {input_data}")
+        raise
+```
+
+**Step 4: Fix the Root Cause**
+- **Not symptoms** - fix what actually causes the problem
+- **Not workarounds** - address the fundamental issue
+- **Consider side effects** - ensure fix doesn't break other things
+
+## 🧠 Using Subagents Effectively
+
+### When to Delegate to Subagents
+
+**USE SUBAGENTS for:**
+- **Large refactoring tasks** - breaking down complex changes
+- **Code exploration** - analyzing unfamiliar codebases
+- **Multiple file modifications** - coordinated changes across files
+- **Research tasks** - investigating technologies/patterns
+- **Testing and validation** - comprehensive test coverage
+
+**HANDLE DIRECTLY for:**
+- **Quick fixes** - simple bug fixes or small changes
+- **Configuration changes** - environment variables, settings
+- **Documentation updates** - README, comments, docstrings
+- **Single-file modifications** - localized changes
+
+### Delegation Pattern
+```python
+# When delegating to subagent, provide:
+1. Clear objective: "Refactor pricing service to use dependency injection"
+2. Success criteria: "All tests pass, no behavioral changes"
+3. Constraints: "Keep existing API, maintain performance"
+4. Context: "Part of larger architecture refactor"
+5. Reference materials: "Link to architecture principles doc"
+```
+
+## 📋 Task Breakdown Strategy
+
+### Large Task → Small Tasks
+
+**Breaking Down Complex Tasks:**
+1. **Identify logical boundaries** - separate concerns, modules, features
+2. **Order dependencies** - what needs to be done first
+3. **Create small, testable units** - each step should have clear success criteria
+4. **Plan integration points** - how pieces work together
+
+**Example - "Add authentication to PokeEdge":**
+```
+Task: Add authentication to PokeEdge TUI
+├── Research authentication options
+├── Design user model and database schema
+├── Implement user registration flow
+├── Implement login flow
+├── Add session management
+├── Update TUI to require auth
+├── Add logout functionality
+├── Test complete authentication flow
+└── Update documentation
+```
+
+## 🔧 Problem-Solving Methodology
+
+### Systematic Approach
+
+**Phase 1: Understanding (5-10 minutes)**
+- [ ] What is the problem statement?
+- [ ] What are the expected vs actual results?
+- [ ] What has been tried already?
+- [ ] What are the constraints (time, scope, technology)?
+
+**Phase 2: Investigation (10-20 minutes)**
+- [ ] Reproduce the issue
+- [ ] Identify the code path involved
+- [ ] Check logs, error messages, stack traces
+- [ ] Look for recent changes that could be related
+
+**Phase 3: Solution Design (5-15 minutes)**
+- [ ] Consider multiple solution approaches
+- [ ] Evaluate pros/cons of each approach
+- [ ] Consider impact on existing code
+- [ ] Choose the simplest solution that works
+
+**Phase 4: Implementation (Variable)**
+- [ ] Make changes incrementally
+- [ ] Test each change
+- [ ] Verify no regressions
+- [ ] Update tests if needed
+
+**Phase 5: Verification (5-10 minutes)**
+- [ ] Test the fix thoroughly
+- [ ] Check edge cases
+- [ ] Verify no side effects
+- [ ] Update documentation
+
+## 🎯 Implementation Strategy
+
+### Before Writing Any Code
+
+**Step 1: Design First**
+```python
+# Plan the solution before coding
+"""
+Solution Design for [Problem]:
+
+1. Input/Output contracts:
+   - Input: What data/parameters?
+   - Output: What should be returned?
+   - Error handling: How to handle edge cases?
+
+2. Algorithm approach:
+   - What data structures?
+   - What algorithms?
+   - Time/space complexity?
+
+3. Integration points:
+   - What existing code to modify?
+   - What tests to update?
+   - What documentation to update?
+"""
+```
+
+**Step 2: Test-First Development**
+```python
+# Write the test before the implementation
+def test_pricing_calculation_with_discounts():
+    """Test that pricing correctly applies multiple discount types."""
+    # Test setup
+    item = Item(price=100.0, source="amazon")
+    discounts = [BulkDiscount(10, 0.1), SourceDiscount("amazon", 0.05)]
+
+    # Expected behavior
+    expected_price = 90.0  # 100 * 0.9 * 0.95
+
+    # Test execution and verification
+    result = calculate_price_with_discounts(item, discounts)
+    assert result == expected_price
+
+# Then implement the actual function
+def calculate_price_with_discounts(item, discounts):
+    # Implementation goes here
+    pass
+```
+
+**Step 3: Implement Incrementally**
+```python
+# Build complexity gradually
+def calculate_price_with_discounts(item, discounts):
+    # Start simple - no discounts
+    price = item.base_price
+
+    # Add one type of discount
+    for discount in discounts:
+        if discount.type == "bulk":
+            price = apply_bulk_discount(price, discount)
+
+    # Add another type
+    for discount in discounts:
+        if discount.type == "source":
+            price = apply_source_discount(price, discount)
+
+    return price
+```
+
+## 🔍 Code Investigation Patterns
+
+### Understanding Existing Code
+
+**Reading Code Effectively:**
+1. **Start with interfaces** - what public methods exist?
+2. **Follow the data flow** - how does data move through the system?
+3. **Look for patterns** - are there similar implementations elsewhere?
+4. **Check tests** - they show how code is expected to be used
+5. **Trace dependencies** - what does this code depend on?
+
+**Code Archaeology Commands:**
+```bash
+# Find where a function is defined
+grep -r "def function_name" src/
+
+# Find all references to a function
+grep -r "function_name(" src/
+
+# Check git history for changes
+git log -p --follow file.py
+
+# Find all tests for a module
+find tests/ -name "*test*module*"
+```
+
+## 📊 Quality Gates for Decisions
+
+### Before Committing to a Decision
+
+**Decision Quality Checklist:**
+- [ ] **Problem clearly understood** - no assumptions made
+- [ ] **Root cause identified** - fixing symptoms, not root issues
+- [ ] **Solution validated** - tested or proven conceptually
+- [ ] **Impact assessed** - considered side effects
+- [ ] **Alternative considered** - at least 2 approaches evaluated
+- [ ] **Documentation updated** - changes are documented
+
+**Risk Assessment:**
+- **Low risk**: Localized changes, easy to revert
+- **Medium risk**: Cross-module changes, some testing needed
+- **High risk**: Architecture changes, comprehensive testing required
+
+## 🚨 Red Flags - When to Stop and Reassess
+
+**Warning Signs:**
+- **Making assumptions** about requirements
+- **Guessing at the cause** without evidence
+- **Implementing workarounds** instead of fixes
+- **Skipping tests** to save time
+- **Not considering edge cases**
+- **Copy-pasting code** without understanding
+
+**What to Do When You See Red Flags:**
+1. **Stop** - don't continue with a bad approach
+2. **Ask for clarification** - get more information
+3. **Break down the problem** - make it smaller
+4. **Get a second opinion** - ask for review
+5. **Do more investigation** - understand the problem better
+
+## 🔄 Learning and Adaptation
+
+### Continuous Improvement
+
+**After Each Task:**
+- [ ] **What worked well?** - what should I repeat?
+- [ ] **What could be improved?** - where did I waste time?
+- [ ] **What did I learn?** - new patterns, tools, techniques?
+- [ ] **How can I be more efficient?** - what to do differently next time?
+
+**Building on Experience:**
+- **Document patterns** - create templates for common solutions
+- **Update guidelines** - improve based on real-world experience
+- **Share learnings** - help others avoid similar issues
+- **Practice decision making** - improve with experience
+
+---
+
+**Remember**: Good decision making is a skill that improves with practice. When in doubt, take time to understand the problem properly. It's better to spend 30 minutes understanding than 3 hours fixing the wrong thing.

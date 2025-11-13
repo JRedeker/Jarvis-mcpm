@@ -1,0 +1,6 @@
+[0;31m[16:16:56 ERROR][0m ❌ Cipher-aggregator is not running
+
+[1;33mRecent errors from logs:[0m
+/home/jrede/dev/MCP/logs/cipher-aggregator-20251112-135937.log:16:05:23 ERROR: MCP Manager: Tool execution failed: firecrawl_search
+/home/jrede/dev/MCP/logs/cipher-aggregator-20251112-135937.log:16:06:34 ERROR: MCP Tool: Tool execution failed: firecrawl_scrape
+/home/jrede/dev/MCP/logs/cipher-aggregator-20251112-135937.log:16:06:34 ERROR: MCP Manager: Tool execution failed: firecrawl_scrape

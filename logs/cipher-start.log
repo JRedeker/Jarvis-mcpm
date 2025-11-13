@@ -1,0 +1,171 @@
+[CIPHER-MCP] Log redirection activated: /tmp/cipher-mcp.log
+01:11:30 INFO: MCP Manager: MCPManager initialized
+01:11:30 INFO: MCP Manager: Initializing 3 servers (0 disabled)
+01:11:30 INFO: MCP Manager: Connecting to server: memory-bank
+01:11:30 INFO: MCP Manager: Registered client: memory-bank
+01:11:30 INFO: MCP Connection: Connecting to memory-bank (stdio)
+01:11:30 INFO: MCP Manager: Connecting to server: filesystem
+01:11:30 INFO: MCP Manager: Registered client: filesystem
+01:11:30 INFO: MCP Connection: Connecting to filesystem (stdio)
+01:11:30 INFO: MCP Manager: Connecting to server: textual-devtools
+01:11:30 INFO: MCP Manager: Registered client: textual-devtools
+01:11:30 INFO: MCP Connection: Connecting to textual-devtools (stdio)
+Enhanced Textual Devtools MCP server v0.2.0 running on stdio - Testing automation and coverage enforcement enabled
+01:11:30 INFO: MCP Connection: Successfully connected to textual-devtools
+01:11:30 INFO: MCP Manager: Successfully connected to server: textual-devtools
+01:11:30 INFO: MCP Manager: Retrieved 0 total prompts
+01:11:30 INFO: MCP Manager: Retrieved 0 total resources
+Secure MCP Filesystem Server running on stdio
+01:11:31 INFO: MCP Connection: Successfully connected to filesystem
+01:11:31 INFO: MCP Manager: Successfully connected to server: filesystem
+Client does not support MCP Roots, using allowed directories set from server args: [ '/home/jrede/dev/MCP' ]
+01:11:31 INFO: MCP Manager: Retrieved 0 total prompts
+01:11:31 INFO: MCP Manager: Retrieved 0 total resources
+01:11:31 INFO: MCP Connection: Successfully connected to memory-bank
+01:11:31 INFO: MCP Manager: Successfully connected to server: memory-bank
+01:11:31 INFO: MCP Manager: Retrieved 0 total prompts
+01:11:31 INFO: MCP Manager: Retrieved 0 total resources
+01:11:31 INFO: MCP Manager: Initialization complete
+01:11:31 INFO: [VectorStoreFactory] Creating dual collection vector storage from environment
+01:11:31 INFO: DualCollectionVectorManager: Initialized with dual collections
+01:11:31 INFO: DualCollectionVectorManager: Connecting collections...
+01:11:31 INFO: [VectorStoreManager] Vector storage system connected
+01:11:31 INFO: DualCollectionVectorManager: Knowledge collection connected
+01:11:31 INFO: [VectorStoreManager] Vector storage system connected
+01:11:31 INFO: DualCollectionVectorManager: Reflection collection connected
+01:11:31 INFO: [KG-Factory] Knowledge graph is disabled in environment
+01:11:31 INFO: [StorageManager] Initialized with configuration
+01:11:31 INFO: [StorageManager] Starting connection attempt 1
+01:11:31 INFO: InMemoryBackend connected
+01:11:31 INFO: [StorageManager:Cache] Connected successfully
+Failed to connect to SQLite database {
+  path: 'data/cipher-sessions.db',
+  directory: 'data',
+  directoryExists: true,
+  error: 'Could not locate the bindings file. Tried:\n' +
+    ' → /home/jrede/.local/share/pnpm/global/5/.pnpm/better-sqlite3@12.4.1/node_modules/better-sqlite3/build/better_sqlite3.node\n' +
+    ' → /home/jrede/.local/share/pnpm/global/5/.pnpm/better-sqlite3@12.4.1/node_modules/better-sqlite3/build/Debug/better_sqlite3.node\n' +
+    ' → /home/jrede/.local/share/pnpm/global/5/.pnpm/better-sqlite3@12.4.1/node_modules/better-sqlite3/build/Release/better_sqlite3.node\n' +
+    ' → /home/jrede/.local/share/pnpm/global/5/.pnpm/better-sqlite3@12.4.1/node_modules/better-sqlite3/out/Debug/better_sqlite3.node\n' +
+    ' → /home/jrede/.local/share/pnpm/global/5/.pnpm/better-sqlite3@12.4.1/node_modules/better-sqlite3/Debug/better_sqlite3.node\n' +
+    ' → /home/jrede/.local/share/pnpm/global/5/.pnpm/better-sqlite3@12.4.1/node_modules/better-sqlite3/out/Release/better_sqlite3.node\n' +
+    ' → /home/jrede/.local/share/pnpm/global/5/.pnpm/better-sqlite3@12.4.1/node_modules/better-sqlite3/Release/better_sqlite3.node\n' +
+    ' → /home/jrede/.local/share/pnpm/global/5/.pnpm/better-sqlite3@12.4.1/node_modules/better-sqlite3/build/default/better_sqlite3.node\n' +
+    ' → /home/jrede/.local/share/pnpm/global/5/.pnpm/better-sqlite3@12.4.1/node_modules/better-sqlite3/compiled/22.21.0/linux/x64/better_sqlite3.node\n' +
+    ' → /home/jrede/.local/share/pnpm/global/5/.pnpm/better-sqlite3@12.4.1/node_modules/better-sqlite3/addon-build/release/install-root/better_sqlite3.node\n' +
+    ' → /home/jrede/.local/share/pnpm/global/5/.pnpm/better-sqlite3@12.4.1/node_modules/better-sqlite3/addon-build/debug/install-root/better_sqlite3.node\n' +
+    ' → /home/jrede/.local/share/pnpm/global/5/.pnpm/better-sqlite3@12.4.1/node_modules/better-sqlite3/addon-build/default/install-root/better_sqlite3.node\n' +
+    ' → /home/jrede/.local/share/pnpm/global/5/.pnpm/better-sqlite3@12.4.1/node_modules/better-sqlite3/lib/binding/node-v127-linux-x64/better_sqlite3.node',
+  stack: 'Error: Could not locate the bindings file. Tried:\n' +
+    ' → /home/jrede/.local/share/pnpm/global/5/.pnpm/better-sqlite3@12.4.1/node_modules/better-sqlite3/build/better_sqlite3.node\n' +
+    ' → /home/jrede/.local/share/pnpm/global/5/.pnpm/better-sqlite3@12.4.1/node_modules/better-sqlite3/build/Debug/better_sqlite3.node\n' +
+    ' → /home/jrede/.local/share/pnpm/global/5/.pnpm/better-sqlite3@12.4.1/node_modules/better-sqlite3/build/Release/better_sqlite3.node\n' +
+    ' → /home/jrede/.local/share/pnpm/global/5/.pnpm/better-sqlite3@12.4.1/node_modules/better-sqlite3/out/Debug/better_sqlite3.node\n' +
+    ' → /home/jrede/.local/share/pnpm/global/5/.pnpm/better-sqlite3@12.4.1/node_modules/better-sqlite3/Debug/better_sqlite3.node\n' +
+    ' → /home/jrede/.local/share/pnpm/global/5/.pnpm/better-sqlite3@12.4.1/node_modules/better-sqlite3/out/Release/better_sqlite3.node\n' +
+    ' → /home/jrede/.local/share/pnpm/global/5/.pnpm/better-sqlite3@12.4.1/node_modules/better-sqlite3/Release/better_sqlite3.node\n' +
+    ' → /home/jrede/.local/share/pnpm/global/5/.pnpm/better-sqlite3@12.4.1/node_modules/better-sqlite3/build/default/better_sqlite3.node\n' +
+    ' → /home/jrede/.local/share/pnpm/global/5/.pnpm/better-sqlite3@12.4.1/node_modules/better-sqlite3/compiled/22.21.0/linux/x64/better_sqlite3.node\n' +
+    ' → /home/jrede/.local/share/pnpm/global/5/.pnpm/better-sqlite3@12.4.1/node_modules/better-sqlite3/addon-build/release/install-root/better_sqlite3.node\n' +
+    ' → /home/jrede/.local/share/pnpm/global/5/.pnpm/better-sqlite3@12.4.1/node_modules/better-sqlite3/addon-build/debug/install-root/better_sqlite3.node\n' +
+    ' → /home/jrede/.local/share/pnpm/global/5/.pnpm/better-sqlite3@12.4.1/node_modules/better-sqlite3/addon-build/default/install-root/better_sqlite3.node\n' +
+    ' → /home/jrede/.local/share/pnpm/global/5/.pnpm/better-sqlite3@12.4.1/node_modules/better-sqlite3/lib/binding/node-v127-linux-x64/better_sqlite3.node\n' +
+    '    at bindings (/home/jrede/.local/share/pnpm/global/5/.pnpm/bindings@1.5.0/node_modules/bindings/bindings.js:126:9)\n' +
+    '    at new Database (/home/jrede/.local/share/pnpm/global/5/.pnpm/better-sqlite3@12.4.1/node_modules/better-sqlite3/lib/database.js:48:64)\n' +
+    '    at SqliteBackend.connect (/home/jrede/.local/share/pnpm/global/5/.pnpm/@byterover+cipher@0.3.0_graphql@16.12.0_typescript@5.9.3_zod@3.25.76/node_modules/@byterover/cipher/dist/src/app/index.cjs:20778:21)\n' +
+    '    at _StorageManager.connect (/home/jrede/.local/share/pnpm/global/5/.pnpm/@byterover+cipher@0.3.0_graphql@16.12.0_typescript@5.9.3_zod@3.25.76/node_modules/@byterover/cipher/dist/src/app/index.cjs:21613:33)\n' +
+    '    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n' +
+    '    at async SessionManager.initializeSqliteStorage (/home/jrede/.local/share/pnpm/global/5/.pnpm/@byterover+cipher@0.3.0_graphql@16.12.0_typescript@5.9.3_zod@3.25.76/node_modules/@byterover/cipher/dist/src/app/index.cjs:23870:11)\n' +
+    '    at async SessionManager.initializePersistenceStorage (/home/jrede/.local/share/pnpm/global/5/.pnpm/@byterover+cipher@0.3.0_graphql@16.12.0_typescript@5.9.3_zod@3.25.76/node_modules/@byterover/cipher/dist/src/app/index.cjs:23843:11)\n' +
+    '    at async SessionManager.init (/home/jrede/.local/share/pnpm/global/5/.pnpm/@byterover+cipher@0.3.0_graphql@16.12.0_typescript@5.9.3_zod@3.25.76/node_modules/@byterover/cipher/dist/src/app/index.cjs:23238:9)\n' +
+    '    at async createAgentServices (/home/jrede/.local/share/pnpm/global/5/.pnpm/@byterover+cipher@0.3.0_graphql@16.12.0_typescript@5.9.3_zod@3.25.76/node_modules/@byterover/cipher/dist/src/app/index.cjs:48777:3)\n' +
+    '    at async MemAgent.start (/home/jrede/.local/share/pnpm/global/5/.pnpm/@byterover+cipher@0.3.0_graphql@16.12.0_typescript@5.9.3_zod@3.25.76/node_modules/@byterover/cipher/dist/src/app/index.cjs:50196:20)',
+  nodeVersion: 'v22.21.0',
+  platform: 'linux',
+  arch: 'x64'
+}
+01:11:31 ERROR: Failed to connect to database backend
+01:11:31 WARN: [StorageManager:Database] Primary backend failed, attempting fallback to in-memory
+01:11:31 INFO: InMemoryBackend connected
+01:11:31 INFO: [StorageManager:Database] Successfully connected to fallback backend
+01:11:31 INFO: [StorageManager] Storage system connected
+02:12:36 INFO: MCP Manager: Executing tool: write_file
+02:12:36 INFO: MCP Tool: Calling tool: write_file
+02:12:36 INFO: MCP Tool: Tool executed successfully: write_file
+02:12:36 INFO: MCP Manager: Tool executed successfully: write_file
+02:12:36 INFO: MCP Manager: Executing tool: read_text_file
+02:12:36 INFO: MCP Tool: Calling tool: read_text_file
+02:12:36 INFO: MCP Tool: Tool executed successfully: read_text_file
+02:12:36 INFO: MCP Manager: Tool executed successfully: read_text_file
+02:13:07 INFO: MCP Manager: Executing tool: create_directory
+02:13:07 INFO: MCP Tool: Calling tool: create_directory
+02:13:07 INFO: MCP Tool: Tool executed successfully: create_directory
+02:13:07 INFO: MCP Manager: Tool executed successfully: create_directory
+02:13:07 INFO: MCP Manager: Executing tool: write_file
+02:13:07 INFO: MCP Tool: Calling tool: write_file
+02:13:07 INFO: MCP Tool: Tool executed successfully: write_file
+02:13:07 INFO: MCP Manager: Tool executed successfully: write_file
+02:13:07 INFO: MCP Manager: Executing tool: read_text_file
+02:13:07 INFO: MCP Tool: Calling tool: read_text_file
+02:13:07 INFO: MCP Tool: Tool executed successfully: read_text_file
+02:13:07 INFO: MCP Manager: Tool executed successfully: read_text_file
+02:13:25 INFO: MCP Manager: Executing tool: create_directory
+02:13:25 INFO: MCP Tool: Calling tool: create_directory
+02:13:25 INFO: MCP Tool: Tool executed successfully: create_directory
+02:13:25 INFO: MCP Manager: Tool executed successfully: create_directory
+02:13:25 INFO: MCP Manager: Executing tool: write_file
+02:13:25 INFO: MCP Tool: Calling tool: write_file
+02:13:25 INFO: MCP Tool: Tool executed successfully: write_file
+02:13:25 INFO: MCP Manager: Tool executed successfully: write_file
+02:13:25 INFO: MCP Manager: Executing tool: read_text_file
+02:13:25 INFO: MCP Tool: Calling tool: read_text_file
+02:13:25 INFO: MCP Tool: Tool executed successfully: read_text_file
+02:13:25 INFO: MCP Manager: Tool executed successfully: read_text_file
+02:13:40 INFO: MCP Manager: Executing tool: create_directory
+02:13:40 INFO: MCP Tool: Calling tool: create_directory
+02:13:40 INFO: MCP Tool: Tool executed successfully: create_directory
+02:13:40 INFO: MCP Manager: Tool executed successfully: create_directory
+02:13:40 INFO: MCP Manager: Executing tool: write_file
+02:13:40 INFO: MCP Tool: Calling tool: write_file
+02:13:40 INFO: MCP Tool: Tool executed successfully: write_file
+02:13:40 INFO: MCP Manager: Tool executed successfully: write_file
+02:13:40 INFO: MCP Manager: Executing tool: read_text_file
+02:13:40 INFO: MCP Tool: Calling tool: read_text_file
+02:13:40 INFO: MCP Tool: Tool executed successfully: read_text_file
+02:13:40 INFO: MCP Manager: Tool executed successfully: read_text_file
+02:13:59 INFO: MCP Manager: Executing tool: create_directory
+02:13:59 INFO: MCP Tool: Calling tool: create_directory
+02:13:59 INFO: MCP Tool: Tool executed successfully: create_directory
+02:13:59 INFO: MCP Manager: Tool executed successfully: create_directory
+02:13:59 INFO: MCP Manager: Executing tool: write_file
+02:13:59 INFO: MCP Tool: Calling tool: write_file
+02:13:59 INFO: MCP Tool: Tool executed successfully: write_file
+02:13:59 INFO: MCP Manager: Tool executed successfully: write_file
+02:13:59 INFO: MCP Manager: Executing tool: read_text_file
+02:13:59 INFO: MCP Tool: Calling tool: read_text_file
+02:13:59 INFO: MCP Tool: Tool executed successfully: read_text_file
+02:13:59 INFO: MCP Manager: Tool executed successfully: read_text_file
+02:16:56 INFO: MCP Manager: Executing tool: create_directory
+02:16:56 INFO: MCP Tool: Calling tool: create_directory
+02:16:56 INFO: MCP Tool: Tool executed successfully: create_directory
+02:16:56 INFO: MCP Manager: Tool executed successfully: create_directory
+02:16:56 INFO: MCP Manager: Executing tool: write_file
+02:16:56 INFO: MCP Tool: Calling tool: write_file
+02:16:56 INFO: MCP Tool: Tool executed successfully: write_file
+02:16:56 INFO: MCP Manager: Tool executed successfully: write_file
+02:16:56 INFO: MCP Manager: Executing tool: read_text_file
+02:16:56 INFO: MCP Tool: Calling tool: read_text_file
+02:16:56 INFO: MCP Tool: Tool executed successfully: read_text_file
+02:16:56 INFO: MCP Manager: Tool executed successfully: read_text_file
+02:20:21 INFO: MCP Manager: Executing tool: create_directory
+02:20:21 INFO: MCP Tool: Calling tool: create_directory
+02:20:21 INFO: MCP Tool: Tool executed successfully: create_directory
+02:20:21 INFO: MCP Manager: Tool executed successfully: create_directory
+02:20:21 INFO: MCP Manager: Executing tool: write_file
+02:20:21 INFO: MCP Tool: Calling tool: write_file
+02:20:21 INFO: MCP Tool: Tool executed successfully: write_file
+02:20:21 INFO: MCP Manager: Tool executed successfully: write_file
+02:20:21 INFO: MCP Manager: Executing tool: read_text_file
+02:20:21 INFO: MCP Tool: Calling tool: read_text_file
+02:20:21 INFO: MCP Tool: Tool executed successfully: read_text_file
+02:20:21 INFO: MCP Manager: Tool executed successfully: read_text_file

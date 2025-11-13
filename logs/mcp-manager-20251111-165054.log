@@ -1,0 +1,24 @@
+[0;34m[16:50:54 INFO][0m MCP Management Configuration:
+
+[0;34mPaths:[0m
+  Script Directory: /home/jrede/dev/MCP
+  MCP Directory: /home/jrede/dev/MCP
+  Config File: /home/jrede/dev/MCP/cipher.yml
+  Log Directory: /home/jrede/dev/MCP/logs
+  PID File: /home/jrede/dev/MCP/cipher-aggregator.pid
+
+[0;34mNetwork:[0m
+  SSE Host: 127.0.0.1
+  SSE Port: 3020
+  SSE URL: http://127.0.0.1:3020/sse
+
+[0;34mSystem:[0m
+  Cipher Binary: /home/jrede/.npm-global/bin/cipher
+  Cipher Version: 0.3.0
+  Max Startup Wait: 30s
+  Log Size Limit: 100MB
+  Configured Servers: 18
+
+[0;34mStatus:[0m
+  Cipher-Aggregator: Running
+/home/jrede/dev/MCP/mcp-manager.sh: line 632: ${#$(detect_conflicts)} - 0: bad substitution

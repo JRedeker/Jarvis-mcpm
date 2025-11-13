@@ -1,0 +1,17 @@
+[project]
+name = "server-health-mcp"
+version = "0.1.0"
+description = "Server health monitoring MCP server"
+requires-python = ">=3.12"
+
+dependencies = [
+    "mcp>=1.0.0",
+    "psutil>=5.9.0",
+    "asyncio",
+    "openai>=1.0.0",
+    "python-dotenv>=1.0.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

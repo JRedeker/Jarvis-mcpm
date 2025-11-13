@@ -1,0 +1,192 @@
+[CIPHER-MCP] Log redirection activated: /tmp/cipher-mcp.log
+19:07:10 INFO: MCP Manager: MCPManager initialized
+19:07:10 INFO: MCP Manager: Initializing 18 servers (3 disabled)
+19:07:10 INFO: MCP Manager: Connecting to server: morph
+19:07:10 INFO: MCP Manager: Registered client: morph
+19:07:10 INFO: MCP Connection: Connecting to morph (stdio)
+19:07:10 INFO: MCP Manager: Connecting to server: memory-bank
+19:07:10 INFO: MCP Manager: Registered client: memory-bank
+19:07:10 INFO: MCP Connection: Connecting to memory-bank (stdio)
+19:07:10 INFO: MCP Manager: Connecting to server: context7
+19:07:10 INFO: MCP Manager: Registered client: context7
+19:07:10 INFO: MCP Connection: Connecting to context7 (stdio)
+19:07:10 INFO: MCP Manager: Connecting to server: firecrawl
+19:07:10 INFO: MCP Manager: Registered client: firecrawl
+19:07:10 INFO: MCP Connection: Connecting to firecrawl (stdio)
+19:07:10 INFO: MCP Manager: Connecting to server: filesystem
+19:07:10 INFO: MCP Manager: Registered client: filesystem
+19:07:10 INFO: MCP Connection: Connecting to filesystem (stdio)
+19:07:10 INFO: MCP Manager: Connecting to server: textual-devtools
+19:07:10 INFO: MCP Manager: Registered client: textual-devtools
+19:07:10 INFO: MCP Connection: Connecting to textual-devtools (stdio)
+19:07:10 INFO: MCP Manager: Connecting to server: svelte
+19:07:10 INFO: MCP Manager: Registered client: svelte
+19:07:10 INFO: MCP Connection: Connecting to svelte (stdio)
+19:07:10 INFO: MCP Manager: Connecting to server: code-index
+19:07:10 INFO: MCP Manager: Registered client: code-index
+19:07:10 INFO: MCP Connection: Connecting to code-index (stdio)
+19:07:10 INFO: MCP Manager: Skipping disabled server: github
+19:07:10 INFO: MCP Manager: Skipping disabled server: server-web
+19:07:10 INFO: MCP Manager: Connecting to server: magic-mcp
+19:07:10 INFO: MCP Manager: Registered client: magic-mcp
+19:07:10 INFO: MCP Connection: Connecting to magic-mcp (stdio)
+19:07:10 INFO: MCP Manager: Connecting to server: playwright
+19:07:10 INFO: MCP Manager: Registered client: playwright
+19:07:10 INFO: MCP Connection: Connecting to playwright (stdio)
+19:07:10 INFO: MCP Manager: Skipping disabled server: docker
+19:07:10 INFO: MCP Manager: Connecting to server: file-batch
+19:07:10 INFO: MCP Manager: Registered client: file-batch
+19:07:10 INFO: MCP Connection: Connecting to file-batch (stdio)
+19:07:10 INFO: MCP Manager: Connecting to server: fetch
+19:07:10 INFO: MCP Manager: Registered client: fetch
+19:07:10 INFO: MCP Connection: Connecting to fetch (stdio)
+19:07:10 INFO: MCP Manager: Connecting to server: schemathesis
+19:07:10 INFO: MCP Manager: Registered client: schemathesis
+19:07:10 INFO: MCP Connection: Connecting to schemathesis (stdio)
+19:07:10 INFO: MCP Manager: Connecting to server: httpie
+19:07:10 INFO: MCP Manager: Registered client: httpie
+19:07:10 INFO: MCP Connection: Connecting to httpie (stdio)
+19:07:10 INFO: MCP Manager: Connecting to server: sql
+19:07:10 INFO: MCP Manager: Registered client: sql
+19:07:10 INFO: MCP Connection: Connecting to sql (stdio)
+19:07:10 INFO: MCP Manager: Connecting to server: pypi
+19:07:10 INFO: MCP Manager: Registered client: pypi
+19:07:10 INFO: MCP Connection: Connecting to pypi (stdio)
+19:07:10 INFO: MCP Manager: Connecting to server: pytest
+19:07:10 INFO: MCP Manager: Registered client: pytest
+19:07:10 INFO: MCP Connection: Connecting to pytest (stdio)
+19:07:10 INFO: MCP Manager: Connecting to server: prometheus
+19:07:10 INFO: MCP Manager: Registered client: prometheus
+19:07:10 INFO: MCP Connection: Connecting to prometheus (stdio)
+19:07:11 INFO: MCP Connection: Successfully connected to filesystem
+19:07:11 INFO: MCP Manager: Successfully connected to server: filesystem
+19:07:11 INFO: MCP Connection: Successfully connected to file-batch
+19:07:11 INFO: MCP Manager: Successfully connected to server: file-batch
+Enhanced Textual Devtools MCP server v0.2.0 running on stdio - Testing automation and coverage enforcement enabled
+19:07:11 INFO: MCP Connection: Successfully connected to textual-devtools
+19:07:11 INFO: MCP Manager: Successfully connected to server: textual-devtools
+Context7 Documentation MCP Server running on stdio
+19:07:11 INFO: MCP Connection: Successfully connected to context7
+19:07:11 INFO: MCP Manager: Successfully connected to server: context7
+19:07:11 INFO: MCP Connection: Successfully connected to code-index
+19:07:11 INFO: MCP Manager: Successfully connected to server: code-index
+19:07:11 INFO: MCP Connection: Successfully connected to firecrawl
+19:07:11 INFO: MCP Manager: Successfully connected to server: firecrawl
+19:07:11 INFO: MCP Connection: Successfully connected to memory-bank
+19:07:11 INFO: MCP Manager: Successfully connected to server: memory-bank
+npm error code E404
+npm error 404 Not Found - GET https://registry.npmjs.org/@modelcontextprotocol%2fpytest-mcp-server - Not found
+npm error 404
+npm error 404  '@modelcontextprotocol/pytest-mcp-server@*' is not in this registry.
+npm error 404
+npm error 404 Note that you can also install from a
+npm error 404 tarball, folder, http url, or git url.
+npm error A complete log of this run can be found in: /home/jrede/.npm/_logs/2025-11-12T00_07_11_049Z-debug-0.log
+npm error code E404
+npm error 404 Not Found - GET https://registry.npmjs.org/@21stdev%2fmagic-mcp - Not found
+npm error 404
+npm error 404  '@21stdev/magic-mcp@*' is not in this registry.
+npm error 404
+npm error 404 Note that you can also install from a
+npm error 404 tarball, folder, http url, or git url.
+npm error A complete log of this run can be found in: /home/jrede/.npm/_logs/2025-11-12T00_07_11_023Z-debug-0.log
+19:07:11 ERROR: MCP Connection: Failed to connect to MCP server: pytest
+19:07:11 ERROR: MCP Manager: Failed to connect to server: pytest
+19:07:11 ERROR: MCP Connection: Failed to connect to MCP server: magic-mcp
+19:07:11 ERROR: MCP Manager: Failed to connect to server: magic-mcp
+npm error code E404
+npm error 404 Not Found - GET https://registry.npmjs.org/schemathesis-mcp-server - Not found
+npm error 404
+npm error 404  'schemathesis-mcp-server@*' is not in this registry.
+npm error 404
+npm error 404 Note that you can also install from a
+npm error 404 tarball, folder, http url, or git url.
+npm error A complete log of this run can be found in: /home/jrede/.npm/_logs/2025-11-12T00_07_11_037Z-debug-0.log
+19:07:11 ERROR: MCP Connection: Failed to connect to MCP server: schemathesis
+19:07:11 ERROR: MCP Manager: Failed to connect to server: schemathesis
+npm error code E404
+npm error 404 Not Found - GET https://registry.npmjs.org/pypi-mcp-server - Not found
+npm error 404
+npm error 404  'pypi-mcp-server@*' is not in this registry.
+npm error 404
+npm error 404 Note that you can also install from a
+npm error 404 tarball, folder, http url, or git url.
+npm error A complete log of this run can be found in: /home/jrede/.npm/_logs/2025-11-12T00_07_11_044Z-debug-0.log
+19:07:11 ERROR: MCP Connection: Failed to connect to MCP server: pypi
+19:07:11 ERROR: MCP Manager: Failed to connect to server: pypi
+19:07:12 INFO: MCP Connection: Successfully connected to fetch
+19:07:12 INFO: MCP Manager: Successfully connected to server: fetch
+19:07:12 INFO: MCP Connection: Successfully connected to playwright
+19:07:12 INFO: MCP Manager: Successfully connected to server: playwright
+npm error code E404
+npm error 404 Not Found - GET https://registry.npmjs.org/httpie-mcp-server - Not found
+npm error 404
+npm error 404  'httpie-mcp-server@*' is not in this registry.
+npm error 404
+npm error 404 Note that you can also install from a
+npm error 404 tarball, folder, http url, or git url.
+npm error A complete log of this run can be found in: /home/jrede/.npm/_logs/2025-11-12T00_07_11_032Z-debug-0.log
+19:07:12 ERROR: MCP Connection: Failed to connect to MCP server: httpie
+19:07:12 ERROR: MCP Manager: Failed to connect to server: httpie
+prometheus-mcp <command>
+
+Commands:
+  prometheus-mcp stdio  Start Prometheus MCP server using stdio
+  prometheus-mcp http   Start Prometheus MCP server using Streamable HTTP
+
+Options:
+  --help     Show help                                                 [boolean]
+  --version  Show version number                                       [boolean]
+
+Not enough non-option arguments: got 0, need at least 1
+19:07:12 ERROR: MCP Connection: Failed to connect to MCP server: prometheus
+19:07:12 ERROR: MCP Manager: Failed to connect to server: prometheus
+Error: DB_NAME environment variable is not set.
+19:07:12 ERROR: MCP Connection: Failed to connect to MCP server: sql
+19:07:12 ERROR: MCP Manager: Failed to connect to server: sql
+MORPH_API_KEY status: present
+Workspace mode enabled: Using /home/jrede/dev/MCP as allowed directory
+Secure MCP Filesystem Server running on stdio
+19:07:12 INFO: MCP Connection: Successfully connected to morph
+19:07:12 INFO: MCP Manager: Successfully connected to server: morph
+Client does not support MCP Roots, using allowed directories set from server args: [ '/home/jrede/dev/MCP' ]
+19:07:12 INFO: MCP Connection: Successfully connected to svelte
+19:07:12 INFO: MCP Manager: Successfully connected to server: svelte
+19:08:11 INFO: MCP Manager: Retrieved 0 total prompts
+19:08:11 INFO: MCP Manager: Retrieved 0 total resources
+19:08:11 INFO: MCP Manager: Retrieved 0 total prompts
+19:08:11 INFO: MCP Manager: Retrieved 0 total resources
+19:08:11 INFO: MCP Manager: Retrieved 0 total prompts
+19:08:11 INFO: MCP Manager: Retrieved 0 total resources
+19:08:11 INFO: MCP Manager: Retrieved 0 total prompts
+19:08:11 INFO: MCP Manager: Retrieved 0 total resources
+19:08:11 INFO: MCP Manager: Retrieved 0 total prompts
+19:08:11 INFO: MCP Manager: Retrieved 0 total resources
+19:08:11 INFO: MCP Manager: Retrieved 0 total prompts
+19:08:11 INFO: MCP Manager: Retrieved 0 total resources
+19:08:11 INFO: MCP Manager: Retrieved 0 total prompts
+19:08:11 INFO: MCP Manager: Retrieved 0 total resources
+19:08:12 INFO: MCP Manager: Retrieved 0 total prompts
+19:08:12 INFO: MCP Manager: Retrieved 0 total resources
+19:08:12 INFO: MCP Manager: Retrieved 0 total prompts
+19:08:12 INFO: MCP Manager: Retrieved 1 total resources
+19:08:12 INFO: MCP Manager: Retrieved 0 total prompts
+19:08:12 INFO: MCP Manager: Retrieved 1 total resources
+19:08:12 INFO: MCP Manager: Retrieved 1 total prompts
+19:08:12 INFO: MCP Manager: Retrieved 1 total resources
+19:08:12 INFO: MCP Manager: Initialization complete
+19:08:12 INFO: [VectorStoreFactory] Creating dual collection vector storage from environment
+19:08:12 INFO: DualCollectionVectorManager: Initialized with dual collections
+19:08:12 INFO: DualCollectionVectorManager: Connecting collections...
+19:08:12 INFO: [VectorStoreManager] Vector storage system connected
+19:08:12 INFO: DualCollectionVectorManager: Knowledge collection connected
+19:08:12 INFO: [VectorStoreManager] Vector storage system connected
+19:08:12 INFO: DualCollectionVectorManager: Reflection collection connected
+19:08:12 INFO: [KG-Factory] Knowledge graph is disabled in environment
+19:08:12 INFO: [StorageManager] Initialized with configuration
+19:08:12 INFO: [StorageManager] Starting connection attempt 1
+19:08:12 INFO: InMemoryBackend connected
+19:08:12 INFO: [StorageManager:Cache] Connected successfully
+19:08:12 INFO: SQLite backend connected successfully
+19:08:12 INFO: [StorageManager:Database] Connected successfully
+19:08:12 INFO: [StorageManager] Storage system connected

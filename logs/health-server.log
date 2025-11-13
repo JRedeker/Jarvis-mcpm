@@ -1,0 +1,20 @@
+2025-11-11 17:21:50,660 - health-server - INFO - Starting MCP Health Server on port 3021
+2025-11-11 17:21:50,660 - health-server - INFO - SSE Target: 127.0.0.1:3020
+2025-11-11 17:21:50,660 - health-server - INFO - PID File: ../MCP/cipher-aggregator.pid
+2025-11-11 17:21:50,662 - health-server - INFO - Health server listening on http://0.0.0.0:3021
+2025-11-11 17:21:50,663 - health-server - INFO - Health endpoint: http://localhost:3021/health
+2025-11-11 17:21:50,663 - health-server - INFO - Status page: http://localhost:3021/
+2025-11-11 17:23:10,072 - health-server - INFO - Health server stopped
+2025-11-11 17:23:24,903 - health-server - INFO - Starting MCP Health Server on port 3021
+2025-11-11 17:23:24,903 - health-server - INFO - SSE Target: 127.0.0.1:3020
+2025-11-11 17:23:24,903 - health-server - INFO - PID File: ../MCP/cipher-aggregator.pid
+2025-11-11 17:23:24,904 - health-server - INFO - Health server listening on http://0.0.0.0:3021
+2025-11-11 17:23:24,904 - health-server - INFO - Health endpoint: http://localhost:3021/health
+2025-11-11 17:23:24,904 - health-server - INFO - Status page: http://localhost:3021/
+2025-11-11 17:23:34,860 - health-server - INFO - Health server stopped
+2025-11-11 17:35:22,273 - health-server - INFO - Starting MCP Health Server on port 3021
+2025-11-11 17:35:22,273 - health-server - INFO - SSE Target: 127.0.0.1:3020
+2025-11-11 17:35:22,273 - health-server - INFO - PID File: ../MCP/cipher-aggregator.pid
+2025-11-11 17:35:22,274 - health-server - INFO - Health server listening on http://0.0.0.0:3021
+2025-11-11 17:35:22,274 - health-server - INFO - Health endpoint: http://localhost:3021/health
+2025-11-11 17:35:22,274 - health-server - INFO - Status page: http://localhost:3021/

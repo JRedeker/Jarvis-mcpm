@@ -1,0 +1,460 @@
+#!/usr/bin/env python3
+"""
+Routing Metadata MCP Server
+
+Provides routing validation and metadata generation for cipher-aggregator.
+Integrates with cipher_routing_middleware.py to validate tool selections
+and return metadata that can be included in MCP responses.
+
+Usage:
+  Add to cipher.yml mcpServers section:
+
+  routing-metadata:
+    type: stdio
+    command: python3
+    args:
+      - /home/jrede/dev/MCP/servers/routing-metadata-mcp.py
+    enabled: true
+    timeout: 10000
+    connectionMode: lenient
+"""
+
+import sys
+import os
+import json
+import asyncio
+import logging
+from typing import Any, Dict, Optional
+from datetime import datetime
+
+# Add project root to path
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, project_root)
+
+# Import routing middleware and OTel
+from cipher_routing_middleware import get_middleware
+from servers.otel_logs import setup_otel_logging, emit_structured_log
+
+# Set up logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler('/home/jrede/dev/MCP/logs/routing-metadata.log'),
+        logging.StreamHandler(sys.stderr)
+    ]
+)
+logger = logging.getLogger(__name__)
+
+# OTel logger provider (initialized in main)
+otel_provider: Optional[Any] = None
+
+# Initialize middleware
+middleware = get_middleware()
+
+
+def create_response(request_id: Any, result: Any) -> Dict[str, Any]:
+    """Create a JSON-RPC response."""
+    return {
+        "jsonrpc": "2.0",
+        "id": request_id,
+        "result": result
+    }
+
+
+def create_error(request_id: Any, code: int, message: str, data: Any = None) -> Dict[str, Any]:
+    """Create a JSON-RPC error response."""
+    error = {
+        "jsonrpc": "2.0",
+        "id": request_id,
+        "error": {
+            "code": code,
+            "message": message
+        }
+    }
+    if data:
+        error["error"]["data"] = data
+    return error
+
+
+async def handle_initialize(params: Dict[str, Any]) -> Dict[str, Any]:
+    """Handle initialize request."""
+    return {
+        "protocolVersion": "0.1.0",
+        "capabilities": {
+            "tools": {}
+        },
+        "serverInfo": {
+            "name": "routing-metadata",
+            "version": "1.0.0"
+        }
+    }
+
+
+async def handle_list_tools() -> Dict[str, Any]:
+    """List available routing metadata tools."""
+    return {
+        "tools": [
+            {
+                "name": "validate_tool_selection",
+                "description": "Validate a tool selection against routing rules and return metadata",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "session_id": {
+                            "type": "string",
+                            "description": "Session identifier"
+                        },
+                        "agent_type": {
+                            "type": "string",
+                            "description": "Type of agent (cline, kilocode, general)",
+                            "default": "general"
+                        },
+                        "task_description": {
+                            "type": "string",
+                            "description": "Description of the task being performed"
+                        },
+                        "selected_tool": {
+                            "type": "string",
+                            "description": "Tool selected by the agent"
+                        },
+                        "context": {
+                            "type": "object",
+                            "description": "Additional context for routing decision",
+                            "additionalProperties": True
+                        }
+                    },
+                    "required": ["session_id", "task_description", "selected_tool"]
+                }
+            },
+            {
+                "name": "track_tool_execution",
+                "description": "Track tool execution metrics for performance monitoring",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "session_id": {
+                            "type": "string",
+                            "description": "Session identifier"
+                        },
+                        "tool_name": {
+                            "type": "string",
+                            "description": "Name of the executed tool"
+                        },
+                        "execution_time_ms": {
+                            "type": "integer",
+                            "description": "Execution time in milliseconds"
+                        },
+                        "success": {
+                            "type": "boolean",
+                            "description": "Whether execution was successful"
+                        },
+                        "error_message": {
+                            "type": "string",
+                            "description": "Error message if execution failed"
+                        }
+                    },
+                    "required": ["session_id", "tool_name", "execution_time_ms", "success"]
+                }
+            },
+            {
+                "name": "initialize_session",
+                "description": "Initialize session tracking with performance constraints",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "session_id": {
+                            "type": "string",
+                            "description": "Session identifier to initialize"
+                        },
+                        "mode": {
+                            "type": "string",
+                            "description": "Execution mode (serial/parallel)",
+                            "default": "serial"
+                        },
+                        "max_calls": {
+                            "type": "integer",
+                            "description": "Maximum calls allowed for this session",
+                            "default": 8
+                        }
+                    },
+                    "required": ["session_id"]
+                }
+            },
+            {
+                "name": "get_routing_analytics",
+                "description": "Get routing analytics for the specified time period",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "days_back": {
+                            "type": "integer",
+                            "description": "Number of days to analyze",
+                            "default": 30
+                        }
+                    }
+                }
+            }
+        ]
+    }
+
+
+async def handle_call_tool(name: str, arguments: Dict[str, Any]) -> Dict[str, Any]:
+    """Handle tool call requests."""
+    try:
+        if name == "validate_tool_selection":
+            session_id = arguments["session_id"]
+            agent_type = arguments.get("agent_type", "general")
+            task_description = arguments["task_description"]
+            selected_tool = arguments["selected_tool"]
+            context = arguments.get("context")
+
+            # Validate tool selection
+            should_allow, suggested_tool, validation = middleware.validate_tool_call(
+                session_id=session_id,
+                agent_type=agent_type,
+                task_description=task_description,
+                selected_tool=selected_tool,
+                context=context
+            )
+
+            # Ensure validation is not None
+            if validation is None:
+                raise ValueError("Validation result is None")
+
+            # Log the validation
+            logger.info(
+                f"Tool validation - Session: {session_id}, "
+                f"Tool: {selected_tool}, Status: {validation['status']}, "
+                f"Domain: {validation['detected_domain']}"
+            )
+
+            # Emit OTel structured log for validation
+            if otel_provider:
+                emit_structured_log(
+                    otel_provider,
+                    "routing-metadata-mcp",
+                    "validate_tool_selection",
+                    level=logging.INFO,
+                    session_id=session_id,
+                    selected_tool=validation["selected_tool"],
+                    recommended_tool=validation["recommended_tool"],
+                    detected_domain=validation["detected_domain"],
+                    is_compliant=validation["is_compliant"],
+                    status=validation["status"],
+                )
+
+            # Build result with routing metadata
+            result: Dict[str, Any] = {
+                "should_allow": should_allow,
+                "suggested_tool": suggested_tool,
+                "validation": validation,
+                "routing_metadata": {
+                    "status": validation["status"],
+                    "detected_domain": validation["detected_domain"],
+                    "selected_tool": validation["selected_tool"],
+                    "recommended_tool": validation["recommended_tool"],
+                    "is_compliant": validation["is_compliant"],
+                    "timestamp": validation["timestamp"]
+                }
+            }
+
+            # Add suggestion if tool is non-compliant
+            if suggested_tool and "routing_metadata" in result:
+                result["routing_metadata"]["suggestion"] = {
+                    "recommended_tool": suggested_tool,
+                    "reason": f"Better tool for {validation['detected_domain']} domain"
+                }
+
+            return {
+                "content": [
+                    {
+                        "type": "text",
+                        "text": json.dumps(result, indent=2)
+                    }
+                ]
+            }
+
+        elif name == "track_tool_execution":
+            session_id = arguments["session_id"]
+            tool_name = arguments["tool_name"]
+            execution_time_ms = arguments["execution_time_ms"]
+            success = arguments["success"]
+            error_message = arguments.get("error_message")
+
+            # Track execution
+            middleware.track_tool_execution(
+                session_id=session_id,
+                tool_name=tool_name,
+                execution_time_ms=execution_time_ms,
+                success=success,
+                error_message=error_message
+            )
+
+            # Emit OTel structured log for execution tracking
+            if otel_provider:
+                emit_structured_log(
+                    otel_provider,
+                    "routing-metadata-mcp",
+                    "track_tool_execution",
+                    level=logging.INFO if success else logging.ERROR,
+                    session_id=session_id,
+                    tool_name=tool_name,
+                    execution_time_ms=execution_time_ms,
+                    success=success,
+                    error_message=error_message or "",
+                    is_error=not success,
+                )
+
+            logger.info(
+                f"Tracked execution - Session: {session_id}, "
+                f"Tool: {tool_name}, Success: {success}, Time: {execution_time_ms}ms"
+            )
+
+            return {
+                "content": [
+                    {
+                        "type": "text",
+                        "text": json.dumps({
+                            "tracked": True,
+                            "session_id": session_id,
+                            "tool_name": tool_name
+                        })
+                    }
+                ]
+            }
+
+        elif name == "initialize_session":
+            session_id = arguments["session_id"]
+            mode = arguments.get("mode", "serial")
+            max_calls = arguments.get("max_calls", 8)
+
+            # Initialize session
+            middleware.initialize_session(
+                session_id=session_id,
+                mode=mode,
+                max_calls=max_calls
+            )
+
+            logger.info(
+                f"Initialized session - ID: {session_id}, "
+                f"Mode: {mode}, Max calls: {max_calls}"
+            )
+
+            return {
+                "content": [
+                    {
+                        "type": "text",
+                        "text": json.dumps({
+                            "initialized": True,
+                            "session_id": session_id,
+                            "mode": mode,
+                            "max_calls": max_calls
+                        })
+                    }
+                ]
+            }
+
+        elif name == "get_routing_analytics":
+            days_back = arguments.get("days_back", 30)
+
+            # Get analytics
+            analytics = middleware.get_routing_analytics(days_back)
+
+            logger.info(f"Retrieved routing analytics for {days_back} days")
+
+            return {
+                "content": [
+                    {
+                        "type": "text",
+                        "text": json.dumps(analytics, indent=2, default=str)
+                    }
+                ]
+            }
+
+        else:
+            raise ValueError(f"Unknown tool: {name}")
+
+    except Exception as e:
+        logger.error(f"Error in tool {name}: {e}", exc_info=True)
+        return {
+            "content": [
+                {
+                    "type": "text",
+                    "text": json.dumps({
+                        "error": str(e),
+                        "tool": name
+                    })
+                }
+            ],
+            "isError": True
+        }
+
+
+async def main():
+    """Main event loop for MCP server."""
+    global otel_provider
+
+    # Initialize OpenTelemetry logging
+    otel_provider = setup_otel_logging("routing-metadata-mcp", enable_console_bridge=True)
+
+    logger.info("Routing Metadata MCP Server starting...")
+
+    while True:
+        try:
+            # Read request from stdin
+            line = await asyncio.get_event_loop().run_in_executor(None, sys.stdin.readline)
+            if not line:
+                break
+
+            request = json.loads(line)
+            method = request.get("method")
+            request_id = request.get("id")
+            params = request.get("params", {})
+
+            logger.debug(f"Received request: {method}")
+
+            # Handle different methods
+            if method == "initialize":
+                result = await handle_initialize(params)
+                response = create_response(request_id, result)
+
+            elif method == "tools/list":
+                result = await handle_list_tools()
+                response = create_response(request_id, result)
+
+            elif method == "tools/call":
+                tool_name = params.get("name")
+                arguments = params.get("arguments", {})
+                result = await handle_call_tool(tool_name, arguments)
+                response = create_response(request_id, result)
+
+            else:
+                response = create_error(
+                    request_id,
+                    -32601,
+                    f"Method not found: {method}"
+                )
+
+            # Write response to stdout
+            print(json.dumps(response), flush=True)
+
+        except json.JSONDecodeError as e:
+            logger.error(f"JSON decode error: {e}")
+            error_response = create_error(None, -32700, "Parse error")
+            print(json.dumps(error_response), flush=True)
+
+        except Exception as e:
+            logger.error(f"Unexpected error: {e}", exc_info=True)
+            error_response = create_error(None, -32603, f"Internal error: {str(e)}")
+            print(json.dumps(error_response), flush=True)
+
+
+if __name__ == "__main__":
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        logger.info("Server stopped by user")
+    except Exception as e:
+        logger.error(f"Fatal error: {e}", exc_info=True)
+        sys.exit(1)

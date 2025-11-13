@@ -1,0 +1,58 @@
+# Minimal local Loki config for dev (no Docker)
+# Stores data under ./data/loki; ensure you run from repo root.
+# Matches Collector exporter endpoint: http://localhost:3100/loki/api/v1/push
+
+server:
+  http_listen_port: 3100
+  grpc_listen_port: 0
+
+common:
+  path_prefix: ./data/loki
+  storage:
+    filesystem:
+      chunks_directory: ./data/loki/chunks
+      rules_directory: ./data/loki/rules
+  replication_factor: 1
+  ring:
+    instance_addr: 127.0.0.1
+    kvstore:
+      store: inmemory
+
+schema_config:
+  configs:
+    - from: 2020-10-24
+      store: boltdb-shipper
+      object_store: filesystem
+      schema: v13
+      index:
+        prefix: index_
+        period: 24h
+
+storage_config:
+  boltdb_shipper:
+    active_index_directory: ./data/loki/index
+    cache_location: ./data/loki/boltdb-cache
+    shared_store: filesystem
+  filesystem:
+    directory: ./data/loki/chunks
+
+compactor:
+  working_directory: ./data/loki/compactor
+  shared_store: filesystem
+
+limits_config:
+  allow_structured_metadata: true
+  ingestion_rate_mb: 8
+  ingestion_burst_size_mb: 16
+
+table_manager:
+  retention_deletes_enabled: true
+  retention_period: 168h  # 7 days for dev
+
+ruler:
+  storage:
+    type: local
+    local:
+      directory: ./data/loki/rules
+  rule_path: ./data/loki/rules-temp
+  enable_api: true

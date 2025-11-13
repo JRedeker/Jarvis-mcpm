@@ -1,0 +1,7 @@
+[0;34m[00:06:13 INFO][0m Starting cipher-aggregator...
+your 131072x1 screen size is bogus. expect trouble
+[0;32m[00:06:13 SUCCESS][0m No conflicting MCP servers detected
+[0;34m[00:06:13 INFO][0m Using cipher binary: /home/jrede/.npm-global/bin/cipher
+[0;34m[00:06:13 INFO][0m Cipher version: 0.3.0
+[0;34m[00:06:13 INFO][0m Loading environment variables from .env...
+/home/jrede/dev/MCP/.env: line 3: $'\r': command not found

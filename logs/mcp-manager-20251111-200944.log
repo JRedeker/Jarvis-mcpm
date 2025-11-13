@@ -1,0 +1,30 @@
+[0;34m[20:09:44 INFO][0m Starting cipher-aggregator...
+your 131072x1 screen size is bogus. expect trouble
+[0;32m[20:09:44 SUCCESS][0m No conflicting MCP servers detected
+[0;34m[20:09:44 INFO][0m Using cipher binary: /home/jrede/.npm-global/bin/cipher
+[0;34m[20:09:45 INFO][0m Cipher version: 0.3.0
+[0;34m[20:09:45 INFO][0m Aggregator mode: MCP_SERVER_MODE=aggregator, AGGREGATOR_CONFLICT_RESOLUTION=prefix
+[0;34m[20:09:45 INFO][0m Starting cipher-aggregator on 127.0.0.1:3020...
+[0;34m[20:09:45 INFO][0m Started cipher-aggregator (PID: 32107), waiting for startup...
+[0;34m[20:09:45 INFO][0m Waiting 5s for cipher initialization...
+[0;31m[20:09:52 ERROR][0m Cipher-aggregator process died during startup
+  --version  Show version number                                       [boolean]
+
+Not enough non-option arguments: got 0, need at least 1
+20:09:46 ERROR: MCP Connection: Failed to connect to MCP server: prometheus
+20:09:46 ERROR: MCP Manager: Failed to connect to server: prometheus
+Error: DB_NAME environment variable is not set.
+20:09:47 ERROR: MCP Connection: Failed to connect to MCP server: sql
+20:09:47 ERROR: MCP Manager: Failed to connect to server: sql
+MORPH_API_KEY status: present
+Workspace mode enabled: Using /home/jrede/dev/MCP as allowed directory
+Secure MCP Filesystem Server running on stdio
+20:09:47 INFO: MCP Connection: Successfully connected to morph
+20:09:47 INFO: MCP Manager: Successfully connected to server: morph
+Client does not support MCP Roots, using allowed directories set from server args: [ '/home/jrede/dev/MCP' ]
+20:09:47 INFO: MCP Connection: Successfully connected to fetch
+20:09:47 INFO: MCP Manager: Successfully connected to server: fetch
+20:09:47 INFO: MCP Connection: Successfully connected to playwright
+20:09:47 INFO: MCP Manager: Successfully connected to server: playwright
+20:09:47 INFO: MCP Connection: Successfully connected to svelte
+20:09:47 INFO: MCP Manager: Successfully connected to server: svelte

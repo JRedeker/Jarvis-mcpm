@@ -1,0 +1,95 @@
+Cleanup candidates report
+Generated: 2025-11-12 23:10:00 (local)
+
+Summary
+-------
+Scanned directories: logs/, scripts/, tests-and-notes/, data/, docs/, archive/
+Found many log files in logs/ (rotated timestamps from 2025-11-10 to 2025-11-12).
+Found three small scripts in scripts/ used for telemetry/OTLP stack.
+Found many files under tests-and-notes/ (testing scripts, validation reports, and pyc caches).
+Found data DB files and memory-bank documentation.
+
+Top candidates (by category)
+---------------------------
+1) logs/ (high priority to archive/rotate)
+- Many cipher-aggregator-YYYYMMDD-HHMMSS.log files (sizes 8K-641K, most ~10-60K)
+- mcp-manager-YYYYMMDD-*.log (many small rotated logs)
+- cipher-aggregator.log, cipher.log (current aggregate logs)
+- PID files: cipher-aggregator.pid, cipher.pid
+- routing-metadata.log (0 bytes) and telemetry-bootstrap.log (152 bytes)
+
+Recommendation: Archive rotated logs older than a retention window (e.g. keep last 7 days or last N files). Optionally truncate or rotate current live logs but do NOT delete active log files (e.g., cipher-aggregator.log) while services are running.
+
+2) scripts/
+- scripts/deploy-otlp-stack.sh (7444 bytes)
+- scripts/run-telemetry-local.sh (7772 bytes)
+- scripts/test-otlp-logs.py (9073 bytes)
+
+Recommendation: These are legitimate utility scripts; keep in repo. No action unless you want to remove tests or move to docs.
+
+3) tests-and-notes/
+- Many test scripts and markdown summaries (sizes 1K-39K). Several __pycache__ .pyc files are present.
+
+Recommendation: Keep source test files, but remove compiled __pycache__ files (safe to delete). Consider archiving long validation reports and older phase summaries into archive/ if they're one-time references.
+
+4) data/ and docs/
+- data/cipher-sessions.db and WAL/shm files (active DB files). DO NOT delete unless you want to lose session state.
+- data/routing_decisions.db (49KB)
+- docs/ yaml and md files (config & docs) - keep.
+
+Recommendation: Do NOT touch DB files. Keep docs. Consider archiving large historical docs if obsolete.
+
+Detailed file list (excerpt)
+----------------------------
+logs/cipher-aggregator-20251111-154240.log	8039 bytes	2025-11-11 15:43:42
+logs/cipher-aggregator-20251112-174024.log	641861 bytes	2025-11-12 23:09:38
+logs/cipher-aggregator-20251112-162422.log	201544 bytes	2025-11-12 17:05:50
+logs/cipher-aggregator-20251112-004120.log	83613 bytes	2025-11-12 03:32:30
+logs/cipher.log	11174 bytes	2025-11-10 23:33:05
+logs/cipher-aggregator.log	13412 bytes	2025-11-12 13:34:49
+logs/cipher.pid	5 bytes	2025-11-10 20:52:45
+logs/cipher-aggregator.pid	5 bytes	2025-11-12 00:41:20
+
+scripts/deploy-otlp-stack.sh	7444 bytes	2025-11-12 15:51:36
+scripts/run-telemetry-local.sh	7772 bytes	2025-11-12 16:23:21
+scripts/test-otlp-logs.py	9073 bytes	2025-11-12 15:52:37
+
+tests-and-notes/__pycache__/agent_configuration_system.cpython-312.pyc	13291 bytes	2025-11-12 09:50:37
+tests-and-notes/routing_enforcement_system.py	38983 bytes	2025-11-12 00:27:29
+tests-and-notes/phase8_comprehensive_validator.py	32707 bytes	2025-11-12 00:51:31
+
+Data and DB files (DO NOT DELETE unless intentional)
+- data/cipher-sessions.db (4096 bytes)
+- data/cipher-sessions.db-shm (32768 bytes)
+- data/cipher-sessions.db-wal (74192 bytes)
+- data/routing_decisions.db (49152 bytes)
+
+Proposed safe actions (pick one)
+--------------------------------
+A) Scan-only (no destructive actions) — I will list candidates (done) and wait for approval. (default)
+B) Archive-only — I will create a timestamped tar.gz under archive/ with selected files (rotated logs, __pycache__ files, and phase reports). I will NOT delete originals.
+C) Archive-and-delete — I will archive selected files then remove originals. This is destructive; confirm file selection criteria and exclusions.
+
+Default selection I recommend for archiving (safe):
+- All logs matching logs/cipher-aggregator-YYYYMMDD-*.log
+- All logs matching logs/mcp-manager-YYYYMMDD-*.log
+- All __pycache__ directories under tests-and-notes/
+- Any files in tests-and-notes/ with names containing 'phase1'..'phase8' or 'phase*_summary' older than 7 days (you can change threshold)
+
+Next steps
+----------
+Please confirm which action to take and any exclusions or age thresholds. Example replies:
+- "Scan only" (do nothing else) — I'm done.
+- "Archive-only: archive logs older than 1 day, exclude tests-and-notes" — I will archive matching files to /home/jrede/dev/MCP/archive/cleanup-YYYYMMDD-HHMMSS.tar.gz and list results.
+- "Archive-and-delete: archive logs older than 7 days and delete originals; exclude data/ and docs/" — I will perform archiving and deletion.
+
+Task progress checklist (current)
+- [x] Analyze repository to find cleanup candidates (completed)
+- [ ] Present categorized list of candidate files with size and age for review
+- [ ] Get your approval for files to archive/delete
+- [ ] Create timestamped archive(s) of approved files under archive/
+- [ ] Delete original approved files
+- [ ] (Optional) Add cleanup rules to .gitignore and document changes in README
+- [ ] Verify system still runs / run basic smoke checks (if desired)
+
+Report saved to: /home/jrede/dev/MCP/archive/cleanup-candidates-20251112-2310.txt

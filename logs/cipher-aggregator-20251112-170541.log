@@ -1,0 +1,525 @@
+[CIPHER-MCP] Log redirection activated: /tmp/cipher-mcp.log
+17:05:42 INFO: MCP Manager: MCPManager initialized
+17:05:42 INFO: MCP Manager: Initializing 21 servers (4 disabled)
+17:05:42 INFO: MCP Manager: Connecting to server: morph
+17:05:42 INFO: MCP Manager: Registered client: morph
+17:05:42 INFO: MCP Connection: Connecting to morph (stdio)
+17:05:42 INFO: MCP Manager: Connecting to server: memory-bank
+17:05:42 INFO: MCP Manager: Registered client: memory-bank
+17:05:42 INFO: MCP Connection: Connecting to memory-bank (stdio)
+17:05:42 INFO: MCP Manager: Connecting to server: context7
+17:05:42 INFO: MCP Manager: Registered client: context7
+17:05:42 INFO: MCP Connection: Connecting to context7 (stdio)
+17:05:42 INFO: MCP Manager: Connecting to server: firecrawl
+17:05:42 INFO: MCP Manager: Registered client: firecrawl
+17:05:42 INFO: MCP Connection: Connecting to firecrawl (stdio)
+17:05:42 INFO: MCP Manager: Connecting to server: filesystem
+17:05:42 INFO: MCP Manager: Registered client: filesystem
+17:05:42 INFO: MCP Connection: Connecting to filesystem (stdio)
+17:05:42 INFO: MCP Manager: Connecting to server: textual-devtools
+17:05:42 INFO: MCP Manager: Registered client: textual-devtools
+17:05:42 INFO: MCP Connection: Connecting to textual-devtools (stdio)
+17:05:42 INFO: MCP Manager: Connecting to server: svelte
+17:05:42 INFO: MCP Manager: Registered client: svelte
+17:05:42 INFO: MCP Connection: Connecting to svelte (stdio)
+17:05:42 INFO: MCP Manager: Connecting to server: code-index
+17:05:42 INFO: MCP Manager: Registered client: code-index
+17:05:42 INFO: MCP Connection: Connecting to code-index (stdio)
+17:05:42 INFO: MCP Manager: Connecting to server: github
+17:05:42 INFO: MCP Manager: Registered client: github
+17:05:42 INFO: MCP Connection: Connecting to github (stdio)
+17:05:42 INFO: MCP Manager: Connecting to server: brave-search
+17:05:42 INFO: MCP Manager: Registered client: brave-search
+17:05:42 INFO: MCP Connection: Connecting to brave-search (stdio)
+17:05:42 INFO: MCP Manager: Skipping disabled server: server-web
+17:05:42 INFO: MCP Manager: Skipping disabled server: magic-mcp
+17:05:42 INFO: MCP Manager: Connecting to server: playwright
+17:05:42 INFO: MCP Manager: Registered client: playwright
+17:05:42 INFO: MCP Connection: Connecting to playwright (stdio)
+17:05:42 INFO: MCP Manager: Skipping disabled server: docker
+17:05:42 INFO: MCP Manager: Connecting to server: file-batch
+17:05:42 INFO: MCP Manager: Registered client: file-batch
+17:05:42 INFO: MCP Connection: Connecting to file-batch (stdio)
+17:05:42 INFO: MCP Manager: Connecting to server: fetch
+17:05:42 INFO: MCP Manager: Registered client: fetch
+17:05:42 INFO: MCP Connection: Connecting to fetch (stdio)
+17:05:42 INFO: MCP Manager: Connecting to server: schemathesis
+17:05:42 INFO: MCP Manager: Registered client: schemathesis
+17:05:42 INFO: MCP Connection: Connecting to schemathesis (stdio)
+17:05:42 INFO: MCP Manager: Connecting to server: httpie
+17:05:42 INFO: MCP Manager: Registered client: httpie
+17:05:42 INFO: MCP Connection: Connecting to httpie (stdio)
+17:05:42 INFO: MCP Manager: Connecting to server: sql
+17:05:42 INFO: MCP Manager: Registered client: sql
+17:05:42 INFO: MCP Connection: Connecting to sql (stdio)
+17:05:42 INFO: MCP Manager: Connecting to server: prometheus
+17:05:42 INFO: MCP Manager: Registered client: prometheus
+17:05:42 INFO: MCP Connection: Connecting to prometheus (stdio)
+17:05:42 INFO: MCP Manager: Connecting to server: pytest
+17:05:42 INFO: MCP Manager: Registered client: pytest
+17:05:42 INFO: MCP Connection: Connecting to pytest (stdio)
+17:05:42 INFO: MCP Manager: Connecting to server: llm-inference
+17:05:42 INFO: MCP Manager: Registered client: llm-inference
+17:05:42 INFO: MCP Connection: Connecting to llm-inference (stdio)
+17:05:42 INFO: MCP Manager: Connecting to server: routing-metadata
+17:05:42 INFO: MCP Manager: Registered client: routing-metadata
+17:05:42 INFO: MCP Connection: Connecting to routing-metadata (stdio)
+17:05:42 INFO: MCP Manager: Connecting to server: logs
+17:05:42 INFO: MCP Manager: Registered client: logs
+17:05:42 INFO: MCP Connection: Connecting to logs (stdio)
+17:05:42 INFO: MCP Manager: Skipping disabled server: time
+time=2025-11-12T17:05:42.411-05:00 level=INFO msg="starting server" version=version host="" dynamicToolsets=false readOnly=false lockdownEnabled=false
+GitHub MCP Server running on stdio
+17:05:42 INFO: MCP Connection: Successfully connected to filesystem
+17:05:42 INFO: MCP Manager: Successfully connected to server: filesystem
+17:05:42 INFO: MCP Connection: Successfully connected to file-batch
+17:05:42 INFO: MCP Manager: Successfully connected to server: file-batch
+17:05:42 INFO: MCP Connection: Successfully connected to github
+17:05:42 INFO: MCP Manager: Successfully connected to server: github
+17:05:42 INFO: MCP Connection: Successfully connected to schemathesis
+17:05:42 INFO: MCP Manager: Successfully connected to server: schemathesis
+INFO:routing_enforcement_system:Loaded cipher configuration from /home/jrede/dev/MCP/cipher.yml
+INFO:routing_enforcement_system:Parsed 10 routing rules from system prompt
+INFO:routing_enforcement_system:Initialized routing decisions database at /home/jrede/dev/MCP/data/routing_decisions.db
+INFO:routing_enforcement_system:Cipher Routing Engine initialized with 10 routing rules
+INFO:agent_configuration_system:Agent Configuration System initialized
+Enhanced Textual Devtools MCP server v0.2.0 running on stdio - Testing automation and coverage enforcement enabled
+17:05:42 INFO: MCP Connection: Successfully connected to textual-devtools
+17:05:42 INFO: MCP Manager: Successfully connected to server: textual-devtools
+2025-11-12 17:05:42,644 - INFO - Logs MCP Server (Loki) starting...
+17:05:42 ERROR: MCP Connection: Failed to connect to MCP server: logs
+17:05:42 ERROR: MCP Manager: Failed to connect to server: logs
+INFO:servers.otel_logs:OTel logging initialized for llm-inference-mcp: endpoint=http://localhost:4317, protocol=grpc, compression=gzip
+INFO:servers.otel_logs:Stdlib logging bridged to OTel for llm-inference-mcp
+INFO:llm-inference-mcp:Starting LLM Inference MCP Server (OpenRouter)
+INFO:llm-inference-mcp:Available tiers: l0, m1, m2, m3, m4
+INFO:llm-inference-mcp:Total model configurations: 5
+17:05:42 INFO: MCP Connection: Successfully connected to llm-inference
+17:05:42 INFO: MCP Manager: Successfully connected to server: llm-inference
+INFO:mcp.server.lowlevel.server:Processing request of type ListToolsRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListPromptsRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListResourcesRequest
+INFO:routing_enforcement_system:Loaded cipher configuration from /home/jrede/dev/MCP/cipher.yml
+INFO:routing_enforcement_system:Parsed 10 routing rules from system prompt
+INFO:routing_enforcement_system:Initialized routing decisions database at /home/jrede/dev/MCP/data/routing_decisions.db
+INFO:routing_enforcement_system:Cipher Routing Engine initialized with 10 routing rules
+INFO:cipher_routing_middleware:Cipher Routing Middleware initialized
+INFO:cipher_routing_middleware:Enforcement mode: warn
+INFO:servers.otel_logs:OTel logging initialized for routing-metadata-mcp: endpoint=http://localhost:4317, protocol=grpc, compression=gzip
+INFO:servers.otel_logs:Stdlib logging bridged to OTel for routing-metadata-mcp
+INFO:routing-metadata-mcp:Starting Routing Metadata MCP Server (SDK-based)
+17:05:43 INFO: MCP Connection: Successfully connected to routing-metadata
+17:05:43 INFO: MCP Manager: Successfully connected to server: routing-metadata
+INFO:mcp.server.lowlevel.server:Processing request of type ListToolsRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListToolsRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListPromptsRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListPromptsRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListResourcesRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListResourcesRequest
+17:05:43 INFO: MCP Connection: Successfully connected to code-index
+17:05:43 INFO: MCP Manager: Successfully connected to server: code-index
+INFO:mcp.server.lowlevel.server:Processing request of type ListToolsRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListToolsRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListPromptsRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListPromptsRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListResourcesRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListResourcesRequest
+MORPH_API_KEY status: present
+Workspace mode enabled: Using /home/jrede/dev/MCP as allowed directory
+Secure MCP Filesystem Server running on stdio
+17:05:43 INFO: MCP Connection: Successfully connected to morph
+17:05:43 INFO: MCP Manager: Successfully connected to server: morph
+INFO:mcp.server.lowlevel.server:Processing request of type ListToolsRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListToolsRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListPromptsRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListPromptsRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListResourcesRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListResourcesRequest
+Client does not support MCP Roots, using allowed directories set from server args: [ '/home/jrede/dev/MCP' ]
+Context7 Documentation MCP Server running on stdio
+17:05:43 INFO: MCP Connection: Successfully connected to context7
+17:05:43 INFO: MCP Manager: Successfully connected to server: context7
+INFO:mcp.server.lowlevel.server:Processing request of type ListToolsRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListToolsRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListPromptsRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListPromptsRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListResourcesRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListResourcesRequest
+{"level":"INFO","time":1762985143738,"pid":2119,"hostname":"WumBox","msg":"connecting to stdio transport"}
+17:05:43 INFO: MCP Connection: Successfully connected to prometheus
+17:05:43 INFO: MCP Manager: Successfully connected to server: prometheus
+INFO:mcp.server.lowlevel.server:Processing request of type ListToolsRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListToolsRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListPromptsRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListPromptsRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListResourcesRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListResourcesRequest
+17:05:43 INFO: MCP Connection: Successfully connected to firecrawl
+17:05:43 INFO: MCP Manager: Successfully connected to server: firecrawl
+17:05:43 INFO: MCP Connection: Successfully connected to brave-search
+INFO:mcp.server.lowlevel.server:Processing request of type ListToolsRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListToolsRequest
+17:05:43 INFO: MCP Manager: Successfully connected to server: brave-search
+INFO:mcp.server.lowlevel.server:Processing request of type ListPromptsRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListPromptsRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListResourcesRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListResourcesRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListToolsRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListToolsRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListPromptsRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListPromptsRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListResourcesRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListResourcesRequest
+17:05:43 INFO: MCP Connection: Successfully connected to memory-bank
+17:05:43 INFO: MCP Manager: Successfully connected to server: memory-bank
+INFO:mcp.server.lowlevel.server:Processing request of type ListToolsRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListToolsRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListPromptsRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListPromptsRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListResourcesRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListResourcesRequest
+17:05:43 INFO: MCP Connection: Successfully connected to playwright
+17:05:43 INFO: MCP Manager: Successfully connected to server: playwright
+INFO:mcp.server.lowlevel.server:Processing request of type ListToolsRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListToolsRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListPromptsRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListPromptsRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListResourcesRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListResourcesRequest
+Configuration loaded successfully.
+Starting MCP server application...
+Skipping SSH tunnel connection as USE_SSH_TUNNEL is not true.
+Initializing database connection pool...
+Failed to initialize database connection pool: Error: connect ECONNREFUSED 127.0.0.1:3306
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16) {
+  errno: -111,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 3306,
+  fatal: true
+}
+Application failed during startup or runtime: Error: Database initialization failed: connect ECONNREFUSED 127.0.0.1:3306
+    at initializeDbPool (file:///home/jrede/.npm/_npx/f14f2f9307d1864a/node_modules/sql-mcp-server/dist/index.js:152:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async main (file:///home/jrede/.npm/_npx/f14f2f9307d1864a/node_modules/sql-mcp-server/dist/index.js:443:5)
+17:05:44 ERROR: MCP Connection: Failed to connect to MCP server: sql
+17:05:44 ERROR: MCP Manager: Failed to connect to server: sql
+17:05:44 INFO: MCP Connection: Successfully connected to fetch
+17:05:44 INFO: MCP Manager: Successfully connected to server: fetch
+INFO:mcp.server.lowlevel.server:Processing request of type ListToolsRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListToolsRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListPromptsRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListResourcesRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListPromptsRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListResourcesRequest
+17:05:44 INFO: MCP Connection: Successfully connected to svelte
+17:05:44 INFO: MCP Manager: Successfully connected to server: svelte
+INFO:mcp.server.lowlevel.server:Processing request of type ListToolsRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListPromptsRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListResourcesRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListToolsRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListPromptsRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListResourcesRequest
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 1s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 1s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 2s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 2s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 4s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 4s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 8s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 8s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 16s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 16s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 32s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 32s.
+17:06:42 ERROR: MCP Connection: Failed to connect to MCP server: httpie
+17:06:42 ERROR: MCP Manager: Failed to connect to server: httpie
+17:06:42 ERROR: MCP Connection: Failed to connect to MCP server: pytest
+17:06:42 ERROR: MCP Manager: Failed to connect to server: pytest
+17:06:42 INFO: MCP Manager: Retrieved 0 total prompts
+17:06:42 INFO: MCP Manager: Retrieved 0 total resources
+17:06:42 INFO: MCP Manager: Retrieved 0 total prompts
+17:06:42 INFO: MCP Manager: Retrieved 0 total resources
+17:06:42 INFO: MCP Manager: Retrieved 2 total prompts
+17:06:42 INFO: MCP Manager: Retrieved 0 total resources
+17:06:42 ERROR: MCP Prompt: Failed to list prompts
+17:06:42 ERROR: MCP Manager: Failed to list prompts from schemathesis
+17:06:42 INFO: MCP Manager: Retrieved 2 total prompts
+17:06:42 ERROR: MCP Resource: Failed to list resources
+17:06:42 ERROR: MCP Manager: Failed to list resources from schemathesis
+17:06:42 INFO: MCP Manager: Retrieved 0 total resources
+17:06:42 ERROR: MCP Prompt: Failed to list prompts
+17:06:42 ERROR: MCP Manager: Failed to list prompts from schemathesis
+17:06:42 INFO: MCP Manager: Retrieved 2 total prompts
+17:06:42 ERROR: MCP Resource: Failed to list resources
+17:06:42 ERROR: MCP Manager: Failed to list resources from schemathesis
+17:06:42 INFO: MCP Manager: Retrieved 0 total resources
+17:06:42 ERROR: MCP Prompt: Failed to list prompts
+17:06:42 ERROR: MCP Manager: Failed to list prompts from schemathesis
+17:06:42 INFO: MCP Manager: Retrieved 2 total prompts
+17:06:42 ERROR: MCP Resource: Failed to list resources
+17:06:42 ERROR: MCP Manager: Failed to list resources from schemathesis
+17:06:42 INFO: MCP Manager: Retrieved 0 total resources
+17:06:43 ERROR: MCP Prompt: Failed to list prompts
+17:06:43 ERROR: MCP Manager: Failed to list prompts from schemathesis
+17:06:43 INFO: MCP Manager: Retrieved 2 total prompts
+17:06:43 ERROR: MCP Resource: Failed to list resources
+17:06:43 ERROR: MCP Manager: Failed to list resources from schemathesis
+17:06:43 INFO: MCP Manager: Retrieved 0 total resources
+17:06:43 ERROR: MCP Prompt: Failed to list prompts
+17:06:43 ERROR: MCP Manager: Failed to list prompts from schemathesis
+17:06:43 INFO: MCP Manager: Retrieved 2 total prompts
+17:06:43 ERROR: MCP Resource: Failed to list resources
+17:06:43 ERROR: MCP Manager: Failed to list resources from schemathesis
+17:06:43 INFO: MCP Manager: Retrieved 0 total resources
+17:06:43 ERROR: MCP Prompt: Failed to list prompts
+17:06:43 ERROR: MCP Manager: Failed to list prompts from schemathesis
+17:06:43 INFO: MCP Manager: Retrieved 2 total prompts
+17:06:43 ERROR: MCP Resource: Failed to list resources
+17:06:43 ERROR: MCP Manager: Failed to list resources from schemathesis
+17:06:43 INFO: MCP Manager: Retrieved 0 total resources
+17:06:43 ERROR: MCP Prompt: Failed to list prompts
+17:06:43 ERROR: MCP Manager: Failed to list prompts from schemathesis
+17:06:43 INFO: MCP Manager: Retrieved 2 total prompts
+17:06:43 ERROR: MCP Resource: Failed to list resources
+17:06:43 ERROR: MCP Manager: Failed to list resources from schemathesis
+17:06:43 INFO: MCP Manager: Retrieved 0 total resources
+17:06:43 ERROR: MCP Prompt: Failed to list prompts
+17:06:43 ERROR: MCP Manager: Failed to list prompts from schemathesis
+17:06:43 INFO: MCP Manager: Retrieved 2 total prompts
+17:06:43 ERROR: MCP Resource: Failed to list resources
+17:06:43 ERROR: MCP Manager: Failed to list resources from schemathesis
+17:06:43 INFO: MCP Manager: Retrieved 0 total resources
+17:06:43 ERROR: MCP Prompt: Failed to list prompts
+17:06:43 ERROR: MCP Manager: Failed to list prompts from schemathesis
+17:06:43 INFO: MCP Manager: Retrieved 2 total prompts
+17:06:43 ERROR: MCP Resource: Failed to list resources
+17:06:43 ERROR: MCP Manager: Failed to list resources from schemathesis
+17:06:43 INFO: MCP Manager: Retrieved 0 total resources
+17:06:43 ERROR: MCP Prompt: Failed to list prompts
+17:06:43 ERROR: MCP Manager: Failed to list prompts from schemathesis
+17:06:43 INFO: MCP Manager: Retrieved 2 total prompts
+17:06:43 ERROR: MCP Resource: Failed to list resources
+17:06:43 ERROR: MCP Manager: Failed to list resources from schemathesis
+17:06:43 INFO: MCP Manager: Retrieved 0 total resources
+17:06:43 ERROR: MCP Prompt: Failed to list prompts
+17:06:43 ERROR: MCP Manager: Failed to list prompts from schemathesis
+17:06:43 INFO: MCP Manager: Retrieved 2 total prompts
+17:06:43 ERROR: MCP Resource: Failed to list resources
+17:06:43 ERROR: MCP Manager: Failed to list resources from schemathesis
+17:06:43 INFO: MCP Manager: Retrieved 0 total resources
+17:06:43 ERROR: MCP Prompt: Failed to list prompts
+17:06:43 ERROR: MCP Manager: Failed to list prompts from schemathesis
+17:06:43 INFO: MCP Manager: Retrieved 2 total prompts
+17:06:43 ERROR: MCP Resource: Failed to list resources
+17:06:43 ERROR: MCP Manager: Failed to list resources from schemathesis
+17:06:43 INFO: MCP Manager: Retrieved 1 total resources
+17:06:44 ERROR: MCP Prompt: Failed to list prompts
+17:06:44 ERROR: MCP Manager: Failed to list prompts from schemathesis
+17:06:44 INFO: MCP Manager: Retrieved 2 total prompts
+17:06:44 ERROR: MCP Resource: Failed to list resources
+17:06:44 ERROR: MCP Manager: Failed to list resources from schemathesis
+17:06:44 INFO: MCP Manager: Retrieved 1 total resources
+17:06:44 ERROR: MCP Prompt: Failed to list prompts
+17:06:44 ERROR: MCP Manager: Failed to list prompts from schemathesis
+17:06:44 INFO: MCP Manager: Retrieved 3 total prompts
+17:06:44 ERROR: MCP Resource: Failed to list resources
+17:06:44 ERROR: MCP Manager: Failed to list resources from schemathesis
+17:06:44 INFO: MCP Manager: Retrieved 1 total resources
+17:06:44 INFO: MCP Manager: Initialization complete
+17:06:44 INFO: [VectorStoreFactory] Creating multi collection vector storage from environment
+storeType chroma
+17:06:44 INFO: MultiCollectionVectorManager: Initialized with multiple collections
+17:06:44 INFO: [VectorStoreManager] Vector storage system connected
+17:06:44 INFO: [VectorStoreManager] Vector storage system connected
+17:06:44 INFO: [VectorStoreManager] Vector storage system connected
+17:06:44 INFO: MultiCollectionVectorManager: Connection completed
+17:06:44 INFO: [VectorStoreFactory] Multi collection vector storage created successfully
+17:06:44 INFO: [KG-Factory] Creating knowledge graph from environment
+17:06:44 DEBUG: [KG-Manager] Initialized with backend type: in-memory
+17:06:44 INFO: [KG-Manager] Connecting to in-memory backend...
+17:06:44 DEBUG: [KG-Manager] Loading in-memory backend module...
+17:06:44 DEBUG: [KG-Memory] Initialized with config:
+17:06:44 INFO: [KG-Memory] Connected successfully
+17:06:44 DEBUG: [KG-Manager] Started health monitoring (interval: 5000ms)
+17:06:44 INFO: [KG-Manager] Connected successfully to in-memory backend
+17:06:44 INFO: [KG-Factory] Knowledge graph system created successfully
+17:06:44 INFO: [StorageManager] Initialized with configuration
+17:06:44 INFO: [StorageManager] Starting connection attempt 1
+17:06:44 INFO: InMemoryBackend connected
+17:06:44 INFO: [StorageManager:Cache] Connected successfully
+17:06:44 INFO: SQLite backend connected successfully
+17:06:44 INFO: [StorageManager:Database] Connected successfully
+17:06:44 INFO: [StorageManager] Storage system connected
+No embeddingManager found in agent.services
+INFO:mcp.server.lowlevel.server:Processing request of type ListToolsRequest
+INFO:mcp.server.lowlevel.server:Processing request of type ListToolsRequest
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 1s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 1s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 2s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 2s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 4s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 4s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 8s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 8s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 16s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 16s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 32s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 32s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 1s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 1s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 2s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 2s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 4s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 4s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 8s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 8s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 16s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 16s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 32s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 32s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 1s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 1s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 2s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 2s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 4s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 4s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 8s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 8s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 16s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 16s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 32s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 32s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 1s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 1s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 2s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 2s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 4s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 4s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 8s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 8s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 16s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 16s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 32s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 32s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 1s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 1s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 2s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 2s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 4s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 4s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 8s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 8s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 16s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 16s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 32s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 32s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 1s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 1s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 2s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 2s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 4s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 4s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 8s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 8s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 16s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 16s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 32s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 32s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 1s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 1s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 2s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 2s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 4s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 4s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 8s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 8s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 16s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 16s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 32s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 32s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 1s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 1s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 2s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 2s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 4s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 4s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 8s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 8s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 16s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 16s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 32s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 32s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 1s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 1s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 2s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 2s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 4s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 4s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 8s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 8s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 16s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 16s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 32s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 32s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 1s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 1s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 2s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 2s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 4s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 4s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 8s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 8s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 16s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 16s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 32s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 32s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 1s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 1s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 2s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 2s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 4s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 4s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 8s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 8s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 16s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 16s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 32s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 32s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 1s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 1s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 2s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 2s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 4s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 4s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 8s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 8s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 16s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 16s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 32s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 32s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 1s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 1s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 2s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 2s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 4s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 4s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 8s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 8s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 16s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 16s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 32s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 32s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 1s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 1s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 2s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 2s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 4s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 4s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 8s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 8s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 16s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 16s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 32s.
+WARNING:opentelemetry.exporter.otlp.proto.grpc.exporter:Transient error StatusCode.UNAVAILABLE encountered while exporting logs to localhost:4317, retrying in 32s.

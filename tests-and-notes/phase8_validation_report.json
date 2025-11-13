@@ -1,0 +1,129 @@
+{
+  "validation_timestamp": "2025-11-12T00:29:27.675532",
+  "overall_status": "FAIL",
+  "overall_success_rate": 66.66666666666666,
+  "summary": {
+    "total_workflows": 3,
+    "successful_workflows": 2,
+    "failed_workflows": 1,
+    "total_tool_calls": 8,
+    "successful_calls": 7,
+    "failed_calls": 1
+  },
+  "workflows": [
+    {
+      "name": "Web Research",
+      "success": false,
+      "total_calls": 1,
+      "successful_calls": 0,
+      "failed_calls": 1,
+      "success_rate": 0.0,
+      "execution_time_seconds": 0.021930456161499023,
+      "steps": [
+        {
+          "step_number": 1,
+          "tool_name": "brave_search",
+          "description": "Search for AI research papers",
+          "success": false,
+          "duration_seconds": 0.02190709114074707,
+          "required": true
+        }
+      ],
+      "errors": [
+        "Step 1 (brave_search): Tool error: Tool execution failed: No client found for tool: brave_search"
+      ],
+      "performance_violations": []
+    },
+    {
+      "name": "Development",
+      "success": true,
+      "total_calls": 4,
+      "successful_calls": 4,
+      "failed_calls": 0,
+      "success_rate": 100.0,
+      "execution_time_seconds": 2.2159900665283203,
+      "steps": [
+        {
+          "step_number": 1,
+          "tool_name": "set_project_path",
+          "description": "Set project path for code analysis",
+          "success": true,
+          "duration_seconds": 0.17592549324035645,
+          "required": true
+        },
+        {
+          "step_number": 2,
+          "tool_name": "search_code_advanced",
+          "description": "Search for Python functions",
+          "success": true,
+          "duration_seconds": 0.36110591888427734,
+          "required": true
+        },
+        {
+          "step_number": 3,
+          "tool_name": "list_directory",
+          "description": "List project files",
+          "success": true,
+          "duration_seconds": 0.002147197723388672,
+          "required": true
+        },
+        {
+          "step_number": 4,
+          "tool_name": "cipher_memory_search",
+          "description": "Search for related code patterns",
+          "success": true,
+          "duration_seconds": 1.2762160301208496,
+          "required": false
+        }
+      ],
+      "errors": [],
+      "performance_violations": []
+    },
+    {
+      "name": "API Testing",
+      "success": true,
+      "total_calls": 3,
+      "successful_calls": 3,
+      "failed_calls": 0,
+      "success_rate": 100.0,
+      "execution_time_seconds": 0.3580203056335449,
+      "steps": [
+        {
+          "step_number": 1,
+          "tool_name": "list_directory",
+          "description": "Check for API spec files",
+          "success": true,
+          "duration_seconds": 0.002317190170288086,
+          "required": true
+        },
+        {
+          "step_number": 2,
+          "tool_name": "fetch_json",
+          "description": "Fetch API endpoint",
+          "success": true,
+          "duration_seconds": 0.030024051666259766,
+          "required": false
+        },
+        {
+          "step_number": 3,
+          "tool_name": "prometheus_list_metrics",
+          "description": "Check Prometheus metrics",
+          "success": true,
+          "duration_seconds": 0.025264978408813477,
+          "required": false
+        }
+      ],
+      "errors": [],
+      "performance_violations": []
+    }
+  ],
+  "performance_analysis": {
+    "max_calls_per_task": 8,
+    "execution_mode": "serial",
+    "violations": []
+  },
+  "recommendations": [
+    "Overall success rate below 80%. Review failed workflows and improve tool reliability.",
+    "1 tool calls failed. Review error messages and improve error handling."
+  ]
+}

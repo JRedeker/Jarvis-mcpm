@@ -1,0 +1,91 @@
+[CIPHER-MCP] Log redirection activated: /tmp/cipher-mcp.log
+00:13:02 INFO: MCP Manager: MCPManager initialized
+00:13:02 INFO: MCP Manager: Initializing 3 servers (0 disabled)
+00:13:02 INFO: MCP Manager: Connecting to server: memory-bank
+00:13:02 INFO: MCP Manager: Registered client: memory-bank
+00:13:02 INFO: MCP Connection: Connecting to memory-bank (stdio)
+00:13:02 INFO: MCP Manager: Connecting to server: filesystem
+00:13:02 INFO: MCP Manager: Registered client: filesystem
+00:13:02 INFO: MCP Connection: Connecting to filesystem (stdio)
+00:13:02 INFO: MCP Manager: Connecting to server: textual-devtools
+00:13:02 INFO: MCP Manager: Registered client: textual-devtools
+00:13:02 INFO: MCP Connection: Connecting to textual-devtools (stdio)
+Enhanced Textual Devtools MCP server v0.2.0 running on stdio - Testing automation and coverage enforcement enabled
+00:13:03 INFO: MCP Connection: Successfully connected to textual-devtools
+00:13:03 INFO: MCP Manager: Successfully connected to server: textual-devtools
+00:13:03 INFO: MCP Manager: Retrieved 0 total prompts
+00:13:03 INFO: MCP Manager: Retrieved 0 total resources
+Secure MCP Filesystem Server running on stdio
+00:13:03 INFO: MCP Connection: Successfully connected to filesystem
+00:13:03 INFO: MCP Manager: Successfully connected to server: filesystem
+Client does not support MCP Roots, using allowed directories set from server args: [ '/home/jrede/dev/MCP' ]
+00:13:03 INFO: MCP Manager: Retrieved 0 total prompts
+00:13:03 INFO: MCP Manager: Retrieved 0 total resources
+00:13:03 INFO: MCP Connection: Successfully connected to memory-bank
+00:13:03 INFO: MCP Manager: Successfully connected to server: memory-bank
+00:13:03 INFO: MCP Manager: Retrieved 0 total prompts
+00:13:03 INFO: MCP Manager: Retrieved 0 total resources
+00:13:03 INFO: MCP Manager: Initialization complete
+00:13:03 INFO: [VectorStoreFactory] Creating dual collection vector storage from environment
+00:13:03 INFO: DualCollectionVectorManager: Initialized with dual collections
+00:13:03 INFO: DualCollectionVectorManager: Connecting collections...
+00:13:03 INFO: [VectorStoreManager] Vector storage system connected
+00:13:03 INFO: DualCollectionVectorManager: Knowledge collection connected
+00:13:03 INFO: [VectorStoreManager] Vector storage system connected
+00:13:03 INFO: DualCollectionVectorManager: Reflection collection connected
+00:13:03 INFO: [KG-Factory] Knowledge graph is disabled in environment
+00:13:03 INFO: [StorageManager] Initialized with configuration
+00:13:03 INFO: [StorageManager] Starting connection attempt 1
+00:13:03 INFO: InMemoryBackend connected
+00:13:03 INFO: [StorageManager:Cache] Connected successfully
+Failed to connect to SQLite database {
+  path: 'data/cipher-sessions.db',
+  directory: 'data',
+  directoryExists: true,
+  error: 'Could not locate the bindings file. Tried:\n' +
+    ' → /home/jrede/.local/share/pnpm/global/5/.pnpm/better-sqlite3@12.4.1/node_modules/better-sqlite3/build/better_sqlite3.node\n' +
+    ' → /home/jrede/.local/share/pnpm/global/5/.pnpm/better-sqlite3@12.4.1/node_modules/better-sqlite3/build/Debug/better_sqlite3.node\n' +
+    ' → /home/jrede/.local/share/pnpm/global/5/.pnpm/better-sqlite3@12.4.1/node_modules/better-sqlite3/build/Release/better_sqlite3.node\n' +
+    ' → /home/jrede/.local/share/pnpm/global/5/.pnpm/better-sqlite3@12.4.1/node_modules/better-sqlite3/out/Debug/better_sqlite3.node\n' +
+    ' → /home/jrede/.local/share/pnpm/global/5/.pnpm/better-sqlite3@12.4.1/node_modules/better-sqlite3/Debug/better_sqlite3.node\n' +
+    ' → /home/jrede/.local/share/pnpm/global/5/.pnpm/better-sqlite3@12.4.1/node_modules/better-sqlite3/out/Release/better_sqlite3.node\n' +
+    ' → /home/jrede/.local/share/pnpm/global/5/.pnpm/better-sqlite3@12.4.1/node_modules/better-sqlite3/Release/better_sqlite3.node\n' +
+    ' → /home/jrede/.local/share/pnpm/global/5/.pnpm/better-sqlite3@12.4.1/node_modules/better-sqlite3/build/default/better_sqlite3.node\n' +
+    ' → /home/jrede/.local/share/pnpm/global/5/.pnpm/better-sqlite3@12.4.1/node_modules/better-sqlite3/compiled/22.21.0/linux/x64/better_sqlite3.node\n' +
+    ' → /home/jrede/.local/share/pnpm/global/5/.pnpm/better-sqlite3@12.4.1/node_modules/better-sqlite3/addon-build/release/install-root/better_sqlite3.node\n' +
+    ' → /home/jrede/.local/share/pnpm/global/5/.pnpm/better-sqlite3@12.4.1/node_modules/better-sqlite3/addon-build/debug/install-root/better_sqlite3.node\n' +
+    ' → /home/jrede/.local/share/pnpm/global/5/.pnpm/better-sqlite3@12.4.1/node_modules/better-sqlite3/addon-build/default/install-root/better_sqlite3.node\n' +
+    ' → /home/jrede/.local/share/pnpm/global/5/.pnpm/better-sqlite3@12.4.1/node_modules/better-sqlite3/lib/binding/node-v127-linux-x64/better_sqlite3.node',
+  stack: 'Error: Could not locate the bindings file. Tried:\n' +
+    ' → /home/jrede/.local/share/pnpm/global/5/.pnpm/better-sqlite3@12.4.1/node_modules/better-sqlite3/build/better_sqlite3.node\n' +
+    ' → /home/jrede/.local/share/pnpm/global/5/.pnpm/better-sqlite3@12.4.1/node_modules/better-sqlite3/build/Debug/better_sqlite3.node\n' +
+    ' → /home/jrede/.local/share/pnpm/global/5/.pnpm/better-sqlite3@12.4.1/node_modules/better-sqlite3/build/Release/better_sqlite3.node\n' +
+    ' → /home/jrede/.local/share/pnpm/global/5/.pnpm/better-sqlite3@12.4.1/node_modules/better-sqlite3/out/Debug/better_sqlite3.node\n' +
+    ' → /home/jrede/.local/share/pnpm/global/5/.pnpm/better-sqlite3@12.4.1/node_modules/better-sqlite3/Debug/better_sqlite3.node\n' +
+    ' → /home/jrede/.local/share/pnpm/global/5/.pnpm/better-sqlite3@12.4.1/node_modules/better-sqlite3/out/Release/better_sqlite3.node\n' +
+    ' → /home/jrede/.local/share/pnpm/global/5/.pnpm/better-sqlite3@12.4.1/node_modules/better-sqlite3/Release/better_sqlite3.node\n' +
+    ' → /home/jrede/.local/share/pnpm/global/5/.pnpm/better-sqlite3@12.4.1/node_modules/better-sqlite3/build/default/better_sqlite3.node\n' +
+    ' → /home/jrede/.local/share/pnpm/global/5/.pnpm/better-sqlite3@12.4.1/node_modules/better-sqlite3/compiled/22.21.0/linux/x64/better_sqlite3.node\n' +
+    ' → /home/jrede/.local/share/pnpm/global/5/.pnpm/better-sqlite3@12.4.1/node_modules/better-sqlite3/addon-build/release/install-root/better_sqlite3.node\n' +
+    ' → /home/jrede/.local/share/pnpm/global/5/.pnpm/better-sqlite3@12.4.1/node_modules/better-sqlite3/addon-build/debug/install-root/better_sqlite3.node\n' +
+    ' → /home/jrede/.local/share/pnpm/global/5/.pnpm/better-sqlite3@12.4.1/node_modules/better-sqlite3/addon-build/default/install-root/better_sqlite3.node\n' +
+    ' → /home/jrede/.local/share/pnpm/global/5/.pnpm/better-sqlite3@12.4.1/node_modules/better-sqlite3/lib/binding/node-v127-linux-x64/better_sqlite3.node\n' +
+    '    at bindings (/home/jrede/.local/share/pnpm/global/5/.pnpm/bindings@1.5.0/node_modules/bindings/bindings.js:126:9)\n' +
+    '    at new Database (/home/jrede/.local/share/pnpm/global/5/.pnpm/better-sqlite3@12.4.1/node_modules/better-sqlite3/lib/database.js:48:64)\n' +
+    '    at SqliteBackend.connect (/home/jrede/.local/share/pnpm/global/5/.pnpm/@byterover+cipher@0.3.0_graphql@16.12.0_typescript@5.9.3_zod@3.25.76/node_modules/@byterover/cipher/dist/src/app/index.cjs:20778:21)\n' +
+    '    at _StorageManager.connect (/home/jrede/.local/share/pnpm/global/5/.pnpm/@byterover+cipher@0.3.0_graphql@16.12.0_typescript@5.9.3_zod@3.25.76/node_modules/@byterover/cipher/dist/src/app/index.cjs:21613:33)\n' +
+    '    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n' +
+    '    at async SessionManager.initializeSqliteStorage (/home/jrede/.local/share/pnpm/global/5/.pnpm/@byterover+cipher@0.3.0_graphql@16.12.0_typescript@5.9.3_zod@3.25.76/node_modules/@byterover/cipher/dist/src/app/index.cjs:23870:11)\n' +
+    '    at async SessionManager.initializePersistenceStorage (/home/jrede/.local/share/pnpm/global/5/.pnpm/@byterover+cipher@0.3.0_graphql@16.12.0_typescript@5.9.3_zod@3.25.76/node_modules/@byterover/cipher/dist/src/app/index.cjs:23843:11)\n' +
+    '    at async SessionManager.init (/home/jrede/.local/share/pnpm/global/5/.pnpm/@byterover+cipher@0.3.0_graphql@16.12.0_typescript@5.9.3_zod@3.25.76/node_modules/@byterover/cipher/dist/src/app/index.cjs:23238:9)\n' +
+    '    at async createAgentServices (/home/jrede/.local/share/pnpm/global/5/.pnpm/@byterover+cipher@0.3.0_graphql@16.12.0_typescript@5.9.3_zod@3.25.76/node_modules/@byterover/cipher/dist/src/app/index.cjs:48777:3)\n' +
+    '    at async MemAgent.start (/home/jrede/.local/share/pnpm/global/5/.pnpm/@byterover+cipher@0.3.0_graphql@16.12.0_typescript@5.9.3_zod@3.25.76/node_modules/@byterover/cipher/dist/src/app/index.cjs:50196:20)',
+  nodeVersion: 'v22.21.0',
+  platform: 'linux',
+  arch: 'x64'
+}
+00:13:03 ERROR: Failed to connect to database backend
+00:13:03 WARN: [StorageManager:Database] Primary backend failed, attempting fallback to in-memory
+00:13:03 INFO: InMemoryBackend connected
+00:13:03 INFO: [StorageManager:Database] Successfully connected to fallback backend
+00:13:03 INFO: [StorageManager] Storage system connected

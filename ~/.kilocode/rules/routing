@@ -1,0 +1,101 @@
+# Kilo Code Routing + Knowledge Policy
+
+*Complementary rules for Kilo Code working with Cipher MCP aggregator*
+
+## 🎯 Core Policy Reference
+
+**Comprehensive policy available in**: `~/.clinerules/routing-and-knowledge-policy.md`
+
+This document provides Kilo Code-specific routing decisions that complement the main policy.
+
+## 🔧 Essential Tool Routing
+
+### Code Operations
+- **Edits**: Route to `morph.*` for changes >5 lines or multiple files
+- **Search**: Use `code-index.*` for code navigation and understanding
+- **Files**: Use `filesystem.*` for read/write operations
+- **Knowledge**: Use `memory-bank.*` for shared learning storage
+
+### Search Priority
+1. `code-index.search_code_advanced` - Complex code searches
+2. `code-index.build_deep_index` - Build/update workspace index
+3. `code-index.find_files` - Locate specific files
+4. **NEVER** manually scan directories
+
+## 📋 Knowledge Management
+
+### Store in memory-bank (SHARED)
+- Architecture insights and design decisions
+- API patterns and integration learnings
+- Tool usage discoveries
+- Cross-project problem solutions
+- Reference patterns for future use
+
+### Keep Local (KILO-SPECIFIC)
+- Repo-specific commands and workflows
+- Kilo Code behaviors and shortcuts
+- Local path patterns and configurations
+- Project-specific CLI commands
+
+## 🔄 Quick Reference Checklist
+
+### Session Start
+- Use `code-index.set_project_path()` for new workspaces
+- Check memory-bank for existing project knowledge
+- Reference local rules for repo-specific commands
+
+### During Development
+- Route code edits through `morph.*` tools
+- Use `code-index.*` for understanding unfamiliar code
+- Store significant learnings to `memory-bank.upsert`
+- Keep tool calls focused and targeted
+
+### Knowledge Updates
+- Summarize durable insights to memory-bank
+- Keep local rules minimal and factual
+- Link to memory-bank for detailed knowledge
+
+## 🛡️ Kilo-Specific Safety
+
+### Never Store in memory-bank
+- Secret tokens or API keys
+- Customer-specific data
+- Temporary debug information
+- Private implementation details
+
+### Kilo Code Behaviors
+- Follow same routing decisions as Cline
+- Use memory-bank for cross-IDE learning
+- Reference Cline policy for detailed procedures
+- Maintain consistent project context
+
+## ⚖️ Conflict Resolution
+
+**Priority Order:**
+1. Cipher global policies (memory-bank knowledge)
+2. Project-specific knowledge (memory-bank)
+3. Local Cline rules
+4. Local Kilo Code rules (this document)
+
+**When conflicts occur:**
+- Prefer memory-bank knowledge over local rules
+- Use Cline policy for detailed guidance
+- Escalate unclear routing decisions
+
+## 🎯 Success Patterns
+
+### Effective Kilo Code Sessions
+- **Consistent tool routing** through Cipher MCP
+- **Shared learning** stored in memory-bank
+- **Minimal local rules** with clear purposes
+- **Fast code navigation** via code-index
+
+### Knowledge Flow
+- Discover insights during work
+- Store summaries to memory-bank
+- Reference existing knowledge for new tasks
+- Build compound understanding over time
+
+---
+
+**Remember**: This policy complements the comprehensive Cline routing policy. For detailed procedures, refer to `~/.clinerules/routing-and-knowledge-policy.md`. The goal is consistent, efficient development through shared learning and intelligent tool routing.
