@@ -1,3 +1,0 @@
-[CIPHER-MCP] Log redirection activated: /tmp/cipher-mcp.log
-[CIPHER-MCP] ERROR: No API key or Ollama configuration found, please set at least one of OPENAI_API_KEY, ANTHROPIC_API_KEY, OPENROUTER_API_KEY, OLLAMA_BASE_URL, or AWS credentials (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION) in your environment variables 
-Available providers: OpenAI, Anthropic, OpenRouter, Ollama, Qwen, Gemini, Azure, AWS, LM Studio
