@@ -1,18 +1,6 @@
-<!-- Cleanup note inserted by script - see archive/cleanup-todo-* for details -->
-
 # Cipher-Aggregator MCP Server Setup
 
-+> LM routing policy update
-+> - Cline now calls OpenRouter directly for all LM requests
-+> - Cipher remains the MCP server/aggregator for tools only
-+> - See ADR: [`docs/adr/adr-0001-direct-openrouter.md`](docs/adr/adr-0001-direct-openrouter.md:1)
-+
-+Quick setup for OpenRouter direct in Cline
-+1. Configure your OpenRouter API key in Cline per the Cline documentation.
-+2. Ensure no IDE/provider routes LM requests to Cipher; LM traffic should bypass Cipher.
-+3. Keep Cipher running for MCP tools only (github, firecrawl, httpie, schemathesis, etc.).
-+
-
+This repository contains a complete setup of cipher-aggregator with multiple Model Context Protocol (MCP) servers configured for enhanced AI development capabilities.
 
 # Cipher-Aggregator: Centralized Tool Routing and Indexing
 
@@ -109,7 +97,7 @@ To add a new routing rule, simply update the `routing_rules.yml` file with the n
 #### 5. Schemathesis MCP Server ⭐ NEWLY IMPLEMENTED
 - **Purpose**: API testing and OpenAPI schema validation
 - **Status**: Fully functional custom Python implementation
-- **Location**: `/home/jerde/dev/MCP/servers/schemathesis-mcp.py`
+- **Location**: `/home/jrede/dev/MCP/servers/schemathesis-mcp.py`
 - **Configuration**: Configured in cipher.yml
 - **Capabilities**:
   - OpenAPI/Swagger schema validation
@@ -452,17 +440,4 @@ For issues and questions:
 
 ## License
 
-This project uses various MCP servers under their respective licenses. Refer to individual server repositories for license information. ...
-
-
-
-
-## Cleanup & Archives
-
-Rotated logs and one-time test artifacts are periodically archived under the archive/ directory. Recent cleanup actions saved archives and reports there.
-
-- Archive location: archive/
-- Cleanup report: archive/cleanup-candidates-20251112-2310.txt
-- Todo summary: archive/cleanup-todo-20251112-2327.md
-
-Please review archive/ before removing any files permanently.
+This project uses various MCP servers under their respective licenses. Refer to individual server repositories for license information.

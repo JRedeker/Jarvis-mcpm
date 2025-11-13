@@ -1,5 +1,9 @@
 # Recommended cipher.yml — template created by assistant on 2025-11-13T03:49:45Z
 # NOTE: Review/adjust secrets and server commands before use.
+# LM routing policy update:
+# - Cline now calls OpenRouter directly for all LM requests
+# - Cipher remains the MCP server/aggregator for tools only
+# - Do NOT route IDE/LM requests through Cipher
 systemPrompt: |
   # Routing rules / system prompt (derived from .kilocode/rules/cipher-routing-rules.md)
   DOMAIN-SPECIFIC-FIRST: true
@@ -28,7 +32,10 @@ servers:
     env:
       OTEL_ENABLED: "false"
   llm-inference:
-    enabled: true
+    # Optional/legacy:
+    # - Not used for IDE LM routing (Cline → OpenRouter is direct)
+    # - Enable only for server-side or automated flows that explicitly need it
+    enabled: false
     transport: stdio
     command: "/home/jrede/dev/MCP/eval_llm_venv/bin/python /home/jrede/dev/MCP/servers/llm-inference-mcp.py"
     env:
@@ -70,3 +77,4 @@ env:
 notes:
   - "This file is a recommended template. Verify all commands, venv paths, and environment variables before starting the aggregator."
   - "If you want, I can parse this file and store a structured routing summary into memory (servers, timeouts, routing rules)."
+  - "LM policy: Cline → OpenRouter direct; Cipher is MCP-only. Enable llm-inference only for non-IDE flows if explicitly required."

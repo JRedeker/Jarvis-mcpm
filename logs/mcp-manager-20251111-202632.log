@@ -1,9 +1,0 @@
-[0;32m[20:26:33 SUCCESS][0m ✅ Cipher-aggregator is running (PID: 11467)
-   [0;34mCommand:[0m node /home/jrede/.npm-global/bin/cipher --mode mcp --mcp-transport-type sse --mcp-host 127.0.0.1 --mcp-port 3020 -a /home/jrede/dev/MCP/cipher.yml
-   [0;34mStarted:[0m Tue Nov 11 20:18:50 2025
-   [0;34mMemory:[0m  1.0%
-   [0;34mEndpoint:[0m http://127.0.0.1:3020/sse
-[0;35m[20:26:33 DEBUG][0m Testing SSE server (attempt 1/5)...
-[0;35m[20:26:33 DEBUG][0m SSE port is reachable
-[0;32m[20:26:33 SUCCESS][0m ✅ SSE server responding
-   [0;34mActive Connections:[0m 8
