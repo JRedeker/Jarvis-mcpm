@@ -1,0 +1,72 @@
+# Recommended cipher.yml — template created by assistant on 2025-11-13T03:49:45Z
+# NOTE: Review/adjust secrets and server commands before use.
+systemPrompt: |
+  # Routing rules / system prompt (derived from .kilocode/rules/cipher-routing-rules.md)
+  DOMAIN-SPECIFIC-FIRST: true
+  routingGuidelines: >
+    Always prefer domain-specific MCP tools over generic fallbacks.
+    Examples: github (git ops), firecrawl (web scraping), code-index (code analysis),
+    schemathesis (API testing), pytest (tests), filesystem (file ops), brave-search (web search),
+    httpie (HTTP).
+toolExecution:
+  callTimeout: 45000       # global call timeout (ms)
+  maxParallelCalls: 1
+  maxToolCallsPerTask: 8
+workspaceMemory:
+  enabled: true
+  path: ./data/workspace-memory
+  autoCapture: true
+memoryBank:
+  path: ./data/memory-bank
+  routingPatternsPath: ./data/memory-bank/routing-patterns
+servers:
+  # Example server entries — update commands to match environment
+  routing-metadata:
+    enabled: true
+    transport: stdio
+    command: "/home/jrede/dev/MCP/servers/routing-metadata-mcp.py"
+    env:
+      OTEL_ENABLED: "false"
+  llm-inference:
+    enabled: true
+    transport: stdio
+    command: "/home/jrede/dev/MCP/eval_llm_venv/bin/python /home/jrede/dev/MCP/servers/llm-inference-mcp.py"
+    env:
+      EVAL_LLM_MODEL: "gpt-5-mini"
+  httpie:
+    enabled: true
+    transport: stdio
+    command: "/home/jrede/dev/MCP/servers/httpie-mcp.py"
+  schemathesis:
+    enabled: true
+    transport: stdio
+    command: "/home/jrede/dev/MCP/servers/schemathesis-mcp.py"
+  firecrawl:
+    enabled: true
+    transport: stdio
+    command: "npx -y @brave/firecrawl-mcp-server"
+  code-index:
+    enabled: true
+    transport: stdio
+    command: "/home/jrede/dev/MCP/servers/code-index-mcp.py"
+  memory-bank:
+    enabled: true
+    transport: stdio
+    command: "/home/jrede/dev/MCP/servers/memory-bank-mcp.py"
+  logs:
+    enabled: true
+    transport: stdio
+    command: "/home/jrede/dev/MCP/servers/logs-mcp.py"
+  # Disabled or optional entries (toggle as needed)
+  magic-mcp:
+    enabled: false
+    note: "Disabled due to npm package availability; open/tickets/magic-mcp-restore.md"
+env:
+  # These are defaults; secrets should live in .env and be loaded by mcp-manager.sh
+  OPENAI_API_KEY: "${OPENAI_API_KEY:-}"
+  KNOWLEDGE_GRAPH_ENABLED: "true"
+  LOKI_BASE_URL: ""
+  OTEL_EXPORTER_OTLP_ENDPOINT: "http://localhost:4317"
+notes:
+  - "This file is a recommended template. Verify all commands, venv paths, and environment variables before starting the aggregator."
+  - "If you want, I can parse this file and store a structured routing summary into memory (servers, timeouts, routing rules)."
