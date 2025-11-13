@@ -1,3 +1,5 @@
+<!-- Cleanup note inserted by script - see archive/cleanup-todo-* for details -->
+
 # Cipher-Aggregator MCP Server Setup
 
 This repository contains a complete setup of cipher-aggregator with multiple Model Context Protocol (MCP) servers configured for enhanced AI development capabilities.
@@ -441,3 +443,15 @@ For issues and questions:
 ## License
 
 This project uses various MCP servers under their respective licenses. Refer to individual server repositories for license information.
+
+
+## Cleanup & Archives
+
+Rotated logs and one-time test artifacts are periodically archived under the archive/ directory. Recent cleanup actions saved archives and reports there.
+
+- Archive location: archive/
+- Cleanup report: archive/cleanup-candidates-20251112-2310.txt
+- Todo summary: archive/cleanup-todo-20251112-2327.md
+
+Please review archive/ before removing any files permanently.
+
