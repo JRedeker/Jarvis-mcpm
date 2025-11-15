@@ -10,21 +10,24 @@ import subprocess
 import sys
 import tempfile
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 import xml.etree.ElementTree as ET
 
 
 # JSON-RPC response helpers
-def send_response(result):
+def send_response(result: Dict[str, Any]) -> None:
     """Send JSON-RPC response to stdout"""
     print(json.dumps(result))
     sys.stdout.flush()
 
 
-def send_error(code, message, data=None):
+def send_error(code: int, message: str, data: Optional[Dict[str, Any]] = None) -> None:
     """Send JSON-RPC error response"""
-    error_response = {"jsonrpc": "2.0", "error": {"code": code, "message": message}}
-    if data:
+    error_response: Dict[str, Any] = {
+        "jsonrpc": "2.0",
+        "error": {"code": code, "message": message},
+    }
+    if data is not None:
         error_response["error"]["data"] = data
     print(json.dumps(error_response))
     sys.stdout.flush()
@@ -226,9 +229,9 @@ def build_pytest_args(test_path, test_pattern=None, markers=None, verbose=True, 
     return args
 
 
-def parse_pytest_output(output_text):
+def parse_pytest_output(output_text: str) -> Dict[str, Any]:
     """Parse pytest output to extract test results"""
-    result = {
+    result: Dict[str, Any] = {
         "total_tests": 0,
         "passed": 0,
         "failed": 0,
@@ -237,22 +240,23 @@ def parse_pytest_output(output_text):
         "warnings": 0,
         "test_results": [],
         "summary": "",
-        "exit_code": 0
+        "exit_code": 0,
     }
 
-    lines = output_text.split('\n')
+    lines = output_text.split("\n")
 
     # Parse session summary
-    for line in lines:
-        line = line.strip()
+    for raw_line in lines:
+        line = raw_line.strip()
         if "===" in line and "passed" in line:
             result["summary"] = line
             # Extract numbers from summary
             import re
-            passed_match = re.search(r'(\d+) passed', line)
-            failed_match = re.search(r'(\d+) failed', line)
-            error_match = re.search(r'(\d+) error', line)
-            skipped_match = re.search(r'(\d+) skipped', line)
+
+            passed_match = re.search(r"(\\d+) passed", line)
+            failed_match = re.search(r"(\\d+) failed", line)
+            error_match = re.search(r"(\\d+) error", line)
+            skipped_match = re.search(r"(\\d+) skipped", line)
 
             if passed_match:
                 result["passed"] = int(passed_match.group(1))
@@ -263,7 +267,12 @@ def parse_pytest_output(output_text):
             if skipped_match:
                 result["skipped"] = int(skipped_match.group(1))
 
-    result["total_tests"] = result["passed"] + result["failed"] + result["errors"] + result["skipped"]
+    # Use local ints for arithmetic to keep types precise
+    passed = int(result.get("passed", 0) or 0)
+    failed = int(result.get("failed", 0) or 0)
+    errors = int(result.get("errors", 0) or 0)
+    skipped = int(result.get("skipped", 0) or 0)
+    result["total_tests"] = passed + failed + errors + skipped
 
     return result
 
@@ -376,48 +385,54 @@ async def handle_get_test_report(args_dict):
 
         if result["success"]:
             # Try to parse XML report if available
-            xml_data = {}
+            xml_data: Dict[str, Any] = {}
             if output_format == "xml" and output_file and os.path.exists(output_file):
                 try:
-                    tree = ET.parse(output_file)
+                    with open(output_file, "r", encoding="utf-8") as f:
+                        tree = ET.parse(f)
                     root = tree.getroot()
+
+                    # Initialize explicit container for testcases
+                    testcases: List[Dict[str, Any]] = []
+
+                    # Extract test cases
+                    for testsuite in root.findall("testsuite"):
+                        for testcase in testsuite.findall("testcase"):
+                            test_data: Dict[str, Any] = {
+                                "name": testcase.get("name"),
+                                "classname": testcase.get("classname"),
+                                "file": testcase.get("file"),
+                                "line": testcase.get("line"),
+                                "status": "passed",
+                                "time": testcase.get("time"),
+                            }
+
+                            if len(testcase.findall("failure")) > 0:
+                                failure = testcase.find("failure")
+                                if failure is not None:
+                                    test_data["status"] = "failed"
+                                    test_data["failure"] = failure.get("message")
+                            elif len(testcase.findall("error")) > 0:
+                                test_data["status"] = "error"
+                                error_elem = testcase.find("error")
+                                if error_elem is not None:
+                                    test_data["error"] = error_elem.get("message")
+                            elif len(testcase.findall("skipped")) > 0:
+                                test_data["status"] = "skipped"
+
+                            testcases.append(test_data)
+
                     xml_data = {
                         "testsuite": {
                             "name": root.get("name"),
-                            "tests": int(root.get("tests", "0")),
-                            "errors": int(root.get("errors", "0")),
-                            "failures": int(root.get("failures", "0")),
-                            "skipped": int(root.get("skipped", "0")),
-                            "time": root.get("time", "0"),
-                            "timestamp": root.get("timestamp"),
-                            "testcases": []
+                            "tests": root.get("tests"),
+                            "failures": root.get("failures"),
+                            "errors": root.get("errors"),
+                            "skipped": root.get("skipped"),
+                            "time": root.get("time"),
+                            "testcases": testcases,
                         }
                     }
-
-                    for testcase in root.findall("testcase"):
-                        test_data = {
-                            "name": testcase.get("name"),
-                            "classname": testcase.get("classname"),
-                            "file": testcase.get("file"),
-                            "line": testcase.get("line"),
-                            "time": testcase.get("time", "0"),
-                            "status": "passed"
-                        }
-
-                        # Check for failures or errors
-                        failure = testcase.find("failure")
-                        if failure is not None:
-                            test_data["status"] = "failed"
-                            test_data["failure"] = failure.get("message")
-                        elif len(testcase.findall("error")) > 0:
-                            test_data["status"] = "error"
-                            error_elem = testcase.find("error")
-                            if error_elem is not None:
-                                test_data["error"] = error_elem.get("message")
-                        elif len(testcase.findall("skipped")) > 0:
-                            test_data["status"] = "skipped"
-
-                        xml_data["testsuite"]["testcases"].append(test_data)
 
                 except Exception:
                     xml_data = {"error": "Could not parse XML report"}
@@ -431,8 +446,8 @@ async def handle_get_test_report(args_dict):
                     "output": result["stdout"],
                     "errors": result["stderr"],
                     "exit_code": result["exit_code"],
-                    "report_data": xml_data
-                }
+                    "report_data": xml_data,
+                },
             }
             send_response(response)
         else:
@@ -465,28 +480,33 @@ async def handle_list_tests(args_dict):
 
         if result["success"]:
             # Parse collected tests
-            collected_tests = []
-            lines = result["stdout"].split('\n')
+            collected_tests: List[Dict[str, Any]] = []
+            stdout = result.get("stdout", "")
+            if not isinstance(stdout, str):
+                stdout = str(stdout)
+            lines = stdout.split("\n")
 
             for line in lines:
                 line = line.strip()
-                if line.startswith("test_") or line.startswith("Test"):
-                    collected_tests.append({
-                        "name": line,
-                        "type": "test function" if line.startswith("test_") else "test class"
-                    })
+                if "::" in line and " <" not in line:
+                    # This looks like a test path
+                    parts = line.split("::")
+                    file_path = parts[0]
+                    test_name = parts[-1]
+
+                    collected_tests.append({"file": file_path, "name": test_name})
 
             response = {
                 "jsonrpc": "2.0",
                 "id": 1,
                 "result": {
                     "success": True,
-                    "test_path": test_path,
-                    "collected_tests": collected_tests,
-                    "total_collected": len(collected_tests),
+                    "command": " ".join(args),
                     "output": result["stdout"],
-                    "errors": result["stderr"]
-                }
+                    "errors": result["stderr"],
+                    "exit_code": result["exit_code"],
+                    "tests": collected_tests,
+                },
             }
             send_response(response)
         else:
@@ -609,62 +629,77 @@ async def handle_validate_test_structure(args_dict):
         if not os.path.exists(test_path):
             return send_error(-32602, f"Test path does not exist: {test_path}")
 
-        validation_results = {
-            "test_path": test_path,
+        # Initialize validation results
+        validation_results: Dict[str, Any] = {
             "valid": True,
             "issues": [],
             "warnings": [],
-            "recommendations": []
+            "recommendations": [],
         }
 
         # Walk through test directory
-        for root, dirs, files in os.walk(test_path):
+        for root_dir, dirs, files in os.walk(test_path):
             for file in files:
                 if file.endswith(".py") and file.startswith("test_"):
-                    file_path = os.path.join(root, file)
+                    file_path = os.path.join(root_dir, file)
 
                     try:
-                        with open(file_path, 'r', encoding='utf-8') as f:
+                        with open(file_path, "r", encoding="utf-8") as f:
                             content = f.read()
 
                         # Check naming conventions
                         if check_conventions:
                             if "def test_" not in content and "class Test" not in content:
-                                validation_results["issues"].append(
-                                    f"File {file_path} appears to contain no valid test functions"
-                                )
+                                issues = validation_results.setdefault("issues", [])
+                                if isinstance(issues, list):
+                                    issues.append(
+                                        f"File {file_path} appears to contain no valid test functions"
+                                    )
                                 validation_results["valid"] = False
 
                         # Check imports
                         if check_imports:
-                            import_lines = [line for line in content.split('\n') if line.strip().startswith('import')]
+                            import_lines = [
+                                line
+                                for line in content.split("\n")
+                                if line.strip().startswith("import")
+                            ]
                             if not import_lines:
-                                validation_results["warnings"].append(
-                                    f"File {file_path} has no imports"
-                                )
+                                warnings = validation_results.setdefault("warnings", [])
+                                if isinstance(warnings, list):
+                                    warnings.append(
+                                        f"File {file_path} has no imports"
+                                    )
 
                     except Exception as e:
-                        validation_results["issues"].append(
-                            f"Could not read file {file_path}: {str(e)}"
-                        )
+                        issues = validation_results.setdefault("issues", [])
+                        if isinstance(issues, list):
+                            issues.append(
+                                f"Could not read file {file_path}: {str(e)}"
+                            )
                         validation_results["valid"] = False
 
         # Add recommendations
+        recommendations = validation_results.setdefault("recommendations", [])
+        if not isinstance(recommendations, list):
+            recommendations = []
+            validation_results["recommendations"] = recommendations
+
         if check_conventions:
-            validation_results["recommendations"].append(
+            recommendations.append(
                 "Ensure test files are named with 'test_' prefix"
             )
-            validation_results["recommendations"].append(
+            recommendations.append(
                 "Ensure test functions are named with 'test_' prefix"
             )
 
-        validation_results["recommendations"].append(
+        recommendations.append(
             "Use descriptive test names that explain what is being tested"
         )
-        validation_results["recommendations"].append(
+        recommendations.append(
             "Group related tests in classes with 'Test' prefix"
         )
-        validation_results["recommendations"].append(
+        recommendations.append(
             "Use pytest fixtures for setup and teardown"
         )
 
@@ -673,8 +708,8 @@ async def handle_validate_test_structure(args_dict):
             "id": 1,
             "result": {
                 "success": True,
-                "validation": validation_results
-            }
+                "validation_results": validation_results,
+            },
         }
         send_response(response)
 

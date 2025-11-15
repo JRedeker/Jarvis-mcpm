@@ -436,6 +436,7 @@ start_cipher() {
     # Start with proper backgrounding
     nohup "$cipher_path" \
         --mode mcp \
+        --agent "$CIPHER_CONFIG" \
         --mcp-transport-type sse \
         --mcp-host "$SSE_HOST" \
         --mcp-port "$SSE_PORT" \

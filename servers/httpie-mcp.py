@@ -12,10 +12,20 @@ import time
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+import importlib  # added for dynamic optional import
 
-# Import the middleware for agent logging
-sys.path.append("/home/jrede/dev/MCP/tests-and-notes")
-from cipher_routing_middleware import CipherRoutingMiddleware
+# Optional middleware import (falls back to no-op if unavailable)
+try:
+    _crm_mod = importlib.import_module("cipher_routing_middleware")
+    CipherRoutingMiddleware = getattr(_crm_mod, "CipherRoutingMiddleware")
+except Exception:
+    class CipherRoutingMiddleware:  # type: ignore
+        def __init__(self, *args, **kwargs) -> None:
+            pass
+        def before_request(self, *args, **kwargs) -> None:
+            pass
+        def after_response(self, *args, **kwargs) -> None:
+            pass
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

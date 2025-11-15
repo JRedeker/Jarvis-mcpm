@@ -33,51 +33,59 @@ workspaceMemory:
 memoryBank:
   path: ./data/memory-bank
   routingPatternsPath: ./data/memory-bank/routing-patterns
-servers:
-  # Example server entries — update commands to match environment
+mcpServers:
   routing-metadata:
     enabled: true
-    transport: stdio
-    command: "/home/jrede/dev/MCP/servers/routing-metadata-mcp.py"
+    type: stdio
+    command: python3
+    args: ["servers/routing-metadata-mcp.py"]
     env:
       OTEL_ENABLED: "false"
-  llm-inference:
-    # Optional/legacy:
-    # - Not used for IDE LM routing (Cline → OpenRouter is direct)
-    # - Enable only for server-side or automated flows that explicitly need it
-    enabled: true
-    transport: stdio
-    command: "/home/jrede/dev/MCP/eval_llm_venv/bin/python /home/jrede/dev/MCP/servers/llm-inference-mcp.py"
-    env:
-      EVAL_LLM_MODEL: "x-ai/grok-4-fast"
   httpie:
     enabled: true
-    transport: stdio
-    command: "/home/jrede/dev/MCP/servers/httpie-mcp.py"
+    type: stdio
+    command: python3
+    args: ["servers/httpie-mcp.py"]
   schemathesis:
     enabled: true
-    transport: stdio
-    command: "/home/jrede/dev/MCP/servers/schemathesis-mcp.py"
+    type: stdio
+    command: python3
+    args: ["servers/schemathesis-mcp.py"]
+  filesystem:
+    enabled: true
+    type: stdio
+    command: python3
+    args: ["servers/custom-filesystem-mcp.py"]
+  file-batch:
+    enabled: true
+    type: stdio
+    command: python3
+    args: ["servers/file-batch-mcp.py"]
+  pytest:
+    enabled: true
+    type: stdio
+    command: python3
+    args: ["servers/pytest-mcp.py"]
   firecrawl:
     enabled: true
-    transport: stdio
-    command: "npx -y @brave/firecrawl-mcp-server"
+    type: stdio
+    command: npx
+    args: ["-y", "@brave/firecrawl-mcp-server"]
   code-index:
     enabled: true
-    transport: stdio
-    command: "/home/jrede/dev/MCP/servers/code-index-mcp.py"
+    type: stdio
+    command: python3
+    args: ["servers/code-index-mcp.py"]
   memory-bank:
     enabled: true
-    transport: stdio
-    command: "/home/jrede/dev/MCP/servers/memory-bank-mcp.py"
+    type: stdio
+    command: python3
+    args: ["servers/memory-bank-mcp.py"]
   logs:
     enabled: true
-    transport: stdio
-    command: "/home/jrede/dev/MCP/servers/logs-mcp.py"
-  # Disabled or optional entries (toggle as needed)
-  magic-mcp:
-    enabled: false
-    note: "Disabled due to npm package availability; open/tickets/magic-mcp-restore.md"
+    type: stdio
+    command: python3
+    args: ["servers/logs-mcp.py"]
 env:
   # These are defaults; secrets should live in .env and be loaded by mcp-manager.sh
   OPENAI_API_KEY: "${OPENAI_API_KEY:-}"
