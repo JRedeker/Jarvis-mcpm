@@ -67,25 +67,29 @@ mcpServers:
     command: python3
     args: ["servers/pytest-mcp.py"]
   firecrawl:
-    enabled: true
+    enabled: false
     type: stdio
     command: npx
     args: ["-y", "@brave/firecrawl-mcp-server"]
+    # TODO: Re-enable after providing a valid npm package source or git URL.
   code-index:
-    enabled: true
+    enabled: false
     type: stdio
     command: python3
     args: ["servers/code-index-mcp.py"]
+    # TODO: Provide servers/code-index-mcp.py or re-enable when implemented.
   memory-bank:
-    enabled: true
+    enabled: false
     type: stdio
     command: python3
     args: ["servers/memory-bank-mcp.py"]
+    # TODO: Provide servers/memory-bank-mcp.py or re-enable when implemented.
   logs:
-    enabled: true
+    enabled: false
     type: stdio
     command: python3
     args: ["servers/logs-mcp.py"]
+    # TODO: Provide servers/logs-mcp.py or re-enable when implemented.
 env:
   # These are defaults; secrets should live in .env and be loaded by mcp-manager.sh
   OPENAI_API_KEY: "${OPENAI_API_KEY:-}"

@@ -11,7 +11,7 @@ import tempfile
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Callable
 import importlib  # added for dynamic optional import
 
 # Optional middleware import (falls back to no-op if unavailable)
@@ -26,6 +26,11 @@ except Exception:
             pass
         def after_response(self, *args, **kwargs) -> None:
             pass
+        def handle_tool_call_wrapper(
+            self, handler: Callable[[Dict[str, Any]], Dict[str, Any]]
+        ) -> Callable[[Dict[str, Any]], Dict[str, Any]]:
+            # No-op wrapper: return the original handler unchanged
+            return handler
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -678,6 +683,9 @@ def handle_tool_call(params: Dict[str, Any]) -> Dict[str, Any]:
                 for key, value in data.items():
                     args.append(f"{key}={json.dumps(value)}")
 
+            # Add headers
+            for key, value in headers.items():
+                args.append(f"{key}:{value}")
             # Add headers
             for key, value in headers.items():
                 args.append(f"{key}:{value}")

@@ -413,7 +413,7 @@ def handle_tool_call(name: str, arguments: Dict[str, Any]) -> Dict[str, Any]:
             schema_path = validate_schema_file(schema_source)
 
             # Run comprehensive testing with different strategies
-            results = []
+            results: List[str] = []
             for strategy in strategies:
                 result = asyncio.run(
                     run_schemathesis_command(
