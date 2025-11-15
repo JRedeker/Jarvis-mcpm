@@ -2,45 +2,46 @@
 import json
 import os
 import sys
-import time
-from pathlib import Path
-from typing import List, Dict, Any, Optional
+from typing import Any, Dict, List, Optional
+
 
 def send_response(result):
     """Send JSON-RPC response to stdout"""
     print(json.dumps(result))
     sys.stdout.flush()
 
-def send_error(code, message, data=None):
+
+def send_error(code: int, message: str, data: Any = None) -> None:
     """Send JSON-RPC error response"""
-    error_response = {
+    error_response: Dict[str, Any] = {
         "jsonrpc": "2.0",
-        "error": {
-            "code": code,
-            "message": message
-        }
+        "error": {"code": code, "message": message},
     }
-    if data:
+    if data is not None:
         error_response["error"]["data"] = data
     print(json.dumps(error_response))
     sys.stdout.flush()
 
-def read_file_content(path: str, head: Optional[int] = None, tail: Optional[int] = None) -> str:
+
+def read_file_content(
+    path: str, head: Optional[int] = None, tail: Optional[int] = None
+) -> str:
     """Read file content with optional head/tail limits"""
     try:
-        with open(path, 'r', encoding='utf-8', errors='ignore') as f:
+        with open(path, "r", encoding="utf-8", errors="ignore") as f:
             content = f.read()
 
         if tail:
-            lines = content.split('\n')
-            content = '\n'.join(lines[-tail:])
+            lines = content.split("\n")
+            content = "\n".join(lines[-tail:])
         elif head:
-            lines = content.split('\n')
-            content = '\n'.join(lines[:head])
+            lines = content.split("\n")
+            content = "\n".join(lines[:head])
 
         return content
     except Exception as e:
         raise Exception(f"Failed to read {path}: {str(e)}")
+
 
 def list_tools():
     """Return list of available tools (modern ones only)"""
@@ -53,23 +54,21 @@ def list_tools():
                 "properties": {
                     "path": {"type": "string"},
                     "tail": {"type": "number", "description": "last N lines"},
-                    "head": {"type": "number", "description": "first N lines"}
+                    "head": {"type": "number", "description": "first N lines"},
                 },
                 "required": ["path"],
-                "additionalProperties": False
-            }
+                "additionalProperties": False,
+            },
         },
         {
             "name": "read_multiple_files",
             "description": "Read multiple files. params:paths[]",
             "inputSchema": {
                 "type": "object",
-                "properties": {
-                    "paths": {"type": "array", "items": {"type": "string"}}
-                },
+                "properties": {"paths": {"type": "array", "items": {"type": "string"}}},
                 "required": ["paths"],
-                "additionalProperties": False
-            }
+                "additionalProperties": False,
+            },
         },
         {
             "name": "write_file",
@@ -78,37 +77,34 @@ def list_tools():
                 "type": "object",
                 "properties": {
                     "path": {"type": "string"},
-                    "content": {"type": "string"}
+                    "content": {"type": "string"},
                 },
                 "required": ["path", "content"],
-                "additionalProperties": False
-            }
+                "additionalProperties": False,
+            },
         },
         {
             "name": "list_directory",
             "description": "List files/dirs. params:path",
             "inputSchema": {
                 "type": "object",
-                "properties": {
-                    "path": {"type": "string"}
-                },
+                "properties": {"path": {"type": "string"}},
                 "required": ["path"],
-                "additionalProperties": False
-            }
+                "additionalProperties": False,
+            },
         },
         {
             "name": "create_directory",
             "description": "Create directory. params:path",
             "inputSchema": {
                 "type": "object",
-                "properties": {
-                    "path": {"type": "string"}
-                },
+                "properties": {"path": {"type": "string"}},
                 "required": ["path"],
-                "additionalProperties": False
-            }
-        }
+                "additionalProperties": False,
+            },
+        },
     ]
+
 
 def handle_tool_call(name: str, arguments: Dict[str, Any]):
     """Handle MCP call_tool request"""
@@ -120,14 +116,7 @@ def handle_tool_call(name: str, arguments: Dict[str, Any]):
 
             content = read_file_content(path, head, tail)
 
-            return {
-                "content": [
-                    {
-                        "type": "text",
-                        "text": content
-                    }
-                ]
-            }
+            return {"content": [{"type": "text", "text": content}]}
 
         elif name == "read_multiple_files":
             paths = arguments["paths"]
@@ -136,23 +125,12 @@ def handle_tool_call(name: str, arguments: Dict[str, Any]):
             for path in paths:
                 try:
                     content = read_file_content(path)
-                    results.append({
-                        "path": path,
-                        "content": content
-                    })
+                    results.append({"path": path, "content": content})
                 except Exception as e:
-                    results.append({
-                        "path": path,
-                        "error": str(e)
-                    })
+                    results.append({"path": path, "error": str(e)})
 
             return {
-                "content": [
-                    {
-                        "type": "text",
-                        "text": json.dumps(results, indent=2)
-                    }
-                ]
+                "content": [{"type": "text", "text": json.dumps(results, indent=2)}]
             }
 
         elif name == "write_file":
@@ -162,21 +140,21 @@ def handle_tool_call(name: str, arguments: Dict[str, Any]):
             # Ensure directory exists
             os.makedirs(os.path.dirname(path), exist_ok=True)
 
-            with open(path, 'w', encoding='utf-8') as f:
+            with open(path, "w", encoding="utf-8") as f:
                 f.write(content)
 
             return {
                 "content": [
                     {
                         "type": "text",
-                        "text": f"Successfully wrote {len(content)} characters to {path}"
+                        "text": f"Successfully wrote {len(content)} characters to {path}",
                     }
                 ]
             }
 
         elif name == "list_directory":
             path = arguments["path"]
-            items = []
+            items: List[str] = []
 
             try:
                 for item in os.listdir(path):
@@ -186,14 +164,7 @@ def handle_tool_call(name: str, arguments: Dict[str, Any]):
                     else:
                         items.append(f"[FILE] {item}")
 
-                return {
-                    "content": [
-                        {
-                            "type": "text",
-                            "text": "\n".join(items)
-                        }
-                    ]
-                }
+                return {"content": [{"type": "text", "text": "\n".join(items)}]}
             except Exception as e:
                 raise Exception(f"Failed to list directory {path}: {str(e)}")
 
@@ -201,14 +172,7 @@ def handle_tool_call(name: str, arguments: Dict[str, Any]):
             path = arguments["path"]
             os.makedirs(path, exist_ok=True)
 
-            return {
-                "content": [
-                    {
-                        "type": "text",
-                        "text": f"Directory created: {path}"
-                    }
-                ]
-            }
+            return {"content": [{"type": "text", "text": f"Directory created: {path}"}]}
 
         else:
             send_error(-32601, f"Unknown tool: {name}")
@@ -217,6 +181,7 @@ def handle_tool_call(name: str, arguments: Dict[str, Any]):
     except Exception as e:
         send_error(-32603, f"Tool execution failed: {str(e)}")
         return
+
 
 def main():
     """Main MCP server loop"""
@@ -231,38 +196,38 @@ def main():
             request_id = request.get("id")
 
             if method == "initialize":
-                send_response({
-                    "jsonrpc": "2.0",
-                    "id": request_id,
-                    "result": {
-                        "protocolVersion": "2024-11-05",
-                        "capabilities": {},
-                        "serverInfo": {
-                            "name": "custom-filesystem-mcp",
-                            "version": "1.0.0"
-                        }
+                send_response(
+                    {
+                        "jsonrpc": "2.0",
+                        "id": request_id,
+                        "result": {
+                            "protocolVersion": "2024-11-05",
+                            "capabilities": {},
+                            "serverInfo": {
+                                "name": "custom-filesystem-mcp",
+                                "version": "1.0.0",
+                            },
+                        },
                     }
-                })
+                )
 
             elif method == "tools/list":
-                send_response({
-                    "jsonrpc": "2.0",
-                    "id": request_id,
-                    "result": {
-                        "tools": list_tools()
+                send_response(
+                    {
+                        "jsonrpc": "2.0",
+                        "id": request_id,
+                        "result": {"tools": list_tools()},
                     }
-                })
+                )
 
             elif method == "tools/call":
                 name = request["params"]["name"]
                 arguments = request["params"]["arguments"]
                 result = handle_tool_call(name, arguments)
                 if result:
-                    send_response({
-                        "jsonrpc": "2.0",
-                        "id": request_id,
-                        "result": result
-                    })
+                    send_response(
+                        {"jsonrpc": "2.0", "id": request_id, "result": result}
+                    )
 
         except json.JSONDecodeError:
             continue
@@ -270,6 +235,7 @@ def main():
             break
         except Exception as e:
             send_error(-32603, f"Server error: {str(e)}")
+
 
 if __name__ == "__main__":
     main()

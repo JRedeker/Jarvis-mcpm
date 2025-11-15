@@ -3,6 +3,7 @@ import json
 import os
 import sys
 import time
+from typing import Any, Dict
 
 # Configuration from environment
 MAX_FILES = int(os.getenv("MAX_FILES", "5"))
@@ -16,16 +17,16 @@ def send_response(result):
     print(json.dumps(result))
     sys.stdout.flush()
 
-def send_error(code, message, data=None):
+def send_error(code: int, message: str, data: Any = None) -> None:
     """Send JSON-RPC error response"""
-    error_response = {
+    error_response: Dict[str, Any] = {
         "jsonrpc": "2.0",
         "error": {
             "code": code,
             "message": message
         }
     }
-    if data:
+    if data is not None:
         error_response["error"]["data"] = data
     print(json.dumps(error_response))
     sys.stdout.flush()

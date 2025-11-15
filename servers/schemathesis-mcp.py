@@ -18,10 +18,10 @@ def send_response(result):
     sys.stdout.flush()
 
 
-def send_error(code, message, data=None):
+def send_error(code: int, message: str, data: Any = None) -> None:
     """Send JSON-RPC error response"""
-    error_response = {"jsonrpc": "2.0", "error": {"code": code, "message": message}}
-    if data:
+    error_response: Dict[str, Any] = {"jsonrpc": "2.0", "error": {"code": code, "message": message}}
+    if data is not None:
         error_response["error"]["data"] = data
     print(json.dumps(error_response))
     sys.stdout.flush()

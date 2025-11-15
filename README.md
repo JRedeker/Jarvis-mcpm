@@ -40,6 +40,13 @@ graph TD
 
 To add a new routing rule, simply update the `routing_rules.yml` file with the new task category and the preferred tool. The routing engine will automatically load the new rule without requiring a system restart.
 
+## Type Checking
+
+- Run [`uv run pyrefly check .`](#) to validate the project with Pyrefly instead of the previous mypy tooling.
+- Update your IDE (for example Visual Studio Code) to use Pyrefly as the Python language server and disable the mypy extension or any mypy-specific workspace settings so that editor diagnostics match the new type checker.
+- Continue to maintain any type-awareness that was previously handled by mypy by mirroring its configuration (Pyrefly accepts the same CLI flags under its `check` subcommand and supports `pyproject.toml` overrides when more control is needed).
+- **Current blocker**: Pyrefly currently reports several existing issues across the MCP servers and tests (unsupported assignments to strings, missing module imports such as `cipher_routing_middleware`, and type mismatches in the pytest helper). Resolve these before relying on the Pyrefly run for CI gating or release checks.
+
 ## Project Structure
 
 ```
@@ -346,7 +353,7 @@ kill -9 <PID>
 python3 /home/jrede/dev/MCP/servers/httpie-mcp.py
 
 # Test Schemathesis server directly
-python3 /home/jrede/dev/MCP/servers/schemathesis-mcp.py
+python3 /home/jerde/dev/MCP/servers/schemathesis-mcp.py
 ```
 
 ### Log Analysis

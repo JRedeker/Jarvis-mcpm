@@ -5,17 +5,16 @@ Httpie MCP Server - Provides HTTP client capabilities through MCP protocol
 
 import asyncio
 import json
-import subprocess
+import logging
 import sys
 import tempfile
-import logging
 import time
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
-from datetime import datetime
 
 # Import the middleware for agent logging
-sys.path.append('/home/jrede/dev/MCP/tests-and-notes')
+sys.path.append("/home/jrede/dev/MCP/tests-and-notes")
 from cipher_routing_middleware import CipherRoutingMiddleware
 
 # Configure logging
@@ -25,6 +24,7 @@ logger = logging.getLogger(__name__)
 # Initialize middleware
 middleware = CipherRoutingMiddleware()
 
+
 # JSON-RPC response helpers
 def send_response(result):
     """Send JSON-RPC response to stdout"""
@@ -32,10 +32,13 @@ def send_response(result):
     sys.stdout.flush()
 
 
-def send_error(code, message, data=None):
+def send_error(code: int, message: str, data: Any = None) -> None:
     """Send JSON-RPC error response"""
-    error_response = {"jsonrpc": "2.0", "error": {"code": code, "message": message}}
-    if data:
+    error_response: Dict[str, Any] = {
+        "jsonrpc": "2.0",
+        "error": {"code": code, "message": message},
+    }
+    if data is not None:
         error_response["error"]["data"] = data
     print(json.dumps(error_response))
     sys.stdout.flush()
@@ -50,23 +53,61 @@ def list_tools():
             "inputSchema": {
                 "type": "object",
                 "properties": {
-                    "method": {"type": "string", "description": "HTTP method", "enum": ["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"], "default": "GET"},
+                    "method": {
+                        "type": "string",
+                        "description": "HTTP method",
+                        "enum": [
+                            "GET",
+                            "POST",
+                            "PUT",
+                            "DELETE",
+                            "PATCH",
+                            "HEAD",
+                            "OPTIONS",
+                        ],
+                        "default": "GET",
+                    },
                     "url": {"type": "string", "description": "request URL"},
                     "headers": {"type": "object", "description": "custom headers"},
                     "data": {"type": "object", "description": "request data"},
                     "query_params": {"type": "object", "description": "query params"},
-                    "auth": {"type": "object", "description": "auth config", "properties": {
-                        "type": {"type": "string", "enum": ["basic", "bearer", "digest"], "default": "basic"},
-                        "username": {"type": "string", "description": "username"},
-                        "password": {"type": "string", "description": "password"},
-                        "token": {"type": "string", "description": "bearer token"}
-                    }},
-                    "timeout": {"type": "integer", "description": "seconds", "default": 30},
-                    "verify_ssl": {"type": "boolean", "description": "verify SSL", "default": True},
-                    "follow_redirects": {"type": "boolean", "description": "follow redirects", "default": False},
-                    "output_format": {"type": "string", "description": "output format", "enum": ["json", "headers", "body", "verbose", "meta"], "default": "json"}
+                    "auth": {
+                        "type": "object",
+                        "description": "auth config",
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "enum": ["basic", "bearer", "digest"],
+                                "default": "basic",
+                            },
+                            "username": {"type": "string", "description": "username"},
+                            "password": {"type": "string", "description": "password"},
+                            "token": {"type": "string", "description": "bearer token"},
+                        },
+                    },
+                    "timeout": {
+                        "type": "integer",
+                        "description": "seconds",
+                        "default": 30,
+                    },
+                    "verify_ssl": {
+                        "type": "boolean",
+                        "description": "verify SSL",
+                        "default": True,
+                    },
+                    "follow_redirects": {
+                        "type": "boolean",
+                        "description": "follow redirects",
+                        "default": False,
+                    },
+                    "output_format": {
+                        "type": "string",
+                        "description": "output format",
+                        "enum": ["json", "headers", "body", "verbose", "meta"],
+                        "default": "json",
+                    },
                 },
-                "required": ["url"]
+                "required": ["url"],
             },
         },
         {
@@ -77,12 +118,31 @@ def list_tools():
                 "properties": {
                     "url": {"type": "string", "description": "upload URL"},
                     "file_path": {"type": "string", "description": "path to file"},
-                    "file_field_name": {"type": "string", "description": "form field name", "default": "file"},
-                    "additional_fields": {"type": "object", "description": "form fields"},
+                    "file_field_name": {
+                        "type": "string",
+                        "description": "form field name",
+                        "default": "file",
+                    },
+                    "additional_fields": {
+                        "type": "object",
+                        "description": "form fields",
+                    },
                     "headers": {"type": "object", "description": "custom headers"},
-                    "auth": {"type": "object", "description": "auth config", "properties": {"type": {"type": "string", "enum": ["basic", "bearer", "digest"]}, "username": {"type": "string"}, "password": {"type": "string"}, "token": {"type": "string"}}}
+                    "auth": {
+                        "type": "object",
+                        "description": "auth config",
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "enum": ["basic", "bearer", "digest"],
+                            },
+                            "username": {"type": "string"},
+                            "password": {"type": "string"},
+                            "token": {"type": "string"},
+                        },
+                    },
                 },
-                "required": ["url", "file_path"]
+                "required": ["url", "file_path"],
             },
         },
         {
@@ -93,11 +153,27 @@ def list_tools():
                 "properties": {
                     "url": {"type": "string", "description": "download URL"},
                     "output_path": {"type": "string", "description": "output path"},
-                    "continue_download": {"type": "boolean", "description": "resume download", "default": False},
+                    "continue_download": {
+                        "type": "boolean",
+                        "description": "resume download",
+                        "default": False,
+                    },
                     "headers": {"type": "object", "description": "custom headers"},
-                    "auth": {"type": "object", "description": "auth config", "properties": {"type": {"type": "string", "enum": ["basic", "bearer", "digest"]}, "username": {"type": "string"}, "password": {"type": "string"}, "token": {"type": "string"}}}
+                    "auth": {
+                        "type": "object",
+                        "description": "auth config",
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "enum": ["basic", "bearer", "digest"],
+                            },
+                            "username": {"type": "string"},
+                            "password": {"type": "string"},
+                            "token": {"type": "string"},
+                        },
+                    },
                 },
-                "required": ["url"]
+                "required": ["url"],
             },
         },
         {
@@ -107,14 +183,31 @@ def list_tools():
                 "type": "object",
                 "properties": {
                     "url": {"type": "string", "description": "endpoint URL"},
-                    "method": {"type": "string", "description": "HTTP method", "enum": ["GET", "POST", "PUT", "DELETE", "PATCH"], "default": "GET"},
-                    "expected_status": {"type": "integer", "description": "expected HTTP status", "default": 200},
+                    "method": {
+                        "type": "string",
+                        "description": "HTTP method",
+                        "enum": ["GET", "POST", "PUT", "DELETE", "PATCH"],
+                        "default": "GET",
+                    },
+                    "expected_status": {
+                        "type": "integer",
+                        "description": "expected HTTP status",
+                        "default": 200,
+                    },
                     "headers": {"type": "object", "description": "request headers"},
                     "data": {"type": "object", "description": "request data"},
-                    "validate_response": {"type": "boolean", "description": "validate response", "default": True},
-                    "timeout": {"type": "integer", "description": "seconds", "default": 30}
+                    "validate_response": {
+                        "type": "boolean",
+                        "description": "validate response",
+                        "default": True,
+                    },
+                    "timeout": {
+                        "type": "integer",
+                        "description": "seconds",
+                        "default": 30,
+                    },
                 },
-                "required": ["url"]
+                "required": ["url"],
             },
         },
         {
@@ -123,16 +216,41 @@ def list_tools():
             "inputSchema": {
                 "type": "object",
                 "properties": {
-                    "action": {"type": "string", "description": "action", "enum": ["create", "use", "list", "delete"], "default": "create"},
+                    "action": {
+                        "type": "string",
+                        "description": "action",
+                        "enum": ["create", "use", "list", "delete"],
+                        "default": "create",
+                    },
                     "session_name": {"type": "string", "description": "session name"},
-                    "session_file": {"type": "string", "description": "session file path"},
+                    "session_file": {
+                        "type": "string",
+                        "description": "session file path",
+                    },
                     "url": {"type": "string", "description": "URL"},
-                    "method": {"type": "string", "description": "HTTP method", "enum": ["GET", "POST", "PUT", "DELETE", "PATCH"], "default": "GET"},
+                    "method": {
+                        "type": "string",
+                        "description": "HTTP method",
+                        "enum": ["GET", "POST", "PUT", "DELETE", "PATCH"],
+                        "default": "GET",
+                    },
                     "data": {"type": "object", "description": "request data"},
                     "headers": {"type": "object", "description": "headers"},
-                    "auth": {"type": "object", "description": "auth config", "properties": {"type": {"type": "string", "enum": ["basic", "bearer", "digest"]}, "username": {"type": "string"}, "password": {"type": "string"}, "token": {"type": "string"}}}
+                    "auth": {
+                        "type": "object",
+                        "description": "auth config",
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "enum": ["basic", "bearer", "digest"],
+                            },
+                            "username": {"type": "string"},
+                            "password": {"type": "string"},
+                            "token": {"type": "string"},
+                        },
+                    },
                 },
-                "required": ["action"]
+                "required": ["action"],
             },
         },
         {
@@ -141,15 +259,25 @@ def list_tools():
             "inputSchema": {
                 "type": "object",
                 "properties": {
-                    "auth_type": {"type": "string", "description": "auth type", "enum": ["basic", "bearer", "digest", "netrc"], "default": "basic"},
+                    "auth_type": {
+                        "type": "string",
+                        "description": "auth type",
+                        "enum": ["basic", "bearer", "digest", "netrc"],
+                        "default": "basic",
+                    },
                     "username": {"type": "string", "description": "username"},
                     "password": {"type": "string", "description": "password"},
                     "token": {"type": "string", "description": "bearer token"},
                     "url": {"type": "string", "description": "auth URL"},
                     "test_endpoint": {"type": "string", "description": "test endpoint"},
-                    "method": {"type": "string", "description": "HTTP method", "enum": ["GET", "POST", "PUT", "DELETE", "PATCH"], "default": "GET"}
+                    "method": {
+                        "type": "string",
+                        "description": "HTTP method",
+                        "enum": ["GET", "POST", "PUT", "DELETE", "PATCH"],
+                        "default": "GET",
+                    },
                 },
-                "required": ["auth_type", "url"]
+                "required": ["auth_type", "url"],
             },
         },
         {
@@ -159,14 +287,33 @@ def list_tools():
                 "type": "object",
                 "properties": {
                     "url": {"type": "string", "description": "URL"},
-                    "output_type": {"type": "string", "description": "output type", "enum": ["headers", "body", "meta", "verbose", "quiet"], "default": "json"},
-                    "pretty_print": {"type": "boolean", "description": "pretty print", "default": True},
-                    "style": {"type": "string", "description": "style", "enum": ["auto", "pie-dark", "pie-light", "monokai", "fruity"], "default": "auto"},
+                    "output_type": {
+                        "type": "string",
+                        "description": "output type",
+                        "enum": ["headers", "body", "meta", "verbose", "quiet"],
+                        "default": "json",
+                    },
+                    "pretty_print": {
+                        "type": "boolean",
+                        "description": "pretty print",
+                        "default": True,
+                    },
+                    "style": {
+                        "type": "string",
+                        "description": "style",
+                        "enum": ["auto", "pie-dark", "pie-light", "monokai", "fruity"],
+                        "default": "auto",
+                    },
                     "headers": {"type": "object", "description": "headers"},
                     "data": {"type": "object", "description": "data"},
-                    "method": {"type": "string", "description": "HTTP method", "enum": ["GET", "POST", "PUT", "DELETE", "PATCH"], "default": "GET"}
+                    "method": {
+                        "type": "string",
+                        "description": "HTTP method",
+                        "enum": ["GET", "POST", "PUT", "DELETE", "PATCH"],
+                        "default": "GET",
+                    },
                 },
-                "required": ["url"]
+                "required": ["url"],
             },
         },
         {
@@ -176,15 +323,43 @@ def list_tools():
                 "type": "object",
                 "properties": {
                     "url": {"type": "string", "description": "URL"},
-                    "test_methods": {"type": "array", "description": "HTTP methods", "items": {"type": "string", "enum": ["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"]}, "default": ["GET"]},
-                    "timeout": {"type": "integer", "description": "seconds", "default": 30},
-                    "check_ssl": {"type": "boolean", "description": "check SSL", "default": True},
+                    "test_methods": {
+                        "type": "array",
+                        "description": "HTTP methods",
+                        "items": {
+                            "type": "string",
+                            "enum": [
+                                "GET",
+                                "POST",
+                                "PUT",
+                                "DELETE",
+                                "PATCH",
+                                "HEAD",
+                                "OPTIONS",
+                            ],
+                        },
+                        "default": ["GET"],
+                    },
+                    "timeout": {
+                        "type": "integer",
+                        "description": "seconds",
+                        "default": 30,
+                    },
+                    "check_ssl": {
+                        "type": "boolean",
+                        "description": "check SSL",
+                        "default": True,
+                    },
                     "headers": {"type": "object", "description": "headers"},
-                    "expected_status": {"type": "integer", "description": "expected status", "default": 200}
+                    "expected_status": {
+                        "type": "integer",
+                        "description": "expected status",
+                        "default": 200,
+                    },
                 },
-                "required": ["url"]
+                "required": ["url"],
             },
-        }
+        },
     ]
 
 
@@ -208,7 +383,7 @@ async def run_httpie_command(args: List[str], **kwargs) -> Dict[str, Any]:
                 "body": "--print=b",
                 "verbose": "--verbose",
                 "meta": "--print=m",
-                "quiet": "--quiet"
+                "quiet": "--quiet",
             }
             cmd.append(format_map.get(kwargs["output_format"], "--pretty=all"))
 
@@ -242,8 +417,15 @@ async def run_httpie_command(args: List[str], **kwargs) -> Dict[str, Any]:
         }
 
 
-def build_httpie_args(method: str, url: str, headers: Optional[Dict] = None, data: Optional[Dict] = None,
-                     query_params: Optional[Dict] = None, auth: Optional[Dict] = None, **kwargs) -> List[str]:
+def build_httpie_args(
+    method: str,
+    url: str,
+    headers: Optional[Dict] = None,
+    data: Optional[Dict] = None,
+    query_params: Optional[Dict] = None,
+    auth: Optional[Dict] = None,
+    **kwargs,
+) -> List[str]:
     """Build httpie command arguments from parameters"""
     args = []
 
@@ -324,17 +506,19 @@ def handle_tool_call(params: Dict[str, Any]) -> Dict[str, Any]:
                 data=data,
                 query_params=query_params,
                 auth=auth,
-                multipart=False
+                multipart=False,
             )
 
             # Run command
-            result = asyncio.run(run_httpie_command(
-                args,
-                timeout=timeout,
-                verify_ssl=verify_ssl,
-                follow_redirects=follow_redirects,
-                output_format=output_format
-            ))
+            result = asyncio.run(
+                run_httpie_command(
+                    args,
+                    timeout=timeout,
+                    verify_ssl=verify_ssl,
+                    follow_redirects=follow_redirects,
+                    output_format=output_format,
+                )
+            )
 
             if result["exit_code"] == 0:
                 # Parse stdout for response
@@ -348,14 +532,14 @@ def handle_tool_call(params: Dict[str, Any]) -> Dict[str, Any]:
                     response_data = {
                         "response": stdout,
                         "status": "success",
-                        "exit_code": 0
+                        "exit_code": 0,
                     }
                 return {"result": response_data, "status": "success"}
             else:
                 return {
                     "error": result["stderr"],
                     "status": "error",
-                    "exit_code": result["exit_code"]
+                    "exit_code": result["exit_code"],
                 }
 
         elif name == "upload_file":
@@ -383,7 +567,11 @@ def handle_tool_call(params: Dict[str, Any]) -> Dict[str, Any]:
             # Add auth
             if auth:
                 auth_type = auth.get("type", "basic")
-                if auth_type == "basic" and auth.get("username") and auth.get("password"):
+                if (
+                    auth_type == "basic"
+                    and auth.get("username")
+                    and auth.get("password")
+                ):
                     args.extend([f"{auth['username']}:{auth['password']}"])
                 elif auth_type == "bearer" and auth.get("token"):
                     args.append(f"Authorization:Bearer {auth['token']}")
@@ -395,13 +583,13 @@ def handle_tool_call(params: Dict[str, Any]) -> Dict[str, Any]:
                 return {
                     "status": "success",
                     "uploaded_file": file_path,
-                    "response": result["stdout"]
+                    "response": result["stdout"],
                 }
             else:
                 return {
                     "error": result["stderr"],
                     "status": "error",
-                    "exit_code": result["exit_code"]
+                    "exit_code": result["exit_code"],
                 }
 
         elif name == "download_file":
@@ -413,12 +601,14 @@ def handle_tool_call(params: Dict[str, Any]) -> Dict[str, Any]:
 
             # Use temporary file if no output path specified
             if not output_path:
-                temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=Path(url).suffix)
+                temp_file = tempfile.NamedTemporaryFile(
+                    delete=False, suffix=Path(url).suffix
+                )
                 output_path = temp_file.name
                 temp_file.close()
 
             # Build download command
-            args = ["GET", url, f"--download", f"--output={output_path}"]
+            args = ["GET", url, "--download", f"--output={output_path}"]
 
             if continue_download:
                 args.append("--continue")
@@ -430,7 +620,11 @@ def handle_tool_call(params: Dict[str, Any]) -> Dict[str, Any]:
             # Add auth
             if auth:
                 auth_type = auth.get("type", "basic")
-                if auth_type == "basic" and auth.get("username") and auth.get("password"):
+                if (
+                    auth_type == "basic"
+                    and auth.get("username")
+                    and auth.get("password")
+                ):
                     args.extend([f"{auth['username']}:{auth['password']}"])
                 elif auth_type == "bearer" and auth.get("token"):
                     args.append(f"Authorization:Bearer {auth['token']}")
@@ -444,7 +638,7 @@ def handle_tool_call(params: Dict[str, Any]) -> Dict[str, Any]:
                     "status": "success",
                     "downloaded_to": output_path,
                     "file_size_bytes": file_size,
-                    "response": result["stdout"]
+                    "response": result["stdout"],
                 }
             else:
                 # Clean up temp file on error
@@ -453,7 +647,7 @@ def handle_tool_call(params: Dict[str, Any]) -> Dict[str, Any]:
                 return {
                     "error": result["stderr"],
                     "status": "error",
-                    "exit_code": result["exit_code"]
+                    "exit_code": result["exit_code"],
                 }
 
         elif name == "test_api_endpoint":
@@ -479,11 +673,15 @@ def handle_tool_call(params: Dict[str, Any]) -> Dict[str, Any]:
                 args.append(f"{key}:{value}")
 
             # Run test
-            result = asyncio.run(run_httpie_command(args, timeout=timeout, output_format="verbose"))
+            result = asyncio.run(
+                run_httpie_command(args, timeout=timeout, output_format="verbose")
+            )
 
             # Parse response for status code
             response_lines = result["stdout"].split("\n")
-            status_line = next((line for line in response_lines if "HTTP/" in line), None)
+            status_line = next(
+                (line for line in response_lines if "HTTP/" in line), None
+            )
 
             if status_line:
                 # Extract status code from "HTTP/1.1 200 OK"
@@ -502,16 +700,21 @@ def handle_tool_call(params: Dict[str, Any]) -> Dict[str, Any]:
                 "response_time": "unknown",  # Httpie doesn't provide timing in stdout
                 "response_body": result["stdout"] if test_passed else None,
                 "error": result["stderr"] if not test_passed else None,
-                "exit_code": result["exit_code"]
+                "exit_code": result["exit_code"],
             }
 
-            return {"result": test_result, "status": "success" if test_passed else "warning"}
+            return {
+                "result": test_result,
+                "status": "success" if test_passed else "warning",
+            }
 
         elif name == "manage_session":
             action = arguments.get("action", "create")
 
             if action == "create":
-                session_name = arguments.get("session_name", f"session-{int(time.time())}")
+                session_name = arguments.get(
+                    "session_name", f"session-{int(time.time())}"
+                )
                 session_dir = Path("/home/jrede/dev/MCP/data/sessions")
                 session_dir.mkdir(exist_ok=True)
                 session_file = session_dir / f"{session_name}.json"
@@ -523,7 +726,7 @@ def handle_tool_call(params: Dict[str, Any]) -> Dict[str, Any]:
                     "cookies": {},
                     "headers": {},
                     "auth": arguments.get("auth", {}),
-                    "last_used": datetime.now().isoformat()
+                    "last_used": datetime.now().isoformat(),
                 }
 
                 with open(session_file, "w") as f:
@@ -532,7 +735,7 @@ def handle_tool_call(params: Dict[str, Any]) -> Dict[str, Any]:
                 return {
                     "status": "success",
                     "session_created": session_name,
-                    "session_file": str(session_file)
+                    "session_file": str(session_file),
                 }
 
             elif action == "list":
@@ -542,17 +745,22 @@ def handle_tool_call(params: Dict[str, Any]) -> Dict[str, Any]:
                     for session_file in session_dir.glob("*.json"):
                         with open(session_file, "r") as f:
                             session_data = json.load(f)
-                        sessions.append({
-                            "name": session_data["name"],
-                            "created": session_data["created"],
-                            "last_used": session_data.get("last_used", "unknown")
-                        })
+                        sessions.append(
+                            {
+                                "name": session_data["name"],
+                                "created": session_data["created"],
+                                "last_used": session_data.get("last_used", "unknown"),
+                            }
+                        )
                 return {"status": "success", "sessions": sessions}
 
             elif action == "delete":
                 session_name = arguments.get("session_name")
                 if session_name:
-                    session_file = Path("/home/jrede/dev/MCP/data/sessions") / f"{session_name}.json"
+                    session_file = (
+                        Path("/home/jrede/dev/MCP/data/sessions")
+                        / f"{session_name}.json"
+                    )
                     if session_file.exists():
                         session_file.unlink()
                         return {"status": "success", "session_deleted": session_name}
@@ -576,14 +784,20 @@ def handle_tool_call(params: Dict[str, Any]) -> Dict[str, Any]:
                     auth_str = f"{username}:{password}"
                     args = [method, test_endpoint, auth_str]
                 else:
-                    return {"error": "Username and password required for basic auth", "status": "error"}
+                    return {
+                        "error": "Username and password required for basic auth",
+                        "status": "error",
+                    }
 
             elif auth_type == "bearer":
                 token = arguments.get("token")
                 if token:
                     args = [method, test_endpoint, f"Authorization:Bearer {token}"]
                 else:
-                    return {"error": "Token required for bearer auth", "status": "error"}
+                    return {
+                        "error": "Token required for bearer auth",
+                        "status": "error",
+                    }
 
             elif auth_type == "digest":
                 username = arguments.get("username")
@@ -593,10 +807,17 @@ def handle_tool_call(params: Dict[str, Any]) -> Dict[str, Any]:
                     args = [method, test_endpoint, auth_str]
                     # Note: Httpie handles digest auth automatically when credentials provided
                 else:
-                    return {"error": "Username and password required for digest auth", "status": "error"}
+                    return {
+                        "error": "Username and password required for digest auth",
+                        "status": "error",
+                    }
 
             elif auth_type == "netrc":
-                args = [method, test_endpoint, "--auth-type=ntlm"]  # Httpie uses netrc for NTLM
+                args = [
+                    method,
+                    test_endpoint,
+                    "--auth-type=ntlm",
+                ]  # Httpie uses netrc for NTLM
                 # Netrc file should be configured in ~/.netrc
 
             else:
@@ -608,14 +829,16 @@ def handle_tool_call(params: Dict[str, Any]) -> Dict[str, Any]:
             if result["exit_code"] == 0:
                 # Check if authentication was successful (status 200 or expected)
                 response_lines = result["stdout"].split("\n")
-                status_line = next((line for line in response_lines if "HTTP/" in line), None)
+                status_line = next(
+                    (line for line in response_lines if "HTTP/" in line), None
+                )
                 if status_line and "200" in status_line:
                     return {
                         "status": "success",
                         "auth_type": auth_type,
                         "test_url": test_endpoint,
                         "authenticated": True,
-                        "response": result["stdout"]
+                        "response": result["stdout"],
                     }
                 else:
                     return {
@@ -624,13 +847,13 @@ def handle_tool_call(params: Dict[str, Any]) -> Dict[str, Any]:
                         "test_url": test_endpoint,
                         "authenticated": False,
                         "response_status": status_line,
-                        "response": result["stdout"]
+                        "response": result["stdout"],
                     }
             else:
                 return {
                     "error": result["stderr"],
                     "status": "error",
-                    "exit_code": result["exit_code"]
+                    "exit_code": result["exit_code"],
                 }
 
         elif name == "format_response":
@@ -675,13 +898,13 @@ def handle_tool_call(params: Dict[str, Any]) -> Dict[str, Any]:
                 return {
                     "status": "success",
                     "formatted_response": result["stdout"],
-                    "exit_code": 0
+                    "exit_code": 0,
                 }
             else:
                 return {
                     "error": result["stderr"],
                     "status": "error",
-                    "exit_code": result["exit_code"]
+                    "exit_code": result["exit_code"],
                 }
 
         elif name == "test_connectivity":
@@ -703,11 +926,15 @@ def handle_tool_call(params: Dict[str, Any]) -> Dict[str, Any]:
                 if not check_ssl:
                     args.append("--verify=no")
 
-                result = asyncio.run(run_httpie_command(args, timeout=timeout, output_format="verbose"))
+                result = asyncio.run(
+                    run_httpie_command(args, timeout=timeout, output_format="verbose")
+                )
 
                 # Parse status code
                 response_lines = result["stdout"].split("\n")
-                status_line = next((line for line in response_lines if "HTTP/" in line), None)
+                status_line = next(
+                    (line for line in response_lines if "HTTP/" in line), None
+                )
                 status_code = None
                 if status_line:
                     try:
@@ -715,7 +942,9 @@ def handle_tool_call(params: Dict[str, Any]) -> Dict[str, Any]:
                     except (ValueError, IndexError):
                         pass
 
-                test_passed = result["exit_code"] == 0 and status_code == expected_status
+                test_passed = (
+                    result["exit_code"] == 0 and status_code == expected_status
+                )
                 connectivity_results[method] = {
                     "method": method,
                     "status_code": status_code,
@@ -723,17 +952,19 @@ def handle_tool_call(params: Dict[str, Any]) -> Dict[str, Any]:
                     "test_passed": test_passed,
                     "response_time": "unknown",  # Would need timing implementation
                     "exit_code": result["exit_code"],
-                    "error": result["stderr"] if not test_passed else None
+                    "error": result["stderr"] if not test_passed else None,
                 }
 
-            overall_passed = all(r["test_passed"] for r in connectivity_results.values())
+            overall_passed = all(
+                r["test_passed"] for r in connectivity_results.values()
+            )
             return {
                 "status": "success" if overall_passed else "warning",
                 "url": url,
                 "test_methods": test_methods,
                 "results": connectivity_results,
                 "overall_passed": overall_passed,
-                "ssl_checked": check_ssl
+                "ssl_checked": check_ssl,
             }
 
         else:
@@ -753,7 +984,11 @@ def main():
             request = json.loads(line.strip())
 
             if request.get("method") == "tools/list":
-                response = {"jsonrpc": "2.0", "result": list_tools(), "id": request.get("id")}
+                response = {
+                    "jsonrpc": "2.0",
+                    "result": list_tools(),
+                    "id": request.get("id"),
+                }
                 send_response(response)
 
             elif request.get("method") == "tools/call":
