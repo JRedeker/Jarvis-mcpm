@@ -4,24 +4,14 @@
 # - Cline now calls OpenRouter directly for all LM requests
 # - Cipher remains the MCP server/aggregator for tools only
 # - Do NOT route IDE/LM requests through Cipher
-agent:
-  name: "cipher-agent"
-  provider: "openrouter"
-  model: "x-ai/grok-4-fast"
-  api_key: "${OPENROUTER_API_KEY}"
-  base_url: "https://openrouter.ai/api/v1"
-  temperature: 0.1
-  max_tokens: 2048
-  instructions: |
-    # Routing rules / system prompt (derived from .kilocode/rules/cipher-routing-rules.md)
-    DOMAIN-SPECIFIC-FIRST: true
-    routingGuidelines: >
-      Always prefer domain-specific MCP tools over generic fallbacks.
-      Examples: github (git ops), firecrawl (web scraping), code-index (code analysis),
-      schemathesis (API testing), pytest (tests), filesystem (file ops), brave-search (web search),
-      httpie (HTTP).
-    For tool calls, output JSON with tool_name and arguments per inputSchema.
-    Use memoryBank for session recall and workspaceMemory for context.
+systemPrompt: |
+  # Routing rules / system prompt (derived from .kilocode/rules/cipher-routing-rules.md)
+  DOMAIN-SPECIFIC-FIRST: true
+  routingGuidelines: >
+    Always prefer domain-specific MCP tools over generic fallbacks.
+    Examples: github (git ops), firecrawl (web scraping), code-index (code analysis),
+    schemathesis (API testing), pytest (tests), filesystem (file ops), brave-search (web search),
+    httpie (HTTP).
 toolExecution:
   callTimeout: 45000       # global call timeout (ms)
   maxParallelCalls: 1
@@ -45,11 +35,11 @@ servers:
     # Optional/legacy:
     # - Not used for IDE LM routing (Cline → OpenRouter is direct)
     # - Enable only for server-side or automated flows that explicitly need it
-    enabled: true
+    enabled: false
     transport: stdio
     command: "/home/jrede/dev/MCP/eval_llm_venv/bin/python /home/jrede/dev/MCP/servers/llm-inference-mcp.py"
     env:
-      EVAL_LLM_MODEL: "x-ai/grok-4-fast"
+      EVAL_LLM_MODEL: "gpt-5-mini"
   httpie:
     enabled: true
     transport: stdio

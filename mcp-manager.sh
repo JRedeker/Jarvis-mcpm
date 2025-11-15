@@ -439,7 +439,6 @@ start_cipher() {
         --mcp-transport-type sse \
         --mcp-host "$SSE_HOST" \
         --mcp-port "$SSE_PORT" \
-        -a "$CIPHER_CONFIG" \
         > "$LOG_DIR/cipher-aggregator-$(date +%Y%m%d-%H%M%S).log" 2>&1 &
 
     local cipher_pid=$!
