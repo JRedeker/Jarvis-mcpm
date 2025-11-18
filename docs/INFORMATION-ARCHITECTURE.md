@@ -230,18 +230,18 @@ Cipher integrates with Qdrant for vector storage. See [Qdrant configuration](qdr
 
 ### 4.2 Content Destination Matrix
 
-| Research Topic | Primary Destination | Secondary References | Status |
-|---------------|---------------------|---------------------|--------|
-| **MetaMCP Installation** | `docs/tech/metamcp.md` | `MCP-MASTER.md` (summary) | Pending |
-| **MetaMCP Configuration** | `docs/tech/metamcp.md` | `MCP-MASTER.md` (quick ref) | Pending |
-| **Cipher Default Mode** | `docs/tech/cipher-aggregator.md` | `docs/architecture.md` | In Progress |
-| **Namespace Design** | `docs/tech/metamcp.md` | ADR (if significant) | Pending |
-| **Middleware Patterns** | `docs/tech/metamcp.md` | Examples in `docs/tech/` | Pending |
-| **WebSocket Setup** | `docs/tech/metamcp.md` | `docs/architecture.md` | Pending |
-| **Tool Discovery** | `docs/tech/metamcp.md` | `MCP-MASTER.md` (catalog) | Pending |
-| **Performance Benchmarks** | `docs/tech/metamcp.md` | `MCP-MASTER.md` (summary) | Pending |
-| **Qdrant Configuration** | `docs/tech/qdrant.md` | `MCP-MASTER.md` (env vars) | Complete |
-| **Context7 Usage** | `docs/tech/kilo-code-context7.md` | `MCP-MASTER.md` (quick ref) | Pending |
+| Research Topic             | Primary Destination               | Secondary References        | Status      |
+| -------------------------- | --------------------------------- | --------------------------- | ----------- |
+| **MetaMCP Installation**   | `docs/tech/metamcp.md`            | `MCP-MASTER.md` (summary)   | Pending     |
+| **MetaMCP Configuration**  | `docs/tech/metamcp.md`            | `MCP-MASTER.md` (quick ref) | Pending     |
+| **Cipher Default Mode**    | `docs/tech/cipher-aggregator.md`  | `docs/architecture.md`      | In Progress |
+| **Namespace Design**       | `docs/tech/metamcp.md`            | ADR (if significant)        | Pending     |
+| **Middleware Patterns**    | `docs/tech/metamcp.md`            | Examples in `docs/tech/`    | Pending     |
+| **WebSocket Setup**        | `docs/tech/metamcp.md`            | `docs/architecture.md`      | Pending     |
+| **Tool Discovery**         | `docs/tech/metamcp.md`            | `MCP-MASTER.md` (catalog)   | Pending     |
+| **Performance Benchmarks** | `docs/tech/metamcp.md`            | `MCP-MASTER.md` (summary)   | Pending     |
+| **Qdrant Configuration**   | `docs/tech/qdrant.md`             | `MCP-MASTER.md` (env vars)  | Complete    |
+| **Context7 Usage**         | `docs/tech/kilo-code-context7.md` | `MCP-MASTER.md` (quick ref) | Pending     |
 
 ### 4.3 Research Tools → Documentation Flow
 
@@ -273,7 +273,6 @@ graph LR
 ### 5.1 Current State
 ```
 docs/tech/
-├── metamcp.md              # Placeholder (needs research)
 ├── cipher-aggregator.md    # Complete (code snippets)
 ├── mcpjungle.md           # Unknown status
 ├── qdrant.md              # Configuration guide
@@ -285,9 +284,7 @@ docs/tech/
 ```
 docs/tech/
 ├── aggregators/
-│   ├── metamcp.md         # MetaMCP aggregator (PRIORITY)
-│   ├── cipher.md          # Cipher as aggregator
-│   └── comparison.md      # Aggregator comparison matrix
+│   ├── mcpjungle.md
 │
 ├── servers/
 │   ├── filesystem-mcp.md  # Filesystem server details
@@ -373,13 +370,13 @@ docs/tech/
 
 ## 7. Document Ownership & Maintenance
 
-| Document | Primary Owner | Update Triggers | Review Frequency |
-|----------|--------------|----------------|------------------|
-| MCP-MASTER.md | Project Lead | Daily during dev | Continuous |
-| docs/tech/*.md | Research Team | New findings | Per research cycle |
-| docs/architecture.md | Architect | System changes | Per major version |
-| docs/adr/*.md | Decision Maker | Major decisions | As needed |
-| docs/migration/*.md | Migration Lead | New migrations | Per migration |
+| Document             | Primary Owner  | Update Triggers  | Review Frequency   |
+| -------------------- | -------------- | ---------------- | ------------------ |
+| MCP-MASTER.md        | Project Lead   | Daily during dev | Continuous         |
+| docs/tech/*.md       | Research Team  | New findings     | Per research cycle |
+| docs/architecture.md | Architect      | System changes   | Per major version  |
+| docs/adr/*.md        | Decision Maker | Major decisions  | As needed          |
+| docs/migration/*.md  | Migration Lead | New migrations   | Per migration      |
 
 ---
 
@@ -466,6 +463,6 @@ grep -r 'TODO\|TBD\|Pending' docs/ MCP-MASTER.md
 
 ## Version History
 
-| Version | Date | Author | Changes |
-|---------|------|--------|---------|
-| 1.0 | 2025-11-16 | Kilo Code | Initial information architecture plan |
+| Version | Date       | Author    | Changes                               |
+| ------- | ---------- | --------- | ------------------------------------- |
+| 1.0     | 2025-11-16 | Kilo Code | Initial information architecture plan |

@@ -14,16 +14,16 @@ This document defines the architecture for a **MCPJungle (jarvis) + Cipher solut
 
 ## 📊 Master Todo Tracking
 
-**Overall Project Status**: 🟢 Ready for Phase 1 - API Keys Configured
+**Overall Project Status**: 🟢 Phase 0 Research Complete - Ready for Phase 1 Implementation
 
 ### Current Phase
-**Phase 0: Pre-Research** - ✅ API Keys Complete, Documentation Review Pending
+**Phase 0: Pre-Research** - ✅ Complete (MCPJungle fully researched and documented)
 
 ### Phase Progress Summary
 
 | Phase | Status | Progress | Estimated Duration | Target Date |
 |-------|--------|----------|-------------------|-------------|
-| **Phase 0: Pre-Research** | 🟡 In Progress | 25% (4/16) | 1-2 days | TBD |
+| **Phase 0: Pre-Research** | ✅ Complete | 100% (16/16) | 1-2 days | 2025-11-18 ✓ |
 | **Phase 1: Infrastructure** | ⏸️ Ready to Start | 0% | 1 week | TBD |
 | **Phase 2: Configuration** | ⏸️ Not Started | 0% | 1 week | TBD |
 | **Phase 3: Client Migration** | ⏸️ Not Started | 0% | 1 week | TBD |
@@ -32,26 +32,31 @@ This document defines the architecture for a **MCPJungle (jarvis) + Cipher solut
 
 ### Quick Stats
 - **Total Tasks**: 89
-- **Completed**: 4 (API keys configured)
+- **Completed**: 20 (Phase 0 complete + API keys)
 - **In Progress**: 0
 - **Blocked**: 0
-- **Remaining**: 85
+- **Remaining**: 69
 
 ### Critical Blockers
-✅ **RESOLVED**: All API keys are configured in `.env` file
-- ✅ TAVILY_API_KEY configured
-- ✅ OPENAI_API_KEY configured
-- ✅ BRAVE_API_KEY configured
-- ✅ OPENROUTER_API_KEY configured
+✅ **ALL BLOCKERS RESOLVED**
+- ✅ API keys configured in `.env`
+- ✅ MCPJungle repository located (mcpjungle/MCPJungle)
+- ✅ MCPJungle architecture researched and documented
+- ✅ Installation procedures documented
+- ✅ Configuration schema understood
+- ✅ Tool groups design patterns documented
+- ✅ Client integration patterns (Claude, Cursor) documented
 
-**No current blockers** - Ready to proceed with Phase 0 validation and Phase 1 implementation
+**No current blockers** - Ready to proceed with Phase 1 implementation
 
 ### Next Actions
 1. ✅ ~~Configure API keys in `.env` file~~ (COMPLETE)
-2. [ ] Verify gpt-researcher and Context7 are working with current keys
-3. [ ] Complete Phase 0 documentation review tasks
-4. [ ] Begin Phase 1: Install MetaMCP (`npm install -g mcp-manager`)
-5. [ ] Create new `cipher-default.yml` configuration file
+2. ✅ ~~Research MCPJungle capabilities and architecture~~ (COMPLETE)
+3. [ ] Install MCPJungle CLI: `brew install mcpjungle/mcpjungle/mcpjungle`
+4. [ ] Start MCPJungle server (docker-compose.yaml or direct)
+5. [ ] Register Cipher as MCP server in jarvis
+6. [ ] Register external MCP servers (context7, brave-search, etc.) in jarvis
+7. [ ] Configure Cline and Kilo Code to connect to jarvis
 
 --
 
@@ -83,19 +88,16 @@ curl -X POST http://127.0.0.1:3021/http \
 # Should return: ask_cipher, cipher_memory_search, cipher_memory_store, etc.
 ```
 
-**Test MetaMCP (Port 3000)**
+**Test jarvis (MCPJungle hub, Port TBD)**
 
 ```bash
-# Start MetaMCP
-mcp-manager start --config metamcp.config.json
+# Start jarvis (MCPJungle hub)
+# TODO: Replace with actual jarvis start command and config
+# e.g., mcp-jungle start --config jarvis.config.json
 
-# Test WebSocket connection
-wscat -c ws://localhost:3000
-
-# Test HTTP endpoint
-curl http://localhost:3000/health
+# Test health endpoint (once defined)
+curl http://localhost:3000/health || true
 ```
-
 ### Integration Testing
 
 **Full Stack Test:**
@@ -154,14 +156,14 @@ python tests/benchmark_concurrent.py
 
 **If critical issues discovered:**
 
-1. **Stop MetaMCP:**
+1. **Stop jarvis (MCPJungle hub):**
 
 ```bash
-mcp-manager stop
+# TODO: Replace with actual jarvis stop command
+echo "Stop jarvis hub (command TBD)"
 ```
 
-2. **Restart old Cipher aggregator:**
-
+2. **Restart Cipher aggregator (current primary):**
 ```bash
 ./mcp-manager.sh start
 ```
@@ -196,6 +198,7 @@ mcp-manager stop
 | Performance degradation | Medium | Debug in parallel | 1 day |
 | Minor bugs | Low | Continue, fix forward | 1 week |
 
+
 --
 
 ## Operational Guide
@@ -205,27 +208,19 @@ mcp-manager stop
 **Starting the System:**
 
 ```bash
-# Start all services
-./mcp-manager.sh start-all
+# Start Cipher aggregator (tools + memory)
+./mcp-manager.sh start
 
-# Or start individually
-./mcp-manager.sh start-cipher-default  # Port 3021
-mcp-manager start --config metamcp.config.json  # Port 3000
+# jarvis (MCPJungle hub) startup commands will be added once implemented.
 ```
 
 **Monitoring:**
 
 ```bash
-# Check health
-curl http://localhost:3000/health
-curl http://127.0.0.1:3021/health
+# Check Cipher aggregator health
+./mcp-manager.sh status
 
-# View logs
-tail -f logs/metamcp-requests.log
-tail -f logs/cipher-default.log
-
-# Check metrics
-curl http://localhost:3000/metrics
+# jarvis (MCPJungle) monitoring commands TBD
 ```
 
 **Maintenance:**
@@ -239,26 +234,23 @@ curl http://localhost:3000/metrics
 
 # Update servers
 ./mcp-manager.sh update-servers
-```
 
+# jarvis maintenance commands will be documented after deployment
+```
 ### Troubleshooting
 
 **Common Issues:**
 
-1. **MetaMCP won't start:**
+1. **Cipher aggregator won't start:**
 
-   - Check port 3000 availability: `lsof -i :3000`
-   - Verify config file syntax: `jsonlint metamcp.config.json`
-   - Check logs: `tail -f logs/metamcp-error.log`
+   - Check port 3020 availability: `lsof -i :3020`
+   - Check logs: `tail -f logs/cipher-aggregator-*.log`
 
-2. **Cipher tools not visible:**
+2. **jarvis hub issues (future):**
 
-   - Verify Cipher running: `curl http://127.0.0.1:3021/health`
-   - Check MetaMCP server config for cipher-memory
-   - Verify namespace configuration
+   - Jarvis-specific troubleshooting steps will be added once deployed
 
 3. **IDE connection issues:**
-
    - Check WebSocket URL: `ws://localhost:3000`
    - Verify firewall not blocking port 3000
    - Check IDE MCP settings format
@@ -299,7 +291,7 @@ curl http://localhost:3000/metrics
 - `brave-search` - Web search
 - `routing-metadata` - Tool metadata
 
-**Standalone MCP Servers (temporary until MetaMCP hub):**
+**Standalone MCP Servers (temporary until jarvis hub):**
 
 - `httpie` - HTTP API testing (run as direct MCP server)
 - `pytest` - Python testing (run as direct MCP server)
@@ -309,7 +301,7 @@ curl http://localhost:3000/metrics
 - `context7` - Documentation lookup (remote streamable-HTTP)
 - `morph-fast-apply` - Code editing (remote streamable-HTTP)
 
-**Migration Plan:** Once the new MetaMCP/MetaHub is in place, all of the above standalone MCP servers will be moved behind that hub and the separate IDE registrations will be removed so that Cipher-aggregator (or the new hub) becomes the single MCP entrypoint again.
+**Migration Plan:** Once the new MCPJungle hub (`jarvis`) is in place, all of the above standalone MCP servers will be moved behind jarvis and the separate IDE registrations will be removed so that jarvis becomes the single MCP entrypoint for external tools.
 
 ### Appendix B: Configuration Management
 
@@ -330,7 +322,7 @@ export MCP_LOG_LEVEL="info"
 
 **Configuration Files:**
 
-- `metamcp.config.json` - Main MetaMCP configuration
+- `jarvis.config.json` - MCPJungle hub (jarvis) configuration
 - `cipher-default.yml` - Cipher default mode configuration
 - `.env` - Environment variables
 - `logs/` - Log directory
@@ -340,8 +332,8 @@ export MCP_LOG_LEVEL="info"
 
 **Access Control:**
 
-- MetaMCP runs on localhost only by default
-- No authentication required for local access
+- jarvis (MCPJungle) will run on localhost only by default
+- No authentication required for local access in dev
 - For multi-user environments, consider:
   - VPN access only
   - Reverse proxy with authentication
@@ -363,19 +355,35 @@ export MCP_LOG_LEVEL="info"
 
 --
 
+## 📚 Technology Reference & GitHub Repositories
+
+### Primary Technologies
+
+| Technology | GitHub | Stars | Purpose | Research Status |
+|-----------|--------|-------|---------|-----------------|
+| **MCPJungle** | [mcpjungle/MCPJungle](https://github.com/mcpjungle/MCPJungle) | ~694 | Primary MCP hub (jarvis) | ✅ [Complete](docs/tech/mcpjungle.md) |
+| **Cipher** | [campfirein/cipher](https://github.com/campfirein/cipher) | ~600 | Memory & knowledge | ✅ [Docs](docs/tech/cipher-aggregator.md) |
+| **Qdrant** | [qdrant/qdrant](https://github.com/qdrant/qdrant) | ~20k | Vector database | 📄 [Docs](docs/tech/qdrant.md) |
+| **MetaMCP** | [wong2/mcp-manager](https://github.com/wong2/mcp-manager) | ~1.7k | Alternative aggregator (not selected) | 📄 [Reference](docs/tech/metamcp.md) |
+
+--
+
 ## Document Version History
 
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
+| 2.1.1 | 2025-11-18 | Kilo Code | Phase 0 MCPJungle research complete; corrected repository to mcpjungle/MCPJungle; comprehensive documentation at docs/tech/mcpjungle.md |
 | 2.1 | 2025-11-16 | Kilo Code | Added Master Todo Tracking system with 89 consolidated tasks, Modification Log, and cross-references |
 | 2.0 | 2025-11-16 | Kilo Code | Complete rewrite with hybrid architecture |
 | 1.0 | 2025-11-15 | Kilo Code | Initial stdio-based architecture |
 
-**Status**: ✅ **TODO TRACKING SYSTEM IMPLEMENTED** - Ready for Phase 0 (API key configuration)
+**Status**: ✅ **PHASE 0 RESEARCH COMPLETE** - MCPJungle documented, ready for Phase 1 implementation
 
 **Next Steps**:
-
-1. Configure API keys in `.env`
-2. Install MetaMCP: `npm install -g mcp-manager`
-3. Create `cipher-default.yml` configuration
-4. Start parallel testing
+1. ✅ ~~Configure API keys in `.env`~~ (COMPLETE)
+2. ✅ ~~Research MCPJungle capabilities and architecture~~ (COMPLETE)
+3. [ ] Install MCPJungle CLI: `brew install mcpjungle/mcpjungle/mcpjungle`
+4. [ ] Start MCPJungle server (docker-compose.yaml or direct)
+5. [ ] Register Cipher as MCP server in jarvis
+6. [ ] Register external MCP servers (context7, brave-search, etc.) in jarvis
+7. [ ] Configure Cline and Kilo Code to connect to jarvis

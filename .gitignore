@@ -29,3 +29,22 @@ data/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Local Python tooling and build artifacts
+.python-version
+.ruff_cache/
+*.egg-info/
+dist/
+build/
+
+# SQLite databases and locks
+catalog.db
+*.db-shm
+*.db-wal
+
+# Coverage reports
+.coverage
+htmlcov/
+
+# Runtime PID files
+cipher-aggregator.pid

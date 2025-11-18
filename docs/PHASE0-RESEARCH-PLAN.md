@@ -28,10 +28,10 @@ This document organizes all Phase 0 research activities, defines research object
 
 ### Success Criteria
 
-- [ ] All installation procedures documented and tested
-- [ ] Complete configuration schema available with examples
-- [ ] Integration pattern validated (Cipher → MetaMCP)
-- [ ] Namespace design approved
+- [ ] All jarvis (MCPJungle) installation procedures documented and tested
+- [ ] Complete MCPJungle configuration schema available with examples
+- [ ] Integration pattern validated (Cipher + external servers → jarvis)
+- [ ] Tool-group design approved
 - [ ] Performance expectations set
 - [ ] Phase 1 ready to start with no unknowns
 
@@ -52,8 +52,8 @@ echo $OPENAI_API_KEY  # Required for Context7
 
 **Usage Pattern:**
 ```bash
-# Query library documentation
-context7 query "wong2/mcp-manager" "installation procedures"
+# Query MCPJungle (jarvis) documentation
+context7 query "wong2/mcp-jungle" "installation and configuration"
 ```
 
 ### GPT-Researcher Setup
@@ -74,7 +74,7 @@ echo $BRAVE_API_KEY     # Alternative search
 from gpt_researcher import GPTResearcher
 
 researcher = GPTResearcher(
-    query="MetaMCP deployment best practices",
+    query="MCPJungle (jarvis) deployment best practices",
     report_type="research_report"
 )
 report = await researcher.conduct_research()
@@ -121,13 +121,13 @@ report = await researcher.conduct_research()
 
 ## Detailed Research Tasks
 
-### R01: MetaMCP Installation
+### R01: MCPJungle (jarvis) Installation
 
-**Objective:** Document complete installation procedures for all platforms
+**Objective:** Document complete installation procedures for MCPJungle on our target platforms
 
 **Context7 Query:**
 ```
-Library: wong2/mcp-manager
+Library: wong2/mcp-jungle
 Focus:
 - npm package installation
 - Global vs local installation
@@ -139,13 +139,13 @@ Focus:
 **GPT-Researcher Query:**
 ```json
 {
-  "task": "MetaMCP installation procedures and requirements",
+  "task": "MCPJungle (jarvis) installation procedures and requirements",
   "report_type": "research_report",
   "sources": ["GitHub", "npm", "documentation"]
 }
 ```
 
-**Output Destination:** `docs/tech/metamcp.md` § Installation
+**Output Destination:** `docs/tech/mcpjungle.md` § Installation
 
 **Deliverables:**
 - [ ] Step-by-step installation guide
@@ -155,23 +155,22 @@ Focus:
 
 ---
 
-### R02: MetaMCP Configuration Schema
+### R02: MCPJungle Configuration Schema
 
-**Objective:** Document complete configuration file structure and options
+**Objective:** Document MCPJungle configuration file structure and options
 
 **Context7 Query:**
 ```
-Library: wong2/mcp-manager
+Library: wong2/mcp-jungle
 Focus:
 - Configuration file format (JSON/YAML)
 - Server definition structure
-- Namespace configuration
-- Middleware options
+- Tool group configuration
 - Environment variables
 - Default values
 ```
 
-**Output Destination:** `docs/tech/metamcp.md` § Configuration
+**Output Destination:** `docs/tech/mcpjungle.md` § Configuration
 
 **Deliverables:**
 - [ ] Complete configuration schema
@@ -181,111 +180,99 @@ Focus:
 
 ---
 
-### R03: Namespace Design Patterns
+### R03: Tool Group Design Patterns
 
-**Objective:** Understand namespace organization and activation patterns
+**Objective:** Understand how to organize MCP servers into MCPJungle tool groups
 
 **Context7 Query:**
 ```
-Library: wong2/mcp-manager
+Library: wong2/mcp-jungle
 Focus:
-- Namespace concept and purpose
+- Tool group concept and purpose
 - Activation rules and triggers
 - Best practices for organization
 - Context-based activation
-- Team/project isolation
 ```
 
 **GPT-Researcher Query:**
 ```json
 {
-  "task": "MCP namespace design patterns and organization strategies",
+  "task": "MCPJungle tool-group design patterns and organization strategies",
   "report_type": "research_report"
 }
 ```
 
-**Output Destination:** `docs/tech/metamcp.md` § Namespaces
-
-**Decision Point:** May require ADR if namespace design is complex
+**Output Destination:** `docs/tech/mcpjungle.md` § Tool Groups
 
 **Deliverables:**
-- [ ] Namespace design recommendations
+- [ ] Tool-group design recommendations
 - [ ] Activation pattern examples
 - [ ] Best practices documented
-- [ ] Our namespace strategy defined
+- [ ] Our jarvis group strategy defined
 
 ---
 
-### R04: Middleware Pipeline
+### R04: MCPJungle Middleware / Hooks
 
-**Objective:** Document middleware capabilities and configuration
+**Objective:** Document MCPJungle middleware / hook capabilities and configuration (if available)
 
 **Context7 Query:**
 ```
-Library: wong2/mcp-manager
+Library: wong2/mcp-jungle
 Focus:
-- Middleware architecture
-- Built-in middleware options
-- Custom middleware creation
-- Logging middleware
-- Metrics middleware
-- Authentication middleware
-- Request/response transformation
+- Any middleware or hook mechanisms
+- Logging / metrics options
+- Request/response customization points
 ```
 
-**Output Destination:** `docs/tech/metamcp.md` § Middleware
+**Output Destination:** `docs/tech/mcpjungle.md` § Middleware / Hooks
 
 **Deliverables:**
-- [ ] Middleware architecture explained
-- [ ] Built-in options documented
-- [ ] Custom middleware examples
-- [ ] Our middleware stack defined
+- [ ] Middleware/hook architecture explained
+- [ ] Built-in options documented (if any)
+- [ ] Customization examples
+- [ ] Our jarvis middleware plan defined
 
 ---
 
-### R05: WebSocket Server Setup
+### R05: MCPJungle Client Integration
 
-**Objective:** Document WebSocket server configuration and client connection
+**Objective:** Document client integration patterns for jarvis (MCPJungle hub)
 
 **Context7 Query:**
 ```
-Library: wong2/mcp-manager
+Library: wong2/mcp-jungle
 Focus:
-- WebSocket endpoint configuration
-- Client connection procedure
-- Protocol details
-- Connection options (port, host, path)
-- TLS/SSL support
+- Client connection configuration
+- MCP transport options (stdio / HTTP)
+- Recommended patterns for IDE integration
 ```
 
-**Output Destination:** `docs/tech/metamcp.md` § WebSocket Setup
+**Output Destination:** `docs/tech/mcpjungle.md` § Client Integration
 
 **Deliverables:**
-- [ ] Server configuration documented
-- [ ] Client connection examples
-- [ ] Protocol specification
-- [ ] Security considerations
+- [ ] Client config examples
+- [ ] Transport recommendations
+- [ ] IDE integration notes (Cline / Kilo / Codex)
 
 ---
 
 ### R06: Streamable-HTTP Integration
 
-**Objective:** Validate Cipher's streamable-HTTP transport works with MetaMCP
+**Objective:** Validate how jarvis (MCPJungle) can front remote HTTP/streamable MCP servers (Context7, Morph, etc.) if needed
 
 **Context7 Query:**
 ```
-Library: wong2/mcp-manager
+Library: wong2/mcp-jungle
 Focus:
-- Streamable-HTTP transport support
+- HTTP/streamable server support (if any)
 - Server definition for HTTP transports
 - URL configuration
 - Request/response handling
 - Error handling
 ```
 
-**Output Destination:** `docs/tech/metamcp.md` § Integration Patterns
-
-**Critical:** This validates our core architecture assumption
+**Output Destination:** `docs/tech/mcpjungle.md` § Integration Patterns
 
 **Deliverables:**
 - [ ] Integration pattern documented
@@ -297,26 +284,26 @@ Focus:
 
 ### R07: Tool Discovery Mechanism
 
-**Objective:** Understand how clients discover and invoke aggregated tools
+**Objective:** Understand how clients discover and invoke aggregated tools via jarvis
 
 **Context7 Query:**
 ```
-Library: wong2/mcp-manager
+Library: wong2/mcp-jungle
 Focus:
 - Tool discovery protocol
 - Tool listing aggregation
-- Namespace-based filtering
+- Tool-group-based filtering
 - Tool invocation routing
 - Error handling
 ```
 
 **Manual Testing:**
-- Start MetaMCP with multiple servers
+- Start jarvis with multiple servers
 - Query tools/list endpoint
-- Verify tool namespacing
+- Verify grouping behavior
 - Test tool invocation
 
-**Output Destination:** `docs/tech/metamcp.md` § Tool Discovery
+**Output Destination:** `docs/tech/mcpjungle.md` § Tool Discovery
 
 **Deliverables:**
 - [ ] Discovery protocol documented
@@ -328,12 +315,12 @@ Focus:
 
 ### R08: Performance Benchmarks
 
-**Objective:** Establish performance expectations and optimization guidelines
+**Objective:** Establish performance expectations and optimization guidelines for jarvis
 
 **GPT-Researcher Query:**
 ```json
 {
-  "task": "MetaMCP performance characteristics and optimization",
+  "task": "MCPJungle (jarvis) performance characteristics and optimization",
   "report_type": "research_report"
 }
 ```
@@ -344,7 +331,7 @@ Focus:
 - Concurrent request handling
 - Memory usage patterns
 
-**Output Destination:** `docs/tech/metamcp.md` § Performance
+**Output Destination:** `docs/tech/mcpjungle.md` § Performance
 
 **Deliverables:**
 - [ ] Expected latency ranges
@@ -475,17 +462,17 @@ Focus:
 
 ### R15: Security Best Practices
 
-**Objective:** Document security considerations for MetaMCP deployment
+**Objective:** Document security considerations for jarvis (MCPJungle hub) deployment
 
 **GPT-Researcher Query:**
 ```json
 {
-  "task": "MCP server aggregator security best practices",
+  "task": "MCP hub (MCPJungle/jarvis) security best practices",
   "report_type": "research_report"
 }
 ```
 
-**Output Destination:** `docs/tech/metamcp.md` § Security
+**Output Destination:** `docs/tech/mcpjungle.md` § Security
 
 **Deliverables:**
 - [ ] Access control patterns
@@ -497,11 +484,11 @@ Focus:
 
 ### R16: Monitoring & Observability
 
-**Objective:** Document monitoring and observability setup
+**Objective:** Document monitoring and observability setup for jarvis
 
 **Context7 Query:**
 ```
-Library: wong2/mcp-manager
+Library: wong2/mcp-jungle
 Focus:
 - Metrics endpoints
 - Logging configuration
@@ -509,7 +496,7 @@ Focus:
 - Debugging tools
 ```
 
-**Output Destination:** `docs/tech/metamcp.md` § Monitoring
+**Output Destination:** `docs/tech/mcpjungle.md` § Monitoring
 
 **Deliverables:**
 - [ ] Metrics collection setup
@@ -551,7 +538,7 @@ Focus:
 ### Parallel Research Opportunities
 
 **Can be executed in parallel:**
-- R01, R02, R03 (all Context7 on wong2/mcp-manager)
+- R01, R02, R03 (all Context7 on wong2/mcp-jungle)
 - R08, R10, R15 (all GPT-Researcher queries)
 - R11, R13, R14 (all manual/documentation review)
 
@@ -565,28 +552,27 @@ Focus:
 
 ### MCP-MASTER.md Updates (Summaries)
 
-After research completes, update these sections in [`MCP-MASTER.md`](../MCP-MASTER.md):
+After jarvis research completes, update these sections in [`MCP-MASTER.md`](../MCP-MASTER.md):
 
 **§ Pre-Research Checklist:**
 - Update with completion status
 - Link to detailed findings
 
 **§ Testing & Validation:**
-- Add MetaMCP testing commands
+- Add jarvis (MCPJungle) testing commands
 - Update integration test procedures
 
 **§ Operational Guide:**
-- Update with MetaMCP operations
+- Update with jarvis operations
 - Add monitoring commands
 
 **§ Appendices:**
-- Update tool reference with MetaMCP namespacing
-- Add MetaMCP configuration reference
+- Update tool reference with jarvis grouping (if applicable)
 
-### docs/tech/metamcp.md Structure
+### docs/tech/metamcp.md Structure (reference only)
 
 ```markdown
-# MetaMCP Technology Documentation
+# MetaMCP Technology Documentation (Reference Only)
 
 ## Overview
 [High-level capabilities from R01, R03]
@@ -643,7 +629,7 @@ After research completes, update these sections in [`MCP-MASTER.md`](../MCP-MAST
 
 | Risk | Impact | Mitigation | Owner |
 |------|--------|------------|-------|
-| MetaMCP doesn't support streamable-HTTP | High | Test early, consider stdio fallback | Research Team |
+| MetaMCP doesn't support streamable-HTTP | High | Reference only; jarvis is primary hub | Research Team |
 | Namespace design too complex | Medium | Start simple, iterate | Architect |
 | Performance below expectations | Medium | Benchmark early, optimize | Performance Team |
 | Installation dependencies missing | Low | Document all requirements | Research Team |
