@@ -1,0 +1,8 @@
+{
+  "name": "filesystem",
+  "transport": "stdio",
+  "description": "File system operations",
+  "command": "npx",
+  "args": ["-y", "@modelcontextprotocol/server-filesystem", "/home/jrede/dev/MCP"],
+  "timeout": 30
+}

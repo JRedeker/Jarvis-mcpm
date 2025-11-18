@@ -1,475 +1,239 @@
-<!-- Cleanup note inserted by script - see archive/cleanup-todo-* for details -->
+<h1 align="center">
+  :deciduous_tree: MCPJungle (jarvis) :deciduous_tree:
+</h1>
+<p align="center">
+  Self-hosted MCP Gateway for your private AI agents
+</p>
+<p align="center">
+  <a href="https://discord.gg/CapV4Z3krk" style="text-decoration: none;">
+    <img src="https://img.shields.io/badge/Discord-MCPJungle-5865F2?style=flat-square&logo=discord&logoColor=white" alt="Discord" style="max-width: 100%;">
+  </a>
+</p>
 
-# Cipher-Aggregator MCP Server Setup
+**MCPJungle (jarvis)** is a single source-of-truth registry for all [Model Context Protocol](https://modelcontextprotocol.io/introduction) Servers running in your Organisation. This implementation uses the simplified jarvis architecture - no cipher aggregator complexity.
 
-+> LM routing policy update
-+> - Cline now calls OpenRouter directly for all LM requests
-+> - Cipher remains the MCP server/aggregator for tools only
-+> - See ADR: [`docs/adr/adr-0001-direct-openrouter.md`](docs/adr/adr-0001-direct-openrouter.md:1)
-+
-+Quick setup for OpenRouter direct in Cline
-+1. Configure your OpenRouter API key in Cline per the Cline documentation.
-+2. Ensure no IDE/provider routes LM requests to Cipher; LM traffic should bypass Cipher.
-+3. Keep Cipher running for MCP tools only (github, firecrawl, httpie, schemathesis, etc.).
-+
+🧑‍💻 Developers use it to register & manage MCP servers and the tools they provide from a central place.
 
+🤖 MCP Clients use it to discover and consume all these tools from a single "Gateway" MCP Server.
 
-# Cipher-Aggregator: Centralized Tool Routing and Indexing
+![diagram](./assets/mcpjungle-diagram/mcpjungle-diagram.png)
 
-## 1. Overview
+<p align="center">MCPJungle jarvis is the only MCP Server your AI agents need to connect to!</p>
 
-This document outlines the architecture of the `cipher-aggregator`, a centralized tool-routing and indexing system designed to intelligently select the best tool for a given task. The system is built around a programmatic routing engine that enforces a clear, consistent, and extensible set of routing rules.
+## 🚀 Quick Start - jarvis Architecture
 
-## 2. Architecture
+This quickstart guide will show you how to:
+1. Start the jarvis server locally
+2. Register MCP servers in jarvis
+3. Connect your Claude/Cursor to jarvis to access all MCP tools
 
-The `cipher-aggregator` is composed of three main components: a centralized routing engine, a machine-readable rules file, and a validation framework.
+### Prerequisites
+- All required API keys in `.env` file:
+  - `BRAVE_API_KEY`, `FIRECRAWL_API_KEY`, `MORPH_API_KEY`, `TAVILY_API_KEY`, `OPENAI_API_KEY`
 
-```mermaid
-graph TD
-    A[Tool Call] --> B{Routing Engine};
-    B -->|Task Category| C[routing_rules.yml];
-    C -->|Preferred Tool| B;
-    B --> D[MCP Server];
-```
-
-- **Routing Engine**: The core of the system, responsible for making all routing decisions.
-- **Rules File**: A YAML file that defines the routing logic in a machine-readable format.
-- **Validation Framework**: A suite of automated tests that validate the routing logic.
-
-## 3. Extending the Routing Engine
-
-To add a new routing rule, simply update the `routing_rules.yml` file with the new task category and the preferred tool. The routing engine will automatically load the new rule without requiring a system restart.
-
-## Type Checking
-
-- Run [`uv run pyrefly check .`](#) to validate the project with Pyrefly instead of the previous mypy tooling.
-- Update your IDE (for example Visual Studio Code) to use Pyrefly as the Python language server and disable the mypy extension or any mypy-specific workspace settings so that editor diagnostics match the new type checker.
-- Continue to maintain any type-awareness that was previously handled by mypy by mirroring its configuration (Pyrefly accepts the same CLI flags under its `check` subcommand and supports `pyproject.toml` overrides when more control is needed).
-- **Current blocker**: Pyrefly currently reports several existing issues across the MCP servers and tests (unsupported assignments to strings, missing module imports such as `cipher_routing_middleware`, and type mismatches in the pytest helper). Resolve these before relying on the Pyrefly run for CI gating or release checks.
-
-## Project Structure
-
-```
-/home/jrede/dev/MCP/
-├── .env                      # Environment variables (API keys)
-├── cipher.yml                # MCP server configuration
-├── health-config.env         # Health check configuration
-├── health-server.py          # Health monitoring server
-├── server-health-mcp.py      # MCP server health checks
-├── mcp-manager.sh            # Management script for MCP servers
-├── data/                     # Data storage directory
-├── logs/                     # Log files directory
-├── servers/                  # Custom MCP server implementations
-│   ├── httpie-mcp.py         # HTTP client MCP server
-│   ├── schemathesis-mcp.py   # API testing MCP server
-│   ├── custom-filesystem-mcp.py
-│   ├── file-batch-mcp.py
-│   ├── pytest-mcp.py
-│   └── schemathesis-mcp.py
-└── smoke_tmp/               # Temporary test files
-```
-
-## Configured MCP Servers
-
-### ✅ Working Servers
-
-#### 1. GitHub MCP Server
-- **Purpose**: GitHub API integration
-- **Status**: Working perfectly
-- **Configuration**: Built-in cipher-aggregator server
-- **Capabilities**: Repository management, issues, pull requests
-
-#### 2. Firecrawl MCP Server
-- **Purpose**: Web scraping and content extraction
-- **Status**: Working perfectly
-- **Configuration**: Built-in cipher-aggregator server
-- **Capabilities**: Website crawling, content extraction, search
-
-#### 3. Brave Search MCP Server ⭐ NEWLY ADDED
-- **Purpose**: Comprehensive web search with Brave Search API
-- **Status**: Successfully integrated and running
-- **API Key**: Configured in .env file
-- **Capabilities**:
-  - Web search
-  - Local search
-  - Video search
-  - Image search
-  - News search
-  - AI summarization
-- **Repository**: https://github.com/brave/brave-search-mcp-server
-
-#### 4. Httpie MCP Server ⭐ NEWLY IMPLEMENTED
-- **Purpose**: HTTP client capabilities using Httpie
-- **Status**: Fully functional custom Python implementation
-- **Location**: `/home/jrede/dev/MCP/servers/httpie-mcp.py`
-- **Configuration**: Configured in cipher.yml
-- **Capabilities**:
-  - HTTP requests (GET, POST, PUT, DELETE, etc.)
-  - File uploads and downloads
-  - API endpoint testing
-  - Authentication (Basic, Bearer, Digest)
-  - Session management
-  - Response formatting
-  - Connectivity testing
-- **Installation**: Httpie installed globally, MCP server fully operational
-
-#### 5. Schemathesis MCP Server ⭐ NEWLY IMPLEMENTED
-- **Purpose**: API testing and OpenAPI schema validation
-- **Status**: Fully functional custom Python implementation
-- **Location**: `/home/jerde/dev/MCP/servers/schemathesis-mcp.py`
-- **Configuration**: Configured in cipher.yml
-- **Capabilities**:
-  - OpenAPI/Swagger schema validation
-  - Property-based API testing
-  - Hypothesis-driven test generation
-  - Endpoint testing with multiple strategies
-  - Test data generation
-  - Comprehensive test reporting
-- **Installation**: Schemathesis installed globally, MCP server fully operational
-
-#### 6. Pytest MCP Server
-- **Purpose**: Python testing framework integration
-- **Status**: Fixed and fully operational
-- **Package**: pytest-mcp-server@1.1.6
-- **Configuration**: Working connection established
-- **Capabilities**:
-  - Test discovery and execution
-  - Test result reporting
-  - Coverage analysis
-  - Test suite management
-- **Status Update**: Connection issues resolved, now working perfectly
-
-### ❌ Unavailable Servers
-
-#### 7. sql-mcp-server
-- **Status**: Not available - requires MySQL database
-- **Issue**: Missing MySQL database (port 3306)
-- **Requirements**: MySQL server must be running
-
-## Setup Instructions
-
-### Initial Setup
-
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd MCP
-   ```
-
-2. **Install dependencies**
-   ```bash
-   # Python dependencies (Httpie, Schemathesis already installed)
-   python3 -m pip install httpie schemathesis
-
-   # Node.js dependencies (if building custom servers)
-   npm install -g @npm/cli
-   ```
-
-3. **Environment Configuration**
-   ```bash
-   # Copy environment template
-   cp .env.example .env
-
-   # Add API keys to .env file
-   # BRAVE_API_KEY=your_brave_search_api_key
-   # OPENAI_API_KEY=your_openai_api_key
-   # MORPH_API_KEY=your_morph_api_key
-   ```
-
-### Custom MCP Servers Setup
-
-#### Httpie MCP Server
-- **Already configured** in cipher.yml
-- **Location**: `/home/jrede/dev/MCP/servers/httpie-mcp.py`
-- **Status**: Fully operational with 8 HTTP tools
-- **Installation**: Httpie globally installed
-
-#### Schemathesis MCP Server
-- **Already configured** in cipher.yml
-- **Location**: `/home/jrede/dev/MCP/servers/schemathesis-mcp.py`
-- **Status**: Fully operational with API testing tools
-- **Installation**: Schemathesis globally installed
-
-### Server Management
-
-#### Start cipher-aggregator
+### Start the jarvis server
 ```bash
-./mcp-manager.sh start
+# Download and start MCPJungle binary
+wget https://github.com/mcpjungle/MCPJungle/releases/download/0.2.16/mcpjungle_Linux_x86_64.tar.gz
+tar -xzf mcpjungle_Linux_x86_64.tar.gz
+chmod +x mcpjungle
+
+# Start jarvis server
+./mcpjungle start --port 8080
+
+# Verify it's running
+curl http://localhost:8080/health
 ```
 
-#### Stop cipher-aggregator
+### Register all MCP servers at once
 ```bash
-./mcp-manager.sh stop
+# Register all 6 pre-configured servers
+./mcpjungle register -c config/jarvis/servers/context7.json
+./mcpjungle register -c config/jarvis/servers/brave-search.json
+./mcpjungle register -c config/jarvis/servers/filesystem.json
+./mcpjungle register -c config/jarvis/servers/firecrawl.json
+./mcpjungle register -c config/jarvis/servers/morph-fast-apply.json
+./mcpjungle register -c config/jarvis/servers/gpt-researcher.json
+
+# Verify registration
+./mcpjungle list servers
+./mcpjungle list tools
 ```
 
-#### Restart cipher-aggregator
-```bash
-./mcp-manager.sh restart
-```
+### Connect to jarvis
 
-#### Check status
-```bash
-./mcp-manager.sh status
-```
-
-## Configuration Details
-
-### cipher.yml Structure
-```yaml
-# Core servers (always available)
-morph: ...
-memory-bank: ...
-context7: ...
-
-# Development and search tools
-github:
-  command: builtin
-  args: []
-
-firecrawl:
-  command: builtin
-  args: []
-
-# Search capabilities
-brave-search:
-  command: npx
-  args: ["-y", "@brave/brave-search-mcp-server"]
-  env:
-    BRAVE_API_KEY: ${BRAVE_API_KEY}
-
-# Custom HTTP and Testing servers
-httpie:
-  command: python3
-  args: ["/home/jrede/dev/MCP/servers/httpie-mcp.py"]
-  env:
-    HTTP_TIMEOUT: "30000"
-    DEFAULT_FORMAT: "json"
-  enabled: true
-
-schemathesis:
-  command: python3
-  args: ["/home/jrede/dev/MCP/servers/schemathesis-mcp.py"]
-  env:
-    SCHEMATHESIS_WORKERS: "4"
-    HYPOTHESIS_MAX_EXAMPLES: "10"
-    API_TIMEOUT: "30000"
-  enabled: true
-
-# File and system tools
-filesystem:
-  command: builtin
-  args: []
-
-file-batch:
-  command: npx
-  args: ["-y", "@modelcontextprotocol/file-batch"]
-```
-
-### Environment Variables (.env)
-```bash
-# Brave Search API
-BRAVE_API_KEY=your_api_key_here
-
-# OpenAI API (for embedding functions)
-OPENAI_API_KEY=your_openai_key_here
-
-# Morph API
-MORPH_API_KEY=your_morph_key_here
-
-# Health check configuration
-HEALTH_PORT=8080
-HEALTH_INTERVAL=30
-```
-
-## Usage Examples
-
-### Testing MCP Server Connections
-```bash
-# Test connection to all servers
-python3 test_memory_m
-
-# Test specific server functionality
-python3 unit-test-mcp.py
-
-# Test Httpie MCP server
-echo '{"jsonrpc": "2.0", "method": "initialize", "id": 1}' | python3 /home/jrede/dev/MCP/servers/httpie-mcp.py
-
-# Test Schemathesis MCP server
-echo '{"jsonrpc": "2.0", "method": "initialize", "id": 1}' | python3 /home/jrede/dev/MCP/servers/schemathesis-mcp.py
-
-# Check logs for connection status
-tail -f logs/cipher-aggregator.log
-```
-
-### API Access
-The MCP servers are accessible via SSE (Server-Sent Events) at:
-```
-http://localhost:3020/sse
-```
-
-### Health Monitoring
-Access the health dashboard at:
-```
-http://localhost:8080/health
-```
-
-## Troubleshooting
-
-### Common Issues
-
-#### 1. Server Connection Failures
-```bash
-# Check if server processes are running
-ps aux | grep brave-search
-ps aux | grep cipher-aggregator
-ps aux | grep httpie-mcp
-ps aux | grep schemathesis-mcp
-
-# Check logs for specific errors
-tail -f logs/cipher-aggregator-$(date +%Y%m%d-*.log)
-```
-
-#### 2. API Key Issues
-```bash
-# Verify API key is set
-grep BRAVE_API_KEY .env
-
-# Test API key directly
-curl -H "X-Subscription-Token: $BRAVE_API_KEY" https://api.search.brave.com/res/v1/web/search?q=test
-```
-
-#### 3. Port Already in Use
-```bash
-# Find process using port 3020
-lsof -i :3020
-
-# Kill process if needed
-kill -9 <PID>
-```
-
-#### 4. Custom Server Testing
-```bash
-# Test Httpie server directly
-python3 /home/jrede/dev/MCP/servers/httpie-mcp.py
-
-# Test Schemathesis server directly
-python3 /home/jerde/dev/MCP/servers/schemathesis-mcp.py
-```
-
-### Log Analysis
-```bash
-# Monitor real-time logs
-tail -f logs/cipher-aggregator.log
-
-# Check for connection errors
-grep "ERROR\|Failed" logs/cipher-aggregator.log
-
-# Verify successful connections
-grep "Successfully connected" logs/cipher-aggregator.log
-```
-
-## Performance Monitoring
-
-### Server Status Dashboard
-- **Health Server**: http://localhost:8080/health
-- **SSE Server**: http://localhost:3020/sse
-- **Process Monitoring**: Available via ps aux commands
-
-### Log Rotation
-```bash
-# Logs are automatically rotated and stored in logs/ directory
-# Monitor disk usage to prevent log accumulation
-du -sh logs/
-```
-
-## Development
-
-### Adding New MCP Servers
-
-1. **Research available packages**
-   ```bash
-   npm search mcp-server
-   ```
-
-2. **Test installation**
-   ```bash
-   npm install -g <package-name>
-   ```
-
-3. **Update cipher.yml**
-   ```yaml
-   your-server:
-     command: npx
-     args: ["-y", "@package/package-name"]
-     env:
-       API_KEY: ${YOUR_API_KEY}
-   ```
-
-4. **Test integration**
-   ```bash
-   ./mcp-manager.sh restart
-   tail -f logs/cipher-aggregator.log
-   ```
-
-### Custom MCP Server Development
-See the `servers/` directory for examples of custom implementations:
-- `custom-filesystem-mcp.py`
-- `file-batch-mcp.py`
-- `httpie-mcp.py` (HTTP client implementation)
-- `schemathesis-mcp.py` (API testing implementation)
-
-## API Documentation
-
-### Available Endpoints
-
-1. **SSE Endpoint**: `http://localhost:3020/sse`
-   - Primary interface for MCP server communication
-   - JSON-RPC over HTTP with Server-Sent Events
-
-2. **Health Endpoint**: `http://localhost:8080/health`
-   - System health monitoring
-   - JSON response with status information
-
-### Request Format
+Use the following configuration for your Claude/Cursor MCP servers config:
 ```json
 {
-  "jsonrpc": "2.0",
-  "method": "tools/list",
-  "id": 1,
-  "params": {
-    "sessionId": "your-session-id"
+  "mcpServers": {
+    "jarvis": {
+      "command": "npx",
+      "args": [
+        "mcp-remote",
+        "http://localhost:8080/mcp",
+        "--allow-http"
+      ]
+    }
   }
 }
 ```
 
-## Contributing
+Once jarvis is added as an MCP to your Claude, try asking it:
+```text
+Use context7 to get the documentation for `/lodash/lodash`
+```
 
-1. **Testing**: Run `python3 test_memory_m` before submitting changes
-2. **Logging**: Ensure all new servers log connection status
-3. **Documentation**: Update this README for any new configurations
-4. **Security**: Never commit API keys to version control
+Claude will then call the `context7__get-library-docs` tool via jarvis.
 
-## Support
+## 📋 Available Tools (34 Total)
 
-For issues and questions:
-1. Check the troubleshooting section above
-2. Review logs in `logs/` directory
-3. Test individual components with provided test scripts
-4. Verify API key configurations in `.env` file
+### Documentation & Research
+- **context7**: Library documentation lookup (2 tools)
+- **gpt-researcher**: Deep web research with AI analysis (5 tools)
 
-## License
+### Web & Search
+- **brave-search**: Web search, news, images, videos (6 tools)
+- **firecrawl**: Web scraping and content extraction (6 tools)
 
-This project uses various MCP servers under their respective licenses. Refer to individual server repositories for license information. ...
+### Development
+- **filesystem**: File operations, reading, writing (14 tools)
+- **morph-fast-apply**: AI-powered code editing (1 tool)
 
+## 🏗️ Architecture - jarvis Implementation
 
+This repository implements the **simplified jarvis architecture**:
 
+```
+[IDEs] → [jarvis:8080] → [MCP Servers]
+```
 
-## Cleanup & Archives
+**Key Features:**
+- ✅ **Single aggregation layer** - No cipher complexity
+- ✅ **34 tools available** - All major MCP servers integrated
+- ✅ **Health monitoring** - Built-in health checks
+- ✅ **Tool groups** - Organize tools by use case
+- ✅ **Access control** - Enterprise security features
 
-Rotated logs and one-time test artifacts are periodically archived under the archive/ directory. Recent cleanup actions saved archives and reports there.
+**Previous cipher aggregator files have been archived** - see `archive/cipher-aggregator/`
 
-- Archive location: archive/
-- Cleanup report: archive/cleanup-candidates-20251112-2310.txt
-- Todo summary: archive/cleanup-todo-20251112-2327.md
+## 📊 Phase Status
 
-Please review archive/ before removing any files permanently.
+| Phase | Status | Progress | Target Date |
+|-------|--------|----------|-------------|
+| **Phase 0.5: Documentation** | ✅ COMPLETED | 100% | 2025-11-18 |
+| **Phase 1: Core Setup** | ✅ COMPLETED | 100% | 2025-11-18 |
+| **Phase 2: Memory Research** | ⏸️ Ready | 0% | 2025-11-25 |
+| **Phase 3: Memory Implementation** | ⏸️ Not Started | 0% | 2025-12-02 |
+| **Phase 4: IDE Migration** | ⏸️ Not Started | 0% | 2025-12-06 |
+
+## 🔧 Installation & Setup
+
+### Option 1: Direct Binary (Recommended)
+```bash
+# Download latest release
+wget https://github.com/mcpjungle/MCPJungle/releases/download/0.2.16/mcpjungle_Linux_x86_64.tar.gz
+tar -xzf mcpjungle_Linux_x86_64.tar.gz
+chmod +x mcpjungle
+
+# Start jarvis
+./mcpjungle start --port 8080
+```
+
+### Option 2: Docker Compose
+```bash
+# Use provided docker-compose.yml
+docker compose up -d
+```
+
+### Option 3: Homebrew (macOS)
+```bash
+brew install mcpjungle/mcpjungle/mcpjungle
+mcpjungle start
+```
+
+## 🛠️ Usage
+
+### Basic Operations
+```bash
+# Check health
+curl http://localhost:8080/health
+
+# List registered servers
+./mcpjungle list servers
+
+# List available tools
+./mcpjungle list tools
+
+# Test a tool
+./mcpjungle invoke context7__get-library-docs --input '{"context7CompatibleLibraryID": "/lodash/lodash"}'
+```
+
+### Server Management
+```bash
+# Register a new server
+./mcpjungle register -c config.json
+
+# Remove a server
+./mcpjungle deregister <server-name>
+
+# Enable/disable tools
+./mcpjungle enable <server-name>__<tool-name>
+./mcpjungle disable <server-name>__<tool-name>
+```
+
+### Tool Groups
+```bash
+# Create tool group
+./mcpjungle create group -c group-config.json
+
+# List groups
+./mcpjungle list groups
+
+# Use group-specific endpoint
+http://localhost:8080/v0/groups/<group-name>/mcp
+```
+
+## 📚 Documentation
+
+### Core Documents
+- **[MCP-MASTER.md](MCP-MASTER.md)** - Master implementation plan
+- **[docs/phase1-completion-report.md](docs/phase1-completion-report.md)** - Phase 1 completion details
+- **[docs/config/actual-configurations.md](docs/config/actual-configurations.md)** - Actual server configs used
+
+### Guides
+- **[docs/guides/install-mcpjungle.md](docs/guides/install-mcpjungle.md)** - Installation procedures
+- **[docs/guides/server-registration.md](docs/guides/server-registration.md)** - Server registration guide
+- **[docs/guides/ide-configuration.md](docs/guides/ide-configuration.md)** - IDE setup instructions
+
+### Architecture
+- **[docs/architecture/simplified-architecture.md](docs/architecture/simplified-architecture.md)** - Technical architecture
+- **[docs/config/port-allocation.md](docs/config/port-allocation.md)** - Port allocation matrix
+
+## 🔮 Next Steps
+
+### Phase 2: Memory Research (Starting Soon)
+Research and implement memory solutions:
+1. Test memory-bank MCP server
+2. Evaluate Cipher default mode
+3. Create comparison matrix
+4. Implement chosen solution
+
+### Future Enhancements
+- Memory persistence across sessions
+- Advanced tool grouping
+- Analytics and monitoring
+- Custom memory solutions
+
+## 🤝 Contributing
+
+We welcome contributions! See our documentation for:
+- Development setup
+- Architecture decisions
+- Contribution guidelines
+
+**Current Focus**: Memory solution research and implementation
+
+---
+
+**Status**: ✅ **Phase 1 Complete** - 6/6 servers registered, 34 tools available
+**Next**: Phase 2 memory research starting 2025-11-25

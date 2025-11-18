@@ -53,7 +53,7 @@ echo $OPENAI_API_KEY  # Required for Context7
 **Usage Pattern:**
 ```bash
 # Query MCPJungle (jarvis) documentation
-context7 query "wong2/mcp-jungle" "installation and configuration"
+context7 query "mcpjungle/MCPJungle" "installation and configuration"
 ```
 
 ### GPT-Researcher Setup
@@ -127,7 +127,7 @@ report = await researcher.conduct_research()
 
 **Context7 Query:**
 ```
-Library: wong2/mcp-jungle
+Library: mcpjungle/MCPJungle
 Focus:
 - npm package installation
 - Global vs local installation
@@ -152,7 +152,6 @@ Focus:
 - [ ] System requirements documented
 - [ ] Verification commands provided
 - [ ] Common installation issues listed
-
 ---
 
 ### R02: MCPJungle Configuration Schema
@@ -161,7 +160,7 @@ Focus:
 
 **Context7 Query:**
 ```
-Library: wong2/mcp-jungle
+Library: mcpjungle/MCPJungle
 Focus:
 - Configuration file format (JSON/YAML)
 - Server definition structure
@@ -186,7 +185,7 @@ Focus:
 
 **Context7 Query:**
 ```
-Library: wong2/mcp-jungle
+Library: mcpjungle/MCPJungle
 Focus:
 - Tool group concept and purpose
 - Activation rules and triggers
@@ -218,7 +217,7 @@ Focus:
 
 **Context7 Query:**
 ```
-Library: wong2/mcp-jungle
+Library: mcpjungle/MCPJungle
 Focus:
 - Any middleware or hook mechanisms
 - Logging / metrics options
@@ -241,7 +240,7 @@ Focus:
 
 **Context7 Query:**
 ```
-Library: wong2/mcp-jungle
+Library: mcpjungle/MCPJungle
 Focus:
 - Client connection configuration
 - MCP transport options (stdio / HTTP)
@@ -263,7 +262,7 @@ Focus:
 
 **Context7 Query:**
 ```
-Library: wong2/mcp-jungle
+Library: mcpjungle/MCPJungle
 Focus:
 - HTTP/streamable server support (if any)
 - Server definition for HTTP transports
@@ -288,7 +287,7 @@ Focus:
 
 **Context7 Query:**
 ```
-Library: wong2/mcp-jungle
+Library: mcpjungle/MCPJungle
 Focus:
 - Tool discovery protocol
 - Tool listing aggregation
@@ -332,7 +331,6 @@ Focus:
 - Memory usage patterns
 
 **Output Destination:** `docs/tech/mcpjungle.md` § Performance
-
 **Deliverables:**
 - [ ] Expected latency ranges
 - [ ] Throughput capabilities
@@ -425,7 +423,7 @@ Focus:
 **Objective:** Document how to effectively use Context7 for research
 
 **Manual Testing:**
-- Query wong2/mcp-manager
+- Query mcpjungle/MCPJungle
 - Test different focus areas
 - Measure response quality
 - Document best practices
@@ -488,7 +486,7 @@ Focus:
 
 **Context7 Query:**
 ```
-Library: wong2/mcp-jungle
+Library: mcpjungle/MCPJungle
 Focus:
 - Metrics endpoints
 - Logging configuration
@@ -503,7 +501,6 @@ Focus:
 - [ ] Logging best practices
 - [ ] Health check configuration
 - [ ] Debugging procedures
-
 ---
 
 ## Research Execution Workflow
@@ -538,10 +535,9 @@ Focus:
 ### Parallel Research Opportunities
 
 **Can be executed in parallel:**
-- R01, R02, R03 (all Context7 on wong2/mcp-jungle)
+- R01, R02, R03 (all Context7 on mcpjungle/MCPJungle)
 - R08, R10, R15 (all GPT-Researcher queries)
 - R11, R13, R14 (all manual/documentation review)
-
 **Must be sequential:**
 - R06 depends on R02 (need config schema)
 - R07 depends on R01 (need installation)
@@ -570,7 +566,6 @@ After jarvis research completes, update these sections in [`MCP-MASTER.md`](../M
 - Update tool reference with jarvis grouping (if applicable)
 
 ### docs/tech/metamcp.md Structure (reference only)
-
 ```markdown
 # MetaMCP Technology Documentation (Reference Only)
 
@@ -722,10 +717,10 @@ npm list -g mcp-manager
 jsonlint metamcp.config.json
 
 # Test endpoint
-curl http://localhost:3000/health
+curl http://localhost:8080/health
 
 # Query tools
-wscat -c ws://localhost:3000
+wscat -c ws://localhost:8080
 > {"jsonrpc":"2.0","method":"tools/list","id":1}
 ```
 

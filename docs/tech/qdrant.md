@@ -76,21 +76,4 @@ VECTOR_STORE_URL=http://localhost:6333
 
 ---
 
-## MetaMCP Hybrid Considerations
-
-**Questions for Research**:
-- Does Cipher default mode need its own Qdrant instance?
-- Or can MetaMCP-managed Cipher share Qdrant with other services?
-- Performance impact of multiple Cipher instances accessing same Qdrant
-- Collection naming strategy to avoid conflicts
-
----
-
 ## Research Deliverables
-
-- [ ] Qdrant Cloud vs self-hosted comparison
-- [ ] Docker compose configuration
-- [ ] Production deployment checklist
-- [ ] Backup/restore procedures
-- [ ] Performance benchmarks for Cipher workload
-- [ ] Multi-tenant access patterns

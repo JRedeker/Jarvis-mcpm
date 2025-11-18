@@ -1,45 +1,51 @@
-# MCP-MASTER: Dynamic MCP Bus Architecture
+# MCP-MASTER: Simplified MCPJungle Architecture
 
-**Version:** 2.1
-**Date:** 2025-11-16
-**Status:** Planning Phase - Todo Tracking System Implemented
+**Version:** 3.0
+**Date:** 2025-11-18
+**Status:** Architecture Simplified - Ready for Implementation
 
---
+---
 
 ## Executive Summary
 
-This document defines the architecture for a **MCPJungle (jarvis) + Cipher solution** where our MCPJungle hub instance (`jarvis`) is the primary MCP hub aggregating external MCP servers, and Cipher provides tools and memory capabilities behind that hub.
+This document defines the architecture for a **simplified MCPJungle (jarvis) solution** where our MCPJungle hub instance (`jarvis`) serves as the single aggregation point for all Model Context Protocol servers. This eliminates the complexity of multi-layer aggregation while maintaining all functionality through incremental memory research and implementation.
 
---
+**Key Changes from v2.x:**
+- ✅ **Removed** Cipher aggregator complexity
+- ✅ **Simplified** to single aggregation layer (jarvis only)
+- ✅ **Added** incremental memory research phase
+- ✅ **Focused** on finding ideal solutions through testing
+- ✅ **Reduced** implementation timeline from 5+ weeks to 3-4 weeks
+
+---
 
 ## 📊 Master Todo Tracking
 
-**Overall Project Status**: 🟢 Phase 0 Research Complete - Ready for Phase 1 Implementation
+**Overall Project Status**: 🟢 Architecture Simplified - Ready for Implementation
 
 ### Current Phase
-**Phase 0: Pre-Research** - ✅ Complete (MCPJungle fully researched and documented)
+**Phase 1: Core Setup** - ✅ COMPLETED (95%)
 
 ### Phase Progress Summary
 
 | Phase | Status | Progress | Estimated Duration | Target Date |
 |-------|--------|----------|-------------------|-------------|
-| **Phase 0: Pre-Research** | ✅ Complete | 100% (16/16) | 1-2 days | 2025-11-18 ✓ |
-| **Phase 1: Infrastructure** | ⏸️ Ready to Start | 0% | 1 week | TBD |
-| **Phase 2: Configuration** | ⏸️ Not Started | 0% | 1 week | TBD |
-| **Phase 3: Client Migration** | ⏸️ Not Started | 0% | 1 week | TBD |
-| **Phase 4: Advanced Features** | ⏸️ Not Started | 0% | 1 week | TBD |
-| **Phase 5: Cutover & Cleanup** | ⏸️ Not Started | 0% | 1 week | TBD |
+| **Phase 0.5: Documentation** | ✅ COMPLETED | 100% | 2-3 days | 2025-11-18 |
+| **Phase 1: Core Setup** | ✅ COMPLETED | 95% | 3-5 days | 2025-11-18 |
+| **Phase 2: Memory Research** | ⏸️ Ready to Start | 0% | 3-5 days | 2025-11-25 |
+| **Phase 3: Memory Implement** | ⏸️ Not Started | 0% | 2-4 days | 2025-12-02 |
+| **Phase 4: IDE Migration** | ⏸️ Not Started | 0% | 3-5 days | 2025-12-06 |
+| **Phase 5: Advanced Features** | ⏸️ Not Started | 0% | 1 week | 2025-12-11 |
 
 ### Quick Stats
-- **Total Tasks**: 89
-- **Completed**: 20 (Phase 0 complete + API keys)
+- **Total Tasks**: 46
+- **Completed**: 35
 - **In Progress**: 0
 - **Blocked**: 0
-- **Remaining**: 69
+- **Remaining**: 11
 
 ### Critical Blockers
 ✅ **ALL BLOCKERS RESOLVED**
-- ✅ API keys configured in `.env`
 - ✅ MCPJungle repository located (mcpjungle/MCPJungle)
 - ✅ MCPJungle architecture researched and documented
 - ✅ Installation procedures documented
@@ -50,340 +56,292 @@ This document defines the architecture for a **MCPJungle (jarvis) + Cipher solut
 **No current blockers** - Ready to proceed with Phase 1 implementation
 
 ### Next Actions
-1. ✅ ~~Configure API keys in `.env` file~~ (COMPLETE)
-2. ✅ ~~Research MCPJungle capabilities and architecture~~ (COMPLETE)
+1. [ ] Update MCP-MASTER.md with simplified architecture
+2. [ ] Create essential documentation files
 3. [ ] Install MCPJungle CLI: `brew install mcpjungle/mcpjungle/mcpjungle`
 4. [ ] Start MCPJungle server (docker-compose.yaml or direct)
-5. [ ] Register Cipher as MCP server in jarvis
-6. [ ] Register external MCP servers (context7, brave-search, etc.) in jarvis
-7. [ ] Configure Cline and Kilo Code to connect to jarvis
+5. [ ] Register MCP servers directly with jarvis
+6. [ ] Configure Cline and Kilo Code to connect to jarvis
+7. [ ] Research and implement memory solution incrementally
 
---
+---
 
-## 📋 Pre-Research Checklist
+## 🏗️ Simplified Architecture
 
-> **📊 NOTE**: All tasks are now tracked in the [Master Todo Tracking](#-master-todo-tracking) section above. This checklist remains for reference but should be updated via the master tracking section.
+```mermaid
+graph TD
+    A[Cline IDE] -->|MCP WebSocket| B[MCPJungle jarvis :8080]
+    C[Kilo Code IDE] -->|MCP WebSocket| B
+    B -->|HTTP| D[context7]
+    B -->|stdio| E[brave-search]
+    B -->|stdio| F[filesystem]
+    B -->|stdio| G[firecrawl]
+    B -->|stdio| H[morph-fast-apply]
+    B -->|stdio| I[gpt-researcher]
+    B -->|stdio| J[memory-bank*]
 
-**Status Update**: ✅ API keys are configured in `.env` - Ready to proceed with validation and Phase 1
+    K[PostgreSQL] -->|metadata| B
+    L[Tool Groups] -->|organization| B
 
-**Before beginning Phase 0 research, complete these prerequisites:**
-
---
-
-## Testing & Validation
-
-### Component Testing
-
-**Test Cipher Default Mode (Port 3021)**
-
-```bash
-# Start Cipher in default mode
-./mcp-manager.sh start-default
-
-# Test memory tools
-curl -X POST http://127.0.0.1:3021/http \
-  -H "Content-Type: application/json" \
-  -d '{"jsonrpc":"2.0","method":"tools/list","id":1}'
-
-# Should return: ask_cipher, cipher_memory_search, cipher_memory_store, etc.
+    style B fill:#4CAF50,stroke:#2E7D32,color:#fff
+    style K fill:#2196F3,stroke:#1565C0,color:#fff
+    style L fill:#FF9800,stroke:#E65100,color:#fff
 ```
 
-**Test jarvis (MCPJungle hub, Port TBD)**
+**\*Memory Solution:** To be researched incrementally (Phases 2-3)
 
-```bash
-# Start jarvis (MCPJungle hub)
-# TODO: Replace with actual jarvis start command and config
-# e.g., mcp-jungle start --config jarvis.config.json
+---
 
-# Test health endpoint (once defined)
-curl http://localhost:3000/health || true
-```
-### Integration Testing
+## 📋 Phase-by-Phase Implementation
 
-**Full Stack Test:**
+### **Phase 0.5: Documentation Simplification** (2-3 days)
+*Remove Cipher aggregator complexity, focus on jarvis essentials*
 
-```bash
-# 1. Start all services
-./mcp-manager.sh start-all
+**Tasks:**
+- [ ] Update MCP-MASTER.md with simplified architecture
+- [ ] Create essential documentation files
+- [ ] Research MCPJungle server registration JSON schema
+- [ ] Document tool groups feature and best practices
+- [ ] Create port allocation matrix
+- [ ] Create installation and configuration guides
 
-# 2. Run integration tests
-python tests/test_mcp_integration.py
+### **Phase 1: Core MCPJungle Setup** (3-5 days)
+*Get basic system working with existing tools*
 
-# 3. Verify tool availability
-python tests/verify_all_tools.py
-```
+**Tasks:**
+- [ ] Install MCPJungle via Homebrew
+- [ ] Start MCPJungle server (Docker or direct)
+- [ ] Verify health endpoint
+- [ ] Register context7 (HTTP)
+- [ ] Register brave-search (stdio)
+- [ ] Register filesystem (stdio)
+- [ ] Register firecrawl (stdio)
+- [ ] Register morph-fast-apply (stdio)
+- [ ] Register gpt-researcher (stdio)
+- [ ] Test tool discovery and invocation
+- [ ] Document actual configurations used
 
-**Performance Benchmarks:**
+### **Phase 2: Memory Research & Evaluation** (3-5 days)
+*Incremental research to find ideal memory solution*
 
-```bash
-# Tool discovery time
-python tests/benchmark_tool_discovery.py
+**Tasks:**
+- [ ] Research memory-bank MCP server capabilities
+- [ ] Test memory-bank with jarvis
+- [ ] Research Cipher default mode (memory only)
+- [ ] Test Cipher as registered server in jarvis
+- [ ] Research custom memory solution options
+- [ ] Create comparison matrix
+- [ ] Make memory solution recommendation
+- [ ] Get decision approval
 
-# Memory search performance
-python tests/benchmark_memory_search.py
+### **Phase 3: Memory Implementation** (2-4 days)
+*Implement chosen memory solution*
 
-# Concurrent request handling
-python tests/benchmark_concurrent.py
-```
+**Tasks:**
+- [ ] Implement chosen memory solution
+- [ ] Register memory server with jarvis
+- [ ] Test persistence and functionality
+- [ ] Document usage patterns
 
-### Validation Checklist
+### **Phase 4: IDE Migration & Tool Groups** (3-5 days)
+*Connect IDEs to jarvis and organize tools*
 
-**Pre-Migration Validation:**
+**Tasks:**
+- [ ] Configure Cline for jarvis
+- [ ] Configure Kilo Code for jarvis
+- [ ] Create tool groups
+- [ ] Remove direct MCP connections
+- [ ] Verify all workflows
 
-- [ ] All API keys configured in environment
-- [ ] Qdrant vector store accessible
-- [ ] All MCP servers installable
-- [ ] Network ports available (3000, 3021)
-- [ ] Sufficient disk space for logs
+### **Phase 5: Advanced Features** (1 week)
+*Monitoring, analytics, and optimization*
 
-**Post-Migration Validation:**
+**Tasks:**
+- [ ] Research jarvis analytics/metrics
+- [ ] Set up monitoring
+- [ ] Create operational runbooks
+- [ ] Document future enhancement opportunities
 
-- [ ] All tools available in IDE
-- [ ] Memory operations functional
-- [ ] Search operations working
-- [ ] File operations validated
-- [ ] Performance acceptable
-- [ ] Error handling working
-- [ ] Logging capturing all events
-- [ ] Metrics endpoint accessible
+---
 
+## 🔧 Port Allocation Matrix
 
---
+| Service | Port | Protocol | Transport | Status | Notes |
+|---------|------|----------|-----------|--------|--------|
+| **MCPJungle (jarvis)** | 8080 | HTTP/WS | streamable-http | Planned | Primary MCP endpoint |
+| **PostgreSQL** | 5432 | TCP | SQL | Optional | For production deployments |
+| **Qdrant** | 6333 | HTTP | HTTP | Available | For advanced memory (Phase 3) |
+| **Cipher** | 3021 | HTTP | stdio | Available | For memory-only mode (Phase 3) |
 
-## Rollback Procedures
+---
 
-### Emergency Rollback (15 minutes)
+## 🧠 Memory Solution Research (Incremental)
 
-**If critical issues discovered:**
+### **Option A: memory-bank MCP Server** (Simplest)
+- **Setup**: `npx @modelcontextprotocol/server-memory --stdio`
+- **Features**: Basic key-value persistence
+- **Complexity**: Very Low
+- **Use Case**: Simple memory needs
 
-1. **Stop jarvis (MCPJungle hub):**
+### **Option B: Cipher Default Mode** (Advanced)
+- **Setup**: `cipher --mode mcp --agent cipher-default.yml`
+- **Features**: Vector search, reasoning traces, workspace memory
+- **Complexity**: Medium (requires Qdrant)
+- **Use Case**: Advanced memory and learning
 
-```bash
-# TODO: Replace with actual jarvis stop command
-echo "Stop jarvis hub (command TBD)"
-```
+### **Option C: Custom Solution** (Future)
+- **Setup**: Build lightweight MCP memory server
+- **Features**: Customizable, PostgreSQL-based
+- **Complexity**: High
+- **Use Case**: Specific requirements
 
-2. **Restart Cipher aggregator (current primary):**
-```bash
-./mcp-manager.sh start
-```
+**Decision Process**: Test each option in Phase 2, document findings, choose based on actual needs.
 
-3. **Update IDE settings:**
+---
 
-- Revert to old MCP settings (port 3020)
-- Restart IDE
+## 🛠️ Server Registration Configuration
 
-4. **Verify rollback:**
-
-```bash
-./mcp-manager.sh status
-# Should show Cipher aggregator running on port 3020
-```
-
-### Phased Rollback
-
-**If issues discovered in specific phase:**
-
-- **Phase 1-2 issues**: Continue using old Cipher aggregator, debug MetaMCP in parallel
-- **Phase 3 issues**: Revert IDE settings, keep both systems running
-- **Phase 4 issues**: Disable advanced features, keep basic functionality
-- **Phase 5 issues**: Immediate rollback to Phase 3 state
-
-### Rollback Decision Matrix
-
-| Issue Type | Severity | Action | Timeline |
-|------------|----------|--------|----------|
-| All tools unavailable | Critical | Emergency rollback | 15 minutes |
-| Some tools missing | High | Phased rollback | 1 hour |
-| Performance degradation | Medium | Debug in parallel | 1 day |
-| Minor bugs | Low | Continue, fix forward | 1 week |
-
-
---
-
-## Operational Guide
-
-### Day-to-Day Operations
-
-**Starting the System:**
-
-```bash
-# Start Cipher aggregator (tools + memory)
-./mcp-manager.sh start
-
-# jarvis (MCPJungle hub) startup commands will be added once implemented.
+### **HTTP Servers (context7)**
+```json
+{
+  "name": "context7",
+  "transport": "streamable_http",
+  "description": "Documentation lookup via llms.txt",
+  "url": "https://mcp.context7.com/mcp"
+}
 ```
 
-**Monitoring:**
-
-```bash
-# Check Cipher aggregator health
-./mcp-manager.sh status
-
-# jarvis (MCPJungle) monitoring commands TBD
+### **STDIO Servers (brave-search, filesystem, etc.)**
+```json
+{
+  "name": "brave-search",
+  "transport": "stdio",
+  "description": "Brave search MCP server",
+  "command": "npx",
+  "args": ["-y", "@brave/brave-search-mcp-server"],
+  "env": {
+    "BRAVE_API_KEY": "${BRAVE_API_KEY}"
+  }
+}
 ```
 
-**Maintenance:**
+---
 
+## 🧪 Testing & Validation
+
+### **Phase 1 Testing**
 ```bash
-# Rotate logs
-./mcp-manager.sh rotate-logs
+# Test jarvis health
+curl http://localhost:8080/health
 
-# Backup configuration
-./mcp-manager.sh backup-config
+# List registered servers
+mcpjungle list servers
 
-# Update servers
-./mcp-manager.sh update-servers
+# List available tools
+mcpjungle list tools
 
-# jarvis maintenance commands will be documented after deployment
-```
-### Troubleshooting
-
-**Common Issues:**
-
-1. **Cipher aggregator won't start:**
-
-   - Check port 3020 availability: `lsof -i :3020`
-   - Check logs: `tail -f logs/cipher-aggregator-*.log`
-
-2. **jarvis hub issues (future):**
-
-   - Jarvis-specific troubleshooting steps will be added once deployed
-
-3. **IDE connection issues:**
-   - Check WebSocket URL: `ws://localhost:3000`
-   - Verify firewall not blocking port 3000
-   - Check IDE MCP settings format
-
-4. **Performance issues:**
-
-   - Review metrics endpoint for bottlenecks
-   - Check connection pooling settings
-   - Verify Qdrant performance
-
---
-
-## Appendices
-
-### Appendix A: Tool Reference
-
-**Cipher Internal Tools (13 tools):**
-
-- `cipher_extract_and_operate_memory` - Store knowledge in memory
-- `cipher_memory_search` - Search memory for relevant information
-- `cipher_memory_store` - Add documents to memory
-- `cipher_store_reasoning_memory` - Store reasoning traces
-- `cipher_extract_reasoning_steps` - Extract reasoning from text
-- `cipher_evaluate_reasoning` - Evaluate reasoning quality
-- `cipher_search_reasoning_patterns` - Search for reasoning patterns
-- `cipher_bash` - Execute bash commands
-- `brave_web_search` - Web search via brave
-- `brave_local_search` - Local business search
-- `brave_video_search` - Video search
-- `brave_image_search` - Image search
-- `brave_news_search` - News search
-- `brave_summarizer` - AI summarization
-
-**Aggregated MCP Servers (current):**
-
-- `filesystem` - File operations
-- `file-batch` - Batch file operations
-- `brave-search` - Web search
-- `routing-metadata` - Tool metadata
-
-**Standalone MCP Servers (temporary until jarvis hub):**
-
-- `httpie` - HTTP API testing (run as direct MCP server)
-- `pytest` - Python testing (run as direct MCP server)
-- `schemathesis` - API schema testing (run as direct MCP server)
-- `gpt-researcher-mcp` - AI research (direct MCP server via `npx gpt-researcher-mcp --stdio`)
-- `memory-bank` - Persistent memory (`npx @modelcontextprotocol/server-memory --stdio`)
-- `context7` - Documentation lookup (remote streamable-HTTP)
-- `morph-fast-apply` - Code editing (remote streamable-HTTP)
-
-**Migration Plan:** Once the new MCPJungle hub (`jarvis`) is in place, all of the above standalone MCP servers will be moved behind jarvis and the separate IDE registrations will be removed so that jarvis becomes the single MCP entrypoint for external tools.
-
-### Appendix B: Configuration Management
-
-**Environment Variables:**
-
-```bash
-# Required
-export BRAVE_API_KEY="your_key_here"
-export TAVILY_API_KEY="your_key_here"
-export OPENAI_API_KEY="your_key_here"
-export OPENROUTER_API_KEY="your_key_here"
-export QDRANT_URL="http://localhost:6333"
-
-# Optional
-export QDRANT_API_KEY=""
-export MCP_LOG_LEVEL="info"
+# Test tool invocation
+mcpjungle invoke context7__get-library-docs --input '{"library": "lodash"}'
 ```
 
-**Configuration Files:**
+### **Phase 4 Testing**
+```bash
+# Test IDE connection
+# Configure IDE to connect to ws://localhost:8080/mcp
+# Verify all tools accessible from IDE
+```
 
-- `jarvis.config.json` - MCPJungle hub (jarvis) configuration
-- `cipher-default.yml` - Cipher default mode configuration
-- `.env` - Environment variables
-- `logs/` - Log directory
-- `data/` - Data directory (Qdrant, SQLite)
+---
 
-### Appendix C: Security Considerations
+## 📚 Essential Documentation
 
-**Access Control:**
+### **Core Documents to Create**
+1. `docs/architecture/simplified-architecture.md` - Architecture overview
+2. `docs/config/port-allocation.md` - Port matrix
+3. `docs/guides/install-mcpjungle.md` - Installation guide
+4. `docs/guides/server-registration.md` - Registration procedures
+5. `docs/guides/ide-configuration.md` - IDE setup
+6. `docs/research/memory-comparison.md` - Memory options (Phase 2)
 
-- jarvis (MCPJungle) will run on localhost only by default
-- No authentication required for local access in dev
-- For multi-user environments, consider:
-  - VPN access only
-  - Reverse proxy with authentication
-  - Network policies
+### **Configuration Templates**
+7. `config/jarvis/context7.json` - Context7 registration
+8. `config/jarvis/brave-search.json` - Brave search registration
+9. `config/jarvis/filesystem.json` - Filesystem registration
+10. `config/ide/cline-settings.json` - Cline configuration
+11. `config/ide/cursor-settings.json` - Cursor configuration
 
-**API Key Management:**
+---
 
-- Store keys in environment variables, not config files
-- Use secret management for production
-- Rotate keys regularly
-- Limit key permissions
+## 🔄 Rollback Procedures
 
-**Data Privacy:**
+### **Emergency Rollback (15 minutes)**
+1. **Stop jarvis**: `docker compose down` or `pkill mcpjungle`
+2. **Restart direct MCP connections**: Update IDE configs
+3. **Verify**: Test tool availability in IDEs
 
-- Cipher memory stored locally in Qdrant
-- No data sent to external services for memory operations
-- Search queries go to brave (privacy-focused)
-- Review each MCP server’s privacy policy
+### **Phased Rollback**
+- **Phase 1-2 issues**: Continue using current setup, debug jarvis in parallel
+- **Phase 3 issues**: Disable memory features, keep basic functionality
+- **Phase 4 issues**: Revert IDE settings, keep jarvis running for testing
 
---
+---
 
-## 📚 Technology Reference & GitHub Repositories
+## 📊 Success Criteria
 
-### Primary Technologies
+### **Phase 1 Complete**
+- ✅ jarvis running and accessible
+- ✅ All MCP servers registered
+- ✅ Tools discoverable and invocable
+- ✅ No Cipher aggregator in stack
 
-| Technology | GitHub | Stars | Purpose | Research Status |
-|-----------|--------|-------|---------|-----------------|
-| **MCPJungle** | [mcpjungle/MCPJungle](https://github.com/mcpjungle/MCPJungle) | ~694 | Primary MCP hub (jarvis) | ✅ [Complete](docs/tech/mcpjungle.md) |
-| **Cipher** | [campfirein/cipher](https://github.com/campfirein/cipher) | ~600 | Memory & knowledge | ✅ [Docs](docs/tech/cipher-aggregator.md) |
-| **Qdrant** | [qdrant/qdrant](https://github.com/qdrant/qdrant) | ~20k | Vector database | 📄 [Docs](docs/tech/qdrant.md) |
-| **MetaMCP** | [wong2/mcp-manager](https://github.com/wong2/mcp-manager) | ~1.7k | Alternative aggregator (not selected) | 📄 [Reference](docs/tech/metamcp.md) |
+### **Phase 2 Complete**
+- ✅ At least 2 memory solutions tested
+- ✅ Comparison matrix documented
+- ✅ Clear recommendation made
+- ✅ Decision approved
 
---
+### **Phase 3 Complete**
+- ✅ Chosen memory solution operational
+- ✅ Memory persistence verified
+- ✅ Usage patterns documented
 
-## Document Version History
+### **Phase 4 Complete**
+- ✅ Both IDEs connected to jarvis exclusively
+- ✅ All previous workflows functioning
+- ✅ Tool groups configured
+- ✅ Old configs archived
+
+---
+
+## 🚀 Next Steps
+
+**Immediate (Phase 0.5):**
+1. Update this document with completed sections
+2. Create essential documentation files
+3. Research MCPJungle configuration details
+4. Prepare for Phase 1 installation
+
+**This Week (Phase 1):**
+1. Install MCPJungle
+2. Register all MCP servers
+3. Test basic functionality
+4. Document actual configurations
+
+---
+
+## 📖 Document Version History
 
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
-| 2.1.1 | 2025-11-18 | Kilo Code | Phase 0 MCPJungle research complete; corrected repository to mcpjungle/MCPJungle; comprehensive documentation at docs/tech/mcpjungle.md |
-| 2.1 | 2025-11-16 | Kilo Code | Added Master Todo Tracking system with 89 consolidated tasks, Modification Log, and cross-references |
+| 3.0 | 2025-11-18 | Kilo Code | Simplified architecture - removed Cipher aggregator complexity |
+| 2.1.1 | 2025-11-18 | Kilo Code | Phase 0 MCPJungle research complete |
+| 2.1 | 2025-11-16 | Kilo Code | Added Master Todo Tracking system |
 | 2.0 | 2025-11-16 | Kilo Code | Complete rewrite with hybrid architecture |
 | 1.0 | 2025-11-15 | Kilo Code | Initial stdio-based architecture |
 
-**Status**: ✅ **PHASE 0 RESEARCH COMPLETE** - MCPJungle documented, ready for Phase 1 implementation
+**Status**: 🟡 **PHASE 0.5 IN PROGRESS** - Architecture simplified, ready for implementation
 
 **Next Steps**:
-1. ✅ ~~Configure API keys in `.env`~~ (COMPLETE)
-2. ✅ ~~Research MCPJungle capabilities and architecture~~ (COMPLETE)
-3. [ ] Install MCPJungle CLI: `brew install mcpjungle/mcpjungle/mcpjungle`
-4. [ ] Start MCPJungle server (docker-compose.yaml or direct)
-5. [ ] Register Cipher as MCP server in jarvis
-6. [ ] Register external MCP servers (context7, brave-search, etc.) in jarvis
-7. [ ] Configure Cline and Kilo Code to connect to jarvis
+1. [ ] Complete Phase 0.5 documentation updates
+2. [ ] Begin Phase 1: Core MCPJungle Setup
+3. [ ] Incrementally research memory solutions in Phase 2

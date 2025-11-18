@@ -232,16 +232,17 @@ Cipher integrates with Qdrant for vector storage. See [Qdrant configuration](qdr
 
 | Research Topic             | Primary Destination               | Secondary References        | Status      |
 | -------------------------- | --------------------------------- | --------------------------- | ----------- |
-| **MetaMCP Installation**   | `docs/tech/metamcp.md`            | `MCP-MASTER.md` (summary)   | Pending     |
-| **MetaMCP Configuration**  | `docs/tech/metamcp.md`            | `MCP-MASTER.md` (quick ref) | Pending     |
+| **MCPJungle Installation**   | `docs/tech/mcpjungle.md`            | `MCP-MASTER.md` (summary)   | Complete     |
+| **MCPJungle Configuration**  | `docs/tech/mcpjungle.md`            | `MCP-MASTER.md` (quick ref) | Complete     |
 | **Cipher Default Mode**    | `docs/tech/cipher-aggregator.md`  | `docs/architecture.md`      | In Progress |
-| **Namespace Design**       | `docs/tech/metamcp.md`            | ADR (if significant)        | Pending     |
-| **Middleware Patterns**    | `docs/tech/metamcp.md`            | Examples in `docs/tech/`    | Pending     |
-| **WebSocket Setup**        | `docs/tech/metamcp.md`            | `docs/architecture.md`      | Pending     |
-| **Tool Discovery**         | `docs/tech/metamcp.md`            | `MCP-MASTER.md` (catalog)   | Pending     |
-| **Performance Benchmarks** | `docs/tech/metamcp.md`            | `MCP-MASTER.md` (summary)   | Pending     |
+| **Tool Group Design**       | `docs/tech/mcpjungle.md`            | ADR (if significant)        | Pending     |
+| **Middleware Patterns**    | `docs/tech/mcpjungle.md`            | Examples in `docs/tech/`    | Pending     |
+| **WebSocket Setup**        | `docs/tech/mcpjungle.md`            | `docs/architecture.md`      | Pending     |
+| **Tool Discovery**         | `docs/tech/mcpjungle.md`            | `MCP-MASTER.md` (catalog)   | Pending     |
+| **Performance Benchmarks** | `docs/tech/mcpjungle.md`            | `MCP-MASTER.md` (summary)   | Pending     |
 | **Qdrant Configuration**   | `docs/tech/qdrant.md`             | `MCP-MASTER.md` (env vars)  | Complete    |
 | **Context7 Usage**         | `docs/tech/kilo-code-context7.md` | `MCP-MASTER.md` (quick ref) | Pending     |
+| **MetaMCP (Reference)**    | `docs/tech/metamcp.md`            | Comparison purposes only    | Not Selected |
 
 ### 4.3 Research Tools → Documentation Flow
 
@@ -284,7 +285,8 @@ docs/tech/
 ```
 docs/tech/
 ├── aggregators/
-│   ├── mcpjungle.md
+│   ├── mcpjungle.md       # Selected aggregator
+│   └── cipher-aggregator.md # Memory-focused server
 │
 ├── servers/
 │   ├── filesystem-mcp.md  # Filesystem server details
@@ -303,25 +305,40 @@ docs/tech/
 │   ├── openrouter.md      # LLM routing
 │   └── docker-setup.md    # Container deployment
 │
-└── integrations/
-    ├── vscode-mcp.md      # VSCode/IDE integration
-    ├── kilo-code.md       # Kilo Code specifics
-    └── cline-mcp.md       # Cline integration
+├── integrations/
+│   ├── vscode-mcp.md      # VSCode/IDE integration
+│   ├── kilo-code.md       # Kilo Code specifics
+│   └── cline-mcp.md       # Cline integration
+│
+└── reference/
+    └── metamcp.md         # Alternative aggregator (NOT SELECTED)
 ```
 
 ### 5.3 Migration Plan
 
 **Phase 1:** Keep existing structure, enhance content
-- Complete research for `metamcp.md`
+- Complete research for `mcpjungle.md` ✅
 - Validate and update `cipher-aggregator.md`
-- Review and organize `mcpjungle.md`
+- Mark `metamcp.md` as reference only
 
-**Phase 2:** Reorganize when structure becomes clear
-- Create subdirectories based on content volume
-- Move files to appropriate categories
-- Update all cross-references
-
-**Decision Point:** Reorganize only if we have 10+ tech docs
+### 5.4 Existing Scheme
+```
+metamcp/
+├── metamcp/
+│   ├── metamcp
+│   ├── metamcp.bat
+│   ├── metamcp.dhall
+│   ├── metamcp.opt
+│   ├── metamcp-contents
+│   ├── metamcp-engine-core
+│   ├── metamcp-engine-core.deps
+│   ├── metamcp-engine-core.p0
+│   └── metamcp-engine-core.p1
+└── metamcpEngine/
+    └── metamcpEngine
+└── scripts/
+    └── update-mcpengine_from_mcp.ps1
+```
 
 ---
 

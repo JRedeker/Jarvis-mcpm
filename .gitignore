@@ -26,6 +26,9 @@ logs/
 *.log
 data/
 
+# Uv package manager cache
+.uv/
+
 # OS files
 .DS_Store
 Thumbs.db
@@ -46,5 +49,7 @@ catalog.db
 .coverage
 htmlcov/
 
-# Runtime PID files
+# Runtime PID / backup files
 cipher-aggregator.pid
+*.pid
+*.backup-*

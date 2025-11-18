@@ -1,0 +1,9 @@
+{
+  "name": "brave-search",
+  "transport": "stdio",
+  "description": "Web search via Brave Search API",
+  "command": "npx",
+  "args": ["-y", "@brave/brave-search-mcp-server"],
+  "env": {"BRAVE_API_KEY": "${BRAVE_API_KEY}"},
+  "timeout": 60
+}
