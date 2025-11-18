@@ -50,6 +50,5 @@ catalog.db
 htmlcov/
 
 # Runtime PID / backup files
-cipher-aggregator.pid
 *.pid
 *.backup-*

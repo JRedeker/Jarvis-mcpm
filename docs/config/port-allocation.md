@@ -17,7 +17,6 @@ This document defines the complete port allocation for the simplified MCPJungle 
 | **MCPJungle (jarvis)** | 8080 | HTTP/WS | streamable-http | ✅ Planned | Primary MCP endpoint | Low |
 | **PostgreSQL** | 5432 | TCP | SQL | ⚪ Optional | Production metadata | Low |
 | **Qdrant** | 6333 | HTTP | HTTP | ⚪ Available | Vector database (Phase 3) | Low |
-| **Cipher** | 3021 | HTTP | stdio | ⚪ Available | Memory-only mode (Phase 3) | Low |
 
 ## Port Status Legend
 
@@ -79,22 +78,6 @@ This document defines the complete port allocation for the simplified MCPJungle 
   # Docker
   ports:
     - "6333:6333"
-  ```
-
-### **Cipher - Port 3021**
-- **Default Port**: 3021 (Cipher default)
-- **Protocol**: HTTP for MCP stdio transport
-- **Use Cases**:
-  - Advanced memory tools (Phase 3)
-  - Vector search and reasoning
-  - Workspace memory
-- **Configuration**:
-  ```bash
-  # Command line
-  cipher --mode mcp --mcp-port 3021
-
-  # Environment
-  export MCP_PORT=3021
   ```
 
 ## Port Conflict Analysis
@@ -193,7 +176,7 @@ services:
 ### **Local Development Ports**
 ```bash
 # Check all ports in use
-netstat -tulpn | grep -E ':(8080|5432|6333|3021)'
+netstat -tulpn | grep -E ':(8080|5432|6333)'
 
 # Check specific port
 lsof -i :8080
@@ -207,7 +190,7 @@ nc -z localhost 8080 && echo "Port 8080 in use" || echo "Port 8080 available"
 #!/bin/bash
 # save as check-ports.sh
 
-PORTS=(8080 5432 6333 3021)
+PORTS=(8080 5432 6333)
 echo "Checking MCPJungle port availability..."
 
 for port in "${PORTS[@]}"; do
@@ -235,7 +218,7 @@ done
 ### **Monitoring**
 ```bash
 # Monitor port usage
-watch -n 5 'netstat -tulpn | grep -E ":(8080|5432|6333|3021)"'
+watch -n 5 'netstat -tulpn | grep -E ":(8080|5432|6333)"'
 
 # Log port access
 sudo tcpdump -i any port 8080 -w jarvis-traffic.pcap
@@ -249,7 +232,6 @@ sudo tcpdump -i any port 8080 -w jarvis-traffic.pcap
 MCPJUNGLE_PORT=8080
 POSTGRES_PORT=5432
 QDRANT_PORT=6333
-CIPHER_PORT=3021
 ```
 
 ### **Docker Environment**
