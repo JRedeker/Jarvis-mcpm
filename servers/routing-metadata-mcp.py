@@ -366,9 +366,8 @@ async def main() -> None:
     # Here we prefer a per-service path; override with ROUTING_LOG_PATH if provided.
     slogger = init_logging(
         service_name="routing-metadata-mcp",
-        log_path=os.getenv("ROUTING_LOG_PATH", "./logs/routing-metadata.jsonl"),
     )
-    slogger.opt(lazy=True).info({"event": "server_start", "service_name": "routing-metadata-mcp"})
+    slogger.info("Server starting: routing-metadata-mcp")
 
     # Initialize OpenTelemetry logging
     otel_provider = setup_otel_logging("routing-metadata-mcp", enable_console_bridge=True)

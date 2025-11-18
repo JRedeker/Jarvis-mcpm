@@ -20,10 +20,24 @@ dependencies = [
 ]
 
 [tool.pyrefly]
+project-excludes = ["get-pip.py"]
 project-includes = [
     "**/*.py*",
     "**/*.ipynb",
 ]
+
+[tool.ruff]
+exclude = [
+    "get-pip.py",  # Generated file from PyPA
+    ".venv",
+    ".mypy_cache",
+    ".ruff_cache",
+]
+
+[tool.ruff.lint]
+# Ignore E402 (module level import not at top of file) for specific files
+# that need to manipulate sys.path before imports
+per-file-ignores = {"servers/routing-metadata-mcp.py" = ["E402"]}
 
 [dependency-groups]
 dev = [

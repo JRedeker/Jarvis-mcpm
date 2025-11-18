@@ -183,15 +183,44 @@ def handle_tool_call(name: str, arguments: Dict[str, Any]):
         return
 
 
+def read_request() -> Optional[Dict[str, Any]]:
+    """Read MCP Content-Length framed or newline-delimited JSON requests."""
+    while True:
+        header = sys.stdin.readline()
+        if not header:
+            return None
+        if header.startswith("Content-Length"):
+            try:
+                length = int(header.split(":", 1)[1].strip())
+            except Exception:
+                continue
+            sys.stdin.readline()  # blank line
+            body = sys.stdin.read(length)
+            if not body:
+                return None
+            try:
+                return json.loads(body)
+            except json.JSONDecodeError:
+                send_error(-32700, "Invalid JSON")
+                continue
+        else:
+            header = header.strip()
+            if not header:
+                continue
+            try:
+                return json.loads(header)
+            except json.JSONDecodeError:
+                send_error(-32700, "Invalid JSON")
+                continue
+
+
 def main():
     """Main MCP server loop"""
     while True:
+        request = read_request()
+        if request is None:
+            break
         try:
-            line = sys.stdin.readline()
-            if not line:
-                break
-
-            request = json.loads(line.strip())
             method = request.get("method")
             request_id = request.get("id")
 
@@ -202,7 +231,11 @@ def main():
                         "id": request_id,
                         "result": {
                             "protocolVersion": "2024-11-05",
-                            "capabilities": {},
+                            "capabilities": {
+                                "tools": {"listChanged": False},
+                                "resources": {"listChanged": False},
+                                "prompts": {"listChanged": False},
+                            },
                             "serverInfo": {
                                 "name": "custom-filesystem-mcp",
                                 "version": "1.0.0",
@@ -228,6 +261,13 @@ def main():
                     send_response(
                         {"jsonrpc": "2.0", "id": request_id, "result": result}
                     )
+            elif method in ("resources/list", "prompts/list"):
+                key = "resources" if method == "resources/list" else "prompts"
+                send_response({"jsonrpc": "2.0", "id": request_id, "result": {key: []}})
+            elif method == "notifications/message":
+                send_response({"jsonrpc": "2.0", "id": request_id, "result": {}})
+            else:
+                send_error(-32601, f"Unknown method: {method}")
 
         except json.JSONDecodeError:
             continue

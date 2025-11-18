@@ -8,7 +8,8 @@ import json
 import sys
 import tempfile
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
+import os
 
 
 # JSON-RPC response helpers
@@ -25,6 +26,68 @@ def send_error(code: int, message: str, data: Any = None) -> None:
         error_response["error"]["data"] = data
     print(json.dumps(error_response))
     sys.stdout.flush()
+
+
+def read_request() -> Optional[Dict[str, Any]]:
+    """Support Content-Length framed or newline-delimited MCP requests."""
+    while True:
+        header = sys.stdin.readline()
+        if not header:
+            return None
+        if header.startswith("Content-Length"):
+            try:
+                length = int(header.split(":", 1)[1].strip())
+            except Exception:
+                continue
+            sys.stdin.readline()  # consume blank
+            body = sys.stdin.read(length)
+            if not body:
+                return None
+            try:
+                return json.loads(body)
+            except json.JSONDecodeError:
+                send_error(-32700, "Invalid JSON")
+                continue
+        else:
+            header = header.strip()
+            if not header:
+                continue
+            try:
+                return json.loads(header)
+            except json.JSONDecodeError:
+                send_error(-32700, "Invalid JSON")
+                continue
+
+
+def read_request() -> Optional[Dict[str, Any]]:
+    """Read MCP Content-Length framed or newline-delimited JSON requests."""
+    while True:
+        header = sys.stdin.readline()
+        if not header:
+            return None
+        if header.startswith("Content-Length"):
+            try:
+                length = int(header.split(":", 1)[1].strip())
+            except Exception:
+                continue
+            sys.stdin.readline()  # consume blank line
+            body = sys.stdin.read(length)
+            if not body:
+                return None
+            try:
+                return json.loads(body)
+            except json.JSONDecodeError:
+                send_error(-32700, "Invalid JSON")
+                continue
+        else:
+            header = header.strip()
+            if not header:
+                continue
+            try:
+                return json.loads(header)
+            except json.JSONDecodeError:
+                send_error(-32700, "Invalid JSON")
+                continue
 
 
 def list_tools():
@@ -453,12 +516,10 @@ def handle_tool_call(name: str, arguments: Dict[str, Any]) -> Dict[str, Any]:
 def main():
     """Main MCP server loop"""
     while True:
+        request = read_request()
+        if request is None:
+            break
         try:
-            line = sys.stdin.readline()
-            if not line:
-                break
-
-            request = json.loads(line.strip())
             method = request.get("method")
             request_id = request.get("id")
 
@@ -469,7 +530,11 @@ def main():
                         "id": request_id,
                         "result": {
                             "protocolVersion": "2024-11-05",
-                            "capabilities": {},
+                            "capabilities": {
+                                "tools": {"listChanged": False},
+                                "resources": {"listChanged": False},
+                                "prompts": {"listChanged": False},
+                            },
                             "serverInfo": {
                                 "name": "schemathesis-mcp",
                                 "version": "1.0.0",
@@ -496,6 +561,13 @@ def main():
                     send_response(
                         {"jsonrpc": "2.0", "id": request_id, "result": result}
                     )
+            elif method in ("resources/list", "prompts/list"):
+                key = "resources" if method == "resources/list" else "prompts"
+                send_response({"jsonrpc": "2.0", "id": request_id, "result": {key: []}})
+            elif method == "ping":
+                send_response({"jsonrpc": "2.0", "id": request_id, "result": "pong"})
+            elif method == "notifications/message":
+                send_response({"jsonrpc": "2.0", "id": request_id, "result": {}})
 
             else:
                 send_error(-32601, f"Unknown method: {method}")

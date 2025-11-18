@@ -3,7 +3,7 @@ import json
 import os
 import sys
 import time
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 # Configuration from environment
 MAX_FILES = int(os.getenv("MAX_FILES", "5"))
@@ -39,7 +39,9 @@ def handle_initialize():
         "result": {
             "protocolVersion": "2024-11-05",
             "capabilities": {
-                "tools": {}
+                "tools": {"listChanged": False},
+                "resources": {"listChanged": False},
+                "prompts": {"listChanged": False},
             },
             "serverInfo": {
                 "name": "file-batch-mcp",
@@ -146,11 +148,44 @@ def handle_call_tool(name, arguments):
         }
     }
 
+
+def read_request():
+    """Read MCP Content-Length framed or newline-delimited JSON requests."""
+    while True:
+        header = sys.stdin.readline()
+        if not header:
+            return None
+        if header.startswith("Content-Length"):
+            try:
+                length = int(header.split(":", 1)[1].strip())
+            except Exception:
+                continue
+            sys.stdin.readline()  # consume blank line
+            body = sys.stdin.read(length)
+            if not body:
+                return None
+            try:
+                return json.loads(body)
+            except json.JSONDecodeError:
+                send_error(-32700, "Parse error")
+                continue
+        else:
+            header = header.strip()
+            if not header:
+                continue
+            try:
+                return json.loads(header)
+            except json.JSONDecodeError:
+                send_error(-32700, "Parse error")
+                continue
+
 def main():
     """Main MCP server loop"""
-    for line in sys.stdin:
+    for _ in iter(int, 1):
+        request = read_request()
+        if request is None:
+            break
         try:
-            request = json.loads(line.strip())
             method = request.get("method")
             request_id = request.get("id")
 
@@ -174,6 +209,11 @@ def main():
 
             elif method == "ping":
                 send_response({"jsonrpc": "2.0", "id": request_id, "result": "pong"})
+            elif method in ("resources/list", "prompts/list"):
+                key = "resources" if method == "resources/list" else "prompts"
+                send_response({"jsonrpc": "2.0", "id": request_id, "result": {key: []}})
+            elif method == "notifications/message":
+                send_response({"jsonrpc": "2.0", "id": request_id, "result": {}})
 
             else:
                 send_error(-32601, f"Method not found: {method}")

@@ -40,6 +40,7 @@ import shutil
 import tempfile
 import argparse
 import importlib
+import importlib.util
 from base64 import b85decode
 
 

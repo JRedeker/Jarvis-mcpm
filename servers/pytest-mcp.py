@@ -8,10 +8,8 @@ import json
 import os
 import subprocess
 import sys
-import tempfile
-from pathlib import Path
-from typing import Any, Dict, List, Optional
 import xml.etree.ElementTree as ET
+from typing import Any, Dict, List, Optional
 
 
 # JSON-RPC response helpers
@@ -31,6 +29,68 @@ def send_error(code: int, message: str, data: Optional[Dict[str, Any]] = None) -
         error_response["error"]["data"] = data
     print(json.dumps(error_response))
     sys.stdout.flush()
+
+
+def read_request() -> Optional[Dict[str, Any]]:
+    """Support Content-Length framed or newline-delimited MCP requests."""
+    while True:
+        header = sys.stdin.readline()
+        if not header:
+            return None
+        if header.startswith("Content-Length"):
+            try:
+                length = int(header.split(":", 1)[1].strip())
+            except Exception:
+                continue
+            sys.stdin.readline()  # consume blank
+            body = sys.stdin.read(length)
+            if not body:
+                return None
+            try:
+                return json.loads(body)
+            except json.JSONDecodeError:
+                send_error(-32700, "Invalid JSON")
+                continue
+        else:
+            header = header.strip()
+            if not header:
+                continue
+            try:
+                return json.loads(header)
+            except json.JSONDecodeError:
+                send_error(-32700, "Invalid JSON")
+                continue
+
+
+def read_request() -> Optional[Dict[str, Any]]:
+    """Read MCP Content-Length framed or newline-delimited JSON requests."""
+    while True:
+        header = sys.stdin.readline()
+        if not header:
+            return None
+        if header.startswith("Content-Length"):
+            try:
+                length = int(header.split(":", 1)[1].strip())
+            except Exception:
+                continue
+            sys.stdin.readline()  # consume blank line
+            body = sys.stdin.read(length)
+            if not body:
+                return None
+            try:
+                return json.loads(body)
+            except json.JSONDecodeError:
+                send_error(-32700, "Invalid JSON")
+                continue
+        else:
+            header = header.strip()
+            if not header:
+                continue
+            try:
+                return json.loads(header)
+            except json.JSONDecodeError:
+                send_error(-32700, "Invalid JSON")
+                continue
 
 
 def list_tools():
@@ -253,10 +313,10 @@ def parse_pytest_output(output_text: str) -> Dict[str, Any]:
             # Extract numbers from summary
             import re
 
-            passed_match = re.search(r"(\\d+) passed", line)
-            failed_match = re.search(r"(\\d+) failed", line)
-            error_match = re.search(r"(\\d+) error", line)
-            skipped_match = re.search(r"(\\d+) skipped", line)
+            passed_match = re.search(r"(\d+) passed", line)
+            failed_match = re.search(r"(\d+) failed", line)
+            error_match = re.search(r"(\d+) error", line)
+            skipped_match = re.search(r"(\d+) skipped", line)
 
             if passed_match:
                 result["passed"] = int(passed_match.group(1))
@@ -461,7 +521,6 @@ async def handle_list_tests(args_dict):
     """Handle list_tests tool request"""
     try:
         test_path = args_dict.get("test_path", ".")
-        collect_only = args_dict.get("collect_only", False)
         markers = args_dict.get("markers", [])
 
         # Validate test path
@@ -721,13 +780,28 @@ async def handle_request(request):
     """Handle incoming JSON-RPC request"""
     method = request.get("method")
     params = request.get("params", {})
+    req_id = request.get("id")
 
     try:
-        if method == "tools/list":
+        if method == "initialize":
+            send_response({
+                "jsonrpc": "2.0",
+                "id": req_id,
+                "result": {
+                    "protocolVersion": "2024-11-05",
+                    "capabilities": {
+                        "tools": {"listChanged": False},
+                        "resources": {"listChanged": False},
+                        "prompts": {"listChanged": False},
+                    },
+                    "serverInfo": {"name": "pytest-mcp", "version": "1.0.0"},
+                },
+            })
+        elif method == "tools/list":
             tools = list_tools()
             send_response({
                 "jsonrpc": "2.0",
-                "id": request.get("id"),
+                "id": req_id,
                 "result": {"tools": tools}
             })
         elif method == "tools/call":
@@ -748,6 +822,13 @@ async def handle_request(request):
                 await handle_validate_test_structure(arguments)
             else:
                 send_error(-32601, f"Unknown tool: {tool_name}")
+        elif method in ("resources/list", "prompts/list"):
+            key = "resources" if method == "resources/list" else "prompts"
+            send_response({"jsonrpc": "2.0", "id": req_id, "result": {key: []}})
+        elif method == "ping":
+            send_response({"jsonrpc": "2.0", "id": req_id, "result": "pong"})
+        elif method == "notifications/message":
+            send_response({"jsonrpc": "2.0", "id": req_id, "result": {}})
         else:
             send_error(-32601, f"Unknown method: {method}")
 
@@ -757,29 +838,14 @@ async def handle_request(request):
 
 async def main():
     """Main MCP server loop"""
-    # Send capabilities
-    send_response({
-        "jsonrpc": "2.0",
-        "id": None,
-        "result": {
-            "capabilities": {
-                "tools": {
-                    "listChanged": False
-                }
-            }
-        }
-    })
-
-    # Read requests from stdin
-    for line in sys.stdin:
-        if line.strip():
-            try:
-                request = json.loads(line.strip())
-                await handle_request(request)
-            except json.JSONDecodeError:
-                send_error(-32700, "Invalid JSON")
-            except Exception as e:
-                send_error(-32000, f"Unexpected error: {str(e)}")
+    while True:
+        request = read_request()
+        if request is None:
+            break
+        try:
+            await handle_request(request)
+        except Exception as e:
+            send_error(-32000, f"Unexpected error: {str(e)}")
 
 
 if __name__ == "__main__":

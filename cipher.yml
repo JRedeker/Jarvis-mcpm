@@ -4,35 +4,9 @@
 # - Cline now calls OpenRouter directly for all LM requests
 # - Cipher remains the MCP server/aggregator for tools only
 # - Do NOT route IDE/LM requests through Cipher
-agent:
-  name: "cipher-agent"
-  provider: "openrouter"
-  model: "x-ai/grok-4-fast"
-  api_key: "${OPENROUTER_API_KEY}"
-  base_url: "https://openrouter.ai/api/v1"
-  temperature: 0.1
-  max_tokens: 2048
-  instructions: |
-    # Routing rules / system prompt (derived from .kilocode/rules/cipher-routing-rules.md)
-    DOMAIN-SPECIFIC-FIRST: true
-    routingGuidelines: >
-      Always prefer domain-specific MCP tools over generic fallbacks.
-      Examples: github (git ops), firecrawl (web scraping), code-index (code analysis),
-      schemathesis (API testing), pytest (tests), filesystem (file ops), brave-search (web search),
-      httpie (HTTP).
-    For tool calls, output JSON with tool_name and arguments per inputSchema.
-    Use memoryBank for session recall and workspaceMemory for context.
-toolExecution:
-  callTimeout: 45000       # global call timeout (ms)
-  maxParallelCalls: 1
-  maxToolCallsPerTask: 8
-workspaceMemory:
-  enabled: true
-  path: ./data/workspace-memory
-  autoCapture: true
-memoryBank:
-  path: ./data/memory-bank
-  routingPatternsPath: ./data/memory-bank/routing-patterns
+
+systemPrompt: "You are a helpful AI assistant with MCP tools."
+
 mcpServers:
   routing-metadata:
     enabled: true
@@ -42,15 +16,17 @@ mcpServers:
     env:
       OTEL_ENABLED: "false"
   httpie:
-    enabled: true
+    enabled: false  # Disabled: running as standalone MCP until MetaMCP hub
     type: stdio
     command: python3
     args: ["servers/httpie-mcp.py"]
+    timeout: 60
   schemathesis:
-    enabled: true
+    enabled: false  # Disabled: running as standalone MCP until MetaMCP hub
     type: stdio
     command: python3
     args: ["servers/schemathesis-mcp.py"]
+    timeout: 60
   filesystem:
     enabled: true
     type: stdio
@@ -62,40 +38,69 @@ mcpServers:
     command: python3
     args: ["servers/file-batch-mcp.py"]
   pytest:
-    enabled: true
+    enabled: false  # Disabled: running as standalone MCP until MetaMCP hub
     type: stdio
     command: python3
     args: ["servers/pytest-mcp.py"]
+    timeout: 60
   firecrawl:
-    enabled: false
+    enabled: false  # Disabled - requires FIRECRAWL_API_KEY
     type: stdio
     command: npx
-    args: ["-y", "@brave/firecrawl-mcp-server"]
-    # TODO: Re-enable after providing a valid npm package source or git URL.
+    args: ["-y", "firecrawl-mcp"]
+    env:
+      FIRECRAWL_API_KEY: "${FIRECRAWL_API_KEY:-}"
+  brave-search:
+    enabled: true
+    type: stdio
+    command: npx
+    args: ["-y", "@brave/brave-search-mcp-server"]
+    env:
+      BRAVE_API_KEY: "${BRAVE_API_KEY:-}"
   code-index:
     enabled: false
     type: stdio
     command: python3
     args: ["servers/code-index-mcp.py"]
-    # TODO: Provide servers/code-index-mcp.py or re-enable when implemented.
   memory-bank:
-    enabled: false
+    enabled: false  # Disabled: direct IDE MCP until MetaMCP hub
     type: stdio
     command: python3
-    args: ["servers/memory-bank-mcp.py"]
-    # TODO: Provide servers/memory-bank-mcp.py or re-enable when implemented.
+    args: ["servers/memory_bank_wrapper.py"]
+    timeout: 60
   logs:
     enabled: false
     type: stdio
     command: python3
     args: ["servers/logs-mcp.py"]
-    # TODO: Provide servers/logs-mcp.py or re-enable when implemented.
+  context7:
+    enabled: false  # Streamable HTTP requires session handshake; keep disabled until supported
+    type: streamable-http
+    url: "https://mcp.context7.com/mcp"
+    headers:
+      Accept: "application/json, text/event-stream"
+      MCP-Protocol-Version: "2024-11-05"
+    timeout: 60
+  morph-fast-apply:
+    enabled: false  # Streamable HTTP; keep disabled until validated
+    type: streamable-http
+    url: "https://mcp.morph.ai/fast-apply"
+    timeout: 60
+  gpt-researcher:
+    enabled: false  # Disabled: direct IDE MCP until MetaMCP hub
+    type: stdio
+    command: python3
+    args: ["servers/gpt_researcher_bridge.py"]
+    env:
+      TAVILY_API_KEY: "${TAVILY_API_KEY:-}"
+      OPENAI_API_KEY: "${OPENAI_API_KEY:-}"
+    timeout: 60
+
 env:
-  # These are defaults; secrets should live in .env and be loaded by mcp-manager.sh
+  MCP_SERVER_MODE: aggregator
   OPENAI_API_KEY: "${OPENAI_API_KEY:-}"
-  KNOWLEDGE_GRAPH_ENABLED: "true"
-  LOKI_BASE_URL: ""
-  OTEL_EXPORTER_OTLP_ENDPOINT: "http://localhost:4317"
+  PATH: "/usr/local/bin:/usr/bin:/bin:${PATH:-}"
+
 notes:
   - "This file is a recommended template. Verify all commands, venv paths, and environment variables before starting the aggregator."
   - "If you want, I can parse this file and store a structured routing summary into memory (servers, timeouts, routing rules)."

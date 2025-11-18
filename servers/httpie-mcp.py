@@ -13,6 +13,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Callable
 import importlib  # added for dynamic optional import
+import os
 
 # Optional middleware import (falls back to no-op if unavailable)
 try:
@@ -57,6 +58,37 @@ def send_error(code: int, message: str, data: Any = None) -> None:
         error_response["error"]["data"] = data
     print(json.dumps(error_response))
     sys.stdout.flush()
+
+
+def read_request() -> Optional[Dict[str, Any]]:
+    """Support Content-Length framed or newline-delimited MCP requests."""
+    while True:
+        header = sys.stdin.readline()
+        if not header:
+            return None
+        if header.startswith("Content-Length"):
+            try:
+                length = int(header.split(":", 1)[1].strip())
+            except Exception:
+                continue
+            sys.stdin.readline()  # consume blank
+            body = sys.stdin.read(length)
+            if not body:
+                return None
+            try:
+                return json.loads(body)
+            except json.JSONDecodeError:
+                send_error(-32700, "Invalid JSON")
+                continue
+        else:
+            header = header.strip()
+            if not header:
+                continue
+            try:
+                return json.loads(header)
+            except json.JSONDecodeError:
+                send_error(-32700, "Invalid JSON")
+                continue
 
 
 def list_tools():
@@ -387,6 +419,8 @@ async def run_httpie_command(args: List[str], **kwargs) -> Dict[str, Any]:
         # Add additional arguments based on kwargs
         if kwargs.get("timeout"):
             cmd.extend(["--timeout", str(kwargs["timeout"])])
+
+
         if kwargs.get("verify_ssl") is False:
             cmd.append("--verify=no")
         if kwargs.get("follow_redirects"):
@@ -671,7 +705,6 @@ def handle_tool_call(params: Dict[str, Any]) -> Dict[str, Any]:
             expected_status = arguments.get("expected_status", 200)
             headers = arguments.get("headers", {})
             data = arguments.get("data", {})
-            validate_response = arguments.get("validate_response", True)
             timeout = arguments.get("timeout", 30)
 
             # Build test command
@@ -992,44 +1025,87 @@ def handle_tool_call(params: Dict[str, Any]) -> Dict[str, Any]:
         return {"error": str(e), "status": "error"}
 
 
+def read_request() -> Optional[Dict[str, Any]]:
+    """Read a request from stdin supporting MCP Content-Length framing."""
+    while True:
+        header = sys.stdin.readline()
+        if not header:
+            return None
+        if header.startswith("Content-Length"):
+            try:
+                length = int(header.split(":", 1)[1].strip())
+            except Exception:
+                continue
+            # Consume blank separator line
+            sys.stdin.readline()
+            body = sys.stdin.read(length)
+            if not body:
+                return None
+            try:
+                return json.loads(body)
+            except json.JSONDecodeError:
+                send_error(-32700, "Invalid JSON")
+                continue
+        else:
+            header = header.strip()
+            if not header:
+                continue
+            try:
+                return json.loads(header)
+            except json.JSONDecodeError:
+                send_error(-32700, "Invalid JSON")
+                continue
+
+
 def main():
-    """Main MCP server loop"""
-    print(json.dumps({"jsonrpc": "2.0", "result": list_tools(), "id": None}))
-    sys.stdout.flush()
-
-    for line in sys.stdin:
+    """Main MCP server loop with basic MCP handshake support."""
+    while True:
+        request = read_request()
+        if request is None:
+            break
         try:
-            request = json.loads(line.strip())
+            method = request.get("method")
+            req_id = request.get("id")
 
-            if request.get("method") == "tools/list":
+            if method == "initialize":
+                # Minimal capabilities for MCP handshake
                 response = {
                     "jsonrpc": "2.0",
-                    "result": list_tools(),
-                    "id": request.get("id"),
+                    "result": {
+                        "protocolVersion": "2024-11-05",
+                        "capabilities": {
+                            "tools": {"listChanged": False},
+                            "resources": {"listChanged": False},
+                            "prompts": {"listChanged": False},
+                        },
+                        "serverInfo": {"name": "httpie-mcp", "version": "1.0.0"},
+                    },
+                    "id": req_id,
                 }
                 send_response(response)
-
-            elif request.get("method") == "tools/call":
+            elif method == "tools/list":
+                response = {
+                    "jsonrpc": "2.0",
+                    "result": {"tools": list_tools()},
+                    "id": req_id,
+                }
+                send_response(response)
+            elif method == "tools/call":
                 params = request.get("params", {})
-                session_id = params.get("sessionId", "unknown")
-                name = params.get("name")
-                arguments = params.get("arguments", {})
-
-                # Extract task description from arguments if available
-                task_desc = arguments.get("task", f"Execute {name} tool")
-
-                # Use middleware wrapper
+                params.setdefault("arguments", {})
                 wrapped_handler = middleware.handle_tool_call_wrapper(handle_tool_call)
                 result = wrapped_handler(params)
-
-                response = {"jsonrpc": "2.0", "result": result, "id": request.get("id")}
+                response = {"jsonrpc": "2.0", "result": result, "id": req_id}
                 send_response(response)
-
+            elif method in ("resources/list", "prompts/list"):
+                # No resources or prompts to expose; return empty collections
+                key = "resources" if method == "resources/list" else "prompts"
+                send_response({"jsonrpc": "2.0", "result": {key: []}, "id": req_id})
+            elif method == "notifications/message":
+                # Acknowledge notification
+                send_response({"jsonrpc": "2.0", "result": {}, "id": req_id})
             else:
-                send_error(-32601, f"Unknown method: {request.get('method')}")
-
-        except json.JSONDecodeError:
-            send_error(-32700, "Invalid JSON")
+                send_error(-32601, f"Unknown method: {method}")
         except Exception as e:
             send_error(-32000, f"Server error: {str(e)}")
 

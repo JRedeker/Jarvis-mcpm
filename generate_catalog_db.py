@@ -25,7 +25,6 @@ View Parquet:
 
 import argparse
 import json
-import os
 import sys
 from pathlib import Path
 import yaml
@@ -274,7 +273,7 @@ def export_to_parquet(con):
     tools_count = con.execute('SELECT COUNT(*) FROM tools').fetchone()[0]
     servers_count = con.execute('SELECT COUNT(*) FROM servers').fetchone()[0]
 
-    print(f"✅ Exported to Parquet:")
+    print("✅ Exported to Parquet:")
     print(f"  - Tools: {parquet_tools} ({tools_count} rows)")
     print(f"  - Servers: {parquet_servers} ({servers_count} rows)")
 

@@ -437,7 +437,7 @@ start_cipher() {
     nohup "$cipher_path" \
         --mode mcp \
         --agent "$CIPHER_CONFIG" \
-        --mcp-transport-type streamable-http \
+        --mcp-transport-type sse \
         --mcp-host "$SSE_HOST" \
         --mcp-port "$SSE_PORT" \
         > "$LOG_DIR/cipher-aggregator-$(date +%Y%m%d-%H%M%S).log" 2>&1 &
