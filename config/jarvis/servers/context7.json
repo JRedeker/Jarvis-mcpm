@@ -1,6 +1,0 @@
-{
-  "name": "context7",
-  "transport": "streamable_http",
-  "description": "Documentation lookup via llms.txt",
-  "url": "https://mcp.context7.com/mcp"
-}

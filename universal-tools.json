@@ -1,0 +1,12 @@
+{
+  "servers": [
+    "context7",
+    "brave-search",
+    "filesystem",
+    "firecrawl",
+    "fetch",
+    "github",
+    "basic-memory",
+    "mcp-server-qdrant"
+  ]
+}
