@@ -33,7 +33,7 @@ The goal is to gradually shift responsibility from the static `mcp-jungle` regis
 - **Action:** Deploy `mcpm` alongside `mcp-jungle`.
 - **Status:** ✅ COMPLETED (2025-11-22)
 - **Technical Implementation:**
-  1. Installed `mcpm` v2.9.0 in a dedicated virtual environment (`.mcpm_venv`) to resolve dependency conflicts with Pydantic.
+  1. Installed `mcpm` v2.9.0 in the standard virtual environment (`.venv`) after resolving dependency conflicts.
   2. Applied manual patch to `fastmcp` to fix `default_factory` issue.
   3. Installed core servers: `brave-search`, `context7`, `memory`, `firecrawl`, `fetch-mcp`, `mcp-server-qdrant`, etc.
   4. Verified server listing via `mcpm ls`.
