@@ -1,84 +1,52 @@
 # Port Allocation Matrix
 
-**Version:** 1.0
-**Date:** 2025-11-18
-**Status:** Configuration Reference
+**Version:** 2.0
+**Date:** 2025-11-22
+**Status:** Active
 
 ---
 
 ## Overview
 
-This document defines the complete port allocation for the simplified MCPJungle architecture, ensuring no conflicts and clear service identification.
+This document defines the port allocation for the MCPM-managed environment. Since `mcpm` primarily manages local processes via `stdio`, the need for extensive port mapping is significantly reduced compared to the legacy gateway architecture.
 
 ## Port Allocation Table
 
 | Service | Port | Protocol | Transport | Status | Notes | Conflict Risk |
 |---------|------|----------|-----------|--------|--------|---------------|
-| **MCPJungle (jarvis)** | 8080 | HTTP/WS | streamable-http | ✅ Planned | Primary MCP endpoint | Low |
-| **PostgreSQL** | 5432 | TCP | SQL | ⚪ Optional | Production metadata | Low |
-| **Qdrant** | 6333 | HTTP | HTTP | ⚪ Available | Vector database (Phase 3) | Low |
+| **PostgreSQL** | 5432 | TCP | SQL | ⚪ Optional | Backend for specific tools | Low |
+| **Qdrant** | 6333 | HTTP | HTTP | ⚪ Available | Vector database for memory | Low |
+| **Remote MCP** | 8080 | HTTP/SSE | SSE | ⚪ Optional | If running a remote MCP server | Medium |
 
 ## Port Status Legend
 
-- ✅ **Planned**: Will be used in current implementation
-- ⚪ **Available**: Can be used if needed in future phases
+- ✅ **Active**: Currently in use by default configuration
+- ⚪ **Optional**: Only used if specific services are enabled
 - ❌ **Avoid**: Known conflicts or reserved ports
-- 🔧 **Configurable**: Can be changed via configuration
 
 ## Service Details
 
-### **MCPJungle (jarvis) - Port 8080**
-- **Default Port**: 8080 (configurable)
-- **Protocol**: HTTP for REST API, WebSocket for IDE connections
-- **Use Cases**:
-  - Tool discovery: `GET /mcp`
-  - Tool invocation: `POST /mcp`
-  - Health checks: `GET /health`
-  - Metrics: `GET /metrics` (enterprise mode)
-- **Configuration**:
-  ```bash
-  # Environment variable
-  export PORT=8080
-
-  # Docker
-  ports:
-    - "8080:8080"
-  ```
-
 ### **PostgreSQL - Port 5432**
-- **Default Port**: 5432 (standard PostgreSQL)
-- **Protocol**: TCP
+- **Default Port**: 5432
 - **Use Cases**:
-  - Server metadata storage
-  - Tool group definitions
-  - Access control data (enterprise)
-  - Usage analytics
+  - Backend storage for `sqlite` or custom database tools.
+  - Metadata storage for enterprise deployments.
 - **Configuration**:
-  ```bash
-  # Environment variable
-  export DATABASE_URL=postgres://user:pass@localhost:5432/mcpjungle_db
-
-  # Docker
-  ports:
-    - "5432:5432"
-  ```
+  Managed via Docker Compose or local installation.
 
 ### **Qdrant - Port 6333**
-- **Default Port**: 6333 (standard Qdrant)
-- **Protocol**: HTTP REST API
+- **Default Port**: 6333
 - **Use Cases**:
-  - Vector storage for advanced memory (Phase 3)
-  - Semantic search capabilities
-  - Embedding storage
+  - Vector storage for the `memory` MCP server.
+  - Semantic search capabilities.
 - **Configuration**:
-  ```bash
-  # Environment variable
-  export VECTOR_STORE_URL=http://localhost:6333
+  Managed via Docker Compose.
 
-  # Docker
-  ports:
-    - "6333:6333"
-  ```
+### **Remote MCP Servers - Port 8080+**
+- **Default Port**: 8080 (Common convention)
+- **Use Cases**:
+  - Hosting an MCP server over HTTP/SSE for remote access.
+  - `mcpm` can register these remote endpoints, but does not manage the port binding itself.
 
 ## Port Conflict Analysis
 
@@ -86,220 +54,28 @@ This document defines the complete port allocation for the simplified MCPJungle 
 
 | Port | Common Service | Risk Level | Mitigation |
 |------|----------------|------------|------------|
-| 3000 | Node.js dev servers | Medium | Use 8080 for jarvis |
-| 3001 | React dev servers | Medium | Use 8080 for jarvis |
-| 5000 | Flask/Python servers | Medium | Use 8080 for jarvis |
-| 5432 | PostgreSQL | Low | Standard port, usually available |
-| 6333 | Qdrant | Low | Specialized service |
-| 8080 | Generic HTTP | Medium | Most common conflict |
-
-### **Conflict Resolution**
-
-#### **If Port 8080 is Unavailable**
-```bash
-# Option 1: Use different port
-export PORT=8081
-mcpjungle start
-
-# Option 2: Check what's using it
-lsof -i :8080
-netstat -tulpn | grep 8080
-
-# Option 3: Kill conflicting process
-kill -9 <PID>
-```
-
-#### **If PostgreSQL Port 5432 is Unavailable**
-```bash
-# Option 1: Use different PostgreSQL port
-docker run -p 5433:5432 postgres:15
-
-# Option 2: Update connection string
-export DATABASE_URL=postgres://user:pass@localhost:5433/mcpjungle_db
-```
-
-#### **If Qdrant Port 6333 is Unavailable**
-```bash
-# Option 1: Use different Qdrant port
-docker run -p 6334:6333 qdrant/qdrant
-
-# Option 2: Update environment
-export VECTOR_STORE_URL=http://localhost:6334
-```
-
-## Network Configuration
-
-### **Firewall Rules**
-```bash
-# Allow jarvis (if external access needed)
-sudo ufw allow 8080/tcp
-
-# Allow PostgreSQL (production only)
-sudo ufw allow 5432/tcp
-
-# Allow Qdrant (if external access needed)
-sudo ufw allow 6333/tcp
-```
-
-### **Docker Networking**
-```yaml
-# docker-compose.yml
-networks:
-  mcp-network:
-    driver: bridge
-    ipam:
-      config:
-        - subnet: 172.20.0.0/16
-
-services:
-  mcpjungle:
-    networks:
-      - mcp-network
-    ports:
-      - "8080:8080"
-
-  postgres:
-    networks:
-      - mcp-network
-    ports:
-      - "5432:5432"
-
-  qdrant:
-    networks:
-      - mcp-network
-    ports:
-      - "6333:6333"
-```
+| 5432 | Local PostgreSQL | Low | Use Docker port mapping (e.g., 5433:5432) if local DB exists. |
+| 6333 | Local Qdrant | Low | Use Docker port mapping. |
+| 8080 | Web Servers | Medium | Configure remote servers to use alternative ports (e.g., 3000, 8081). |
 
 ## Development Environment
 
-### **Local Development Ports**
+### **Checking Port Availability**
+
+Before starting Docker services, ensure the required ports are free:
+
 ```bash
-# Check all ports in use
-netstat -tulpn | grep -E ':(8080|5432|6333)'
-
-# Check specific port
-lsof -i :8080
-
-# Check port availability
-nc -z localhost 8080 && echo "Port 8080 in use" || echo "Port 8080 available"
+# Check for listeners on common ports
+netstat -tulpn | grep -E ':(5432|6333|8080)'
 ```
 
-### **Port Monitoring Script**
-```bash
-#!/bin/bash
-# save as check-ports.sh
+### **Docker Configuration**
 
-PORTS=(8080 5432 6333)
-echo "Checking MCPJungle port availability..."
+If you encounter conflicts, modify the `docker-compose.yml` to map to different host ports:
 
-for port in "${PORTS[@]}"; do
-    if lsof -i :$port > /dev/null 2>&1; then
-        echo "❌ Port $port - IN USE"
-        lsof -i :$port | head -2
-    else
-        echo "✅ Port $port - AVAILABLE"
-    fi
-done
-```
-
-## Production Considerations
-
-### **Load Balancing**
-- **jarvis**: Can be load balanced behind nginx/traefik
-- **PostgreSQL**: Use connection pooling (PgBouncer)
-- **Qdrant**: Built-in clustering support
-
-### **Security**
-- **8080**: Should be behind reverse proxy in production
-- **5432**: Should not be exposed externally
-- **6333**: Should be internal network only
-
-### **Monitoring**
-```bash
-# Monitor port usage
-watch -n 5 'netstat -tulpn | grep -E ":(8080|5432|6333)"'
-
-# Log port access
-sudo tcpdump -i any port 8080 -w jarvis-traffic.pcap
-```
-
-## Configuration Management
-
-### **Environment Variables**
-```bash
-# .env file
-MCPJUNGLE_PORT=8080
-POSTGRES_PORT=5432
-QDRANT_PORT=6333
-```
-
-### **Docker Environment**
 ```yaml
-# docker-compose.override.yml
-version: '3.8'
 services:
-  mcpjungle:
-    ports:
-      - "${MCPJUNGLE_PORT:-8080}:8080"
-
   postgres:
     ports:
-      - "${POSTGRES_PORT:-5432}:5432"
-
-  qdrant:
-    ports:
-      - "${QDRANT_PORT:-6333}:6333"
+      - "5433:5432"  # Maps host 5433 to container 5432
 ```
-
-## Troubleshooting
-
-### **Port Already in Use**
-```bash
-# Find process using port
-sudo lsof -i :8080
-
-# Kill process (careful!)
-kill -9 <PID>
-
-# Or use different port
-export PORT=8081
-mcpjungle start
-```
-
-### **Permission Denied**
-```bash
-# Check if port requires root
-sudo netstat -tulpn | grep 8080
-
-# Use higher port (above 1024)
-export PORT=18080
-mcpjungle start
-```
-
-### **Connection Refused**
-```bash
-# Check if service is running
-curl http://localhost:8080/health
-
-# Check firewall
-sudo ufw status
-
-# Check Docker port mapping
-docker ps | grep mcpjungle
-```
-
-## Version History
-
-| Version | Date | Author | Changes |
-|---------|------|--------|---------|
-| 1.0 | 2025-11-18 | Kilo Code | Initial port allocation matrix |
-| 1.1 | TBD | TBD | Add production considerations |
-| 1.2 | TBD | TBD | Add troubleshooting section |
-
-**Status**: ✅ **Complete** - Port allocation defined and documented
-
-**Next Steps**:
-1. Verify ports during Phase 1 installation
-2. Update matrix with actual usage findings
-3. Add any new ports discovered during implementation

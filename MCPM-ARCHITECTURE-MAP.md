@@ -62,7 +62,6 @@ graph TD
 ## 3. File Structure & Key Files
 
 ### Root Directory
-*   `MCP-MASTER.md`: The master implementation plan and status tracker. **(Critical)**
 *   `README.md`: Project overview, quick start guide, and available tools list.
 *   `docker-compose.yml`: Defines the container services (PostgreSQL, Qdrant).
 *   `package.json`: Node.js dependencies, including `mcpm` and server packages.
@@ -107,13 +106,13 @@ graph TD
 *   **Concept:** Logical grouping of tools for specific workflows (Universal, Backend, Frontend).
 *   **Implementation:** Configured within Jarvis to expose specific subsets of tools via dedicated endpoints (e.g., `/v0/groups/universal/mcp`).
 
-## 5. Key Data Flows
+## 6. Key Data Flows
 
 1.  **Registration:** Admin uses CLI/API -> Jarvis records server details -> PostgreSQL.
 2.  **Discovery:** Client (IDE) connects to Jarvis -> Jarvis queries active servers/DB -> Returns list of tools.
 3.  **Invocation:** Client requests tool execution -> Jarvis routes request to appropriate MCP server -> Server executes -> Result returned to Client.
 
-## 6. Technology Stack
+## 7. Technology Stack
 
 *   **Runtime:** Node.js (for most MCP servers and tooling).
 *   **Database:** PostgreSQL (metadata), Qdrant (vector search/memory - planned).

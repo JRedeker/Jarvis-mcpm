@@ -1,620 +1,146 @@
-# MCPJungle Server Registration Guide
+# MCPM Server Registration Guide
 
-**Version:** 1.0
-**Date:** 2025-11-18
-**Status:** Configuration Reference
+**Version:** 2.0
+**Date:** 2025-11-22
+**Status:** Active
 
 ---
 
 ## Overview
 
-This guide provides detailed instructions for registering various MCP servers with MCPJungle (jarvis), including configuration examples and best practices.
+This guide explains how to register and manage MCP servers using **MCPM (Model Context Protocol Manager)**. MCPM automates the installation, configuration, and registration process, eliminating the need for manual JSON file editing.
 
-## Registration Methods
+## 1. Installing Servers
 
-### **Method 1: Command Line Registration**
+The primary way to register a server is to install it via the `mcpm` CLI.
+
+### Basic Installation
+
+To install a server from the official registry or npm:
+
 ```bash
-# Register HTTP server
-mcpjungle register --name context7 --url https://mcp.context7.com/mcp
-
-# Register STDIO server with config file
-mcpjungle register -c server-config.json
+mcpm install @modelcontextprotocol/server-github
 ```
 
-### **Method 2: Configuration File Registration**
-```bash
-# Create config file
-mcpjungle register -c ./servers/context7.json
+This command:
+1.  Downloads the package.
+2.  Registers it in the local MCPM registry.
+3.  Makes it available for IDE configuration generation.
 
-# Register multiple servers
-mcpjungle register -c ./servers/brave-search.json
-mcpjungle register -c ./servers/filesystem.json
+### Installing with Custom Configuration
+
+Some servers require specific arguments or environment variables. You can provide these during installation or configure them afterwards.
+
+```bash
+# Install with environment variables
+mcpm install @brave/brave-search-mcp-server --env BRAVE_API_KEY=your_key
 ```
 
 ---
 
-## Server Registration Templates
+## 2. Managing Configuration
 
-### **HTTP/Streamable-HTTP Servers**
+Once a server is installed, you can modify its configuration using the `mcpm` CLI.
 
-#### **context7 (Documentation)**
-```json
-{
-  "name": "context7",
-  "transport": "streamable_http",
-  "description": "Documentation lookup via llms.txt",
-  "url": "https://mcp.context7.com/mcp",
-  "bearer_token": "optional-api-token"
-}
-```
+### Setting Environment Variables
 
-**Registration Command:**
+If a server requires API keys or other secrets:
+
 ```bash
-mcpjungle register -c context7.json
+mcpm env set brave-search BRAVE_API_KEY=your_actual_api_key
 ```
 
-#### **Semgrep (Security)**
-```json
-{
-  "name": "semgrep",
-  "transport": "streamable_http",
-  "description": "Static analysis security scanning",
-  "url": "https://mcp.semgrep.ai/mcp/",
-  "bearer_token": "your-semgrep-token"
-}
-```
+### Updating Arguments
 
-### **STDIO Servers**
+To change the arguments passed to the server executable:
 
-#### **brave-search (Web Search)**
-```json
-{
-  "name": "brave-search",
-  "transport": "stdio",
-  "description": "Web search via Brave Search API",
-  "command": "npx",
-  "args": ["-y", "@brave/brave-search-mcp-server"],
-  "env": {
-    "BRAVE_API_KEY": "${BRAVE_API_KEY}"
-  },
-  "timeout": 60
-}
-```
-
-**Registration Command:**
 ```bash
-# Set environment variable first
-export BRAVE_API_KEY="your-brave-api-key"
-
-# Register server
-mcpjungle register -c brave-search.json
+mcpm config set filesystem --args "/path/to/allowed/directory"
 ```
 
-#### **filesystem (File Operations)**
-```json
-{
-  "name": "filesystem",
-  "transport": "stdio",
-  "description": "File system operations with security restrictions",
-  "command": "npx",
-  "args": ["-y", "@modelcontextprotocol/server-filesystem", "/host"],
-  "timeout": 30
-}
-```
+### Viewing Configuration
 
-#### **firecrawl (Web Crawling)**
-```json
-{
-  "name": "firecrawl",
-  "transport": "stdio",
-  "description": "Web crawling and content extraction",
-  "command": "npx",
-  "args": ["-y", "firecrawl-mcp"],
-  "env": {
-    "FIRECRAWL_API_KEY": "${FIRECRAWL_API_KEY}"
-  },
-  "timeout": 120
-}
-```
+To see the current configuration for a specific server:
 
-#### **morph-fast-apply (Code Editing)**
-```json
-{
-  "name": "morph-fast-apply",
-  "transport": "stdio",
-  "description": "AI-powered code editing and refactoring",
-  "command": "npx",
-  "args": ["-y", "@morph-llm/morph-fast-apply"],
-  "env": {
-    "MORPH_API_KEY": "${MORPH_API_KEY}",
-    "ALL_TOOLS": "false"
-  },
-  "timeout": 60
-}
-```
-
-#### **gpt-researcher (AI Research)**
-```json
-{
-  "name": "gpt-researcher",
-  "transport": "stdio",
-  "description": "AI-powered research and report generation",
-  "command": "/home/jrede/dev/MCP/.venv/bin/python3",
-  "args": ["servers/gpt_researcher_mcp.py"],
-  "env": {
-    "TAVILY_API_KEY": "${TAVILY_API_KEY}",
-    "OPENAI_API_KEY": "${OPENAI_API_KEY}"
-  },
-  "timeout": 300
-}
+```bash
+mcpm inspect filesystem
 ```
 
 ---
 
-## Complete Registration Process
+## 3. Server Management
 
-### **Step 1: Prepare Environment**
+### Listing Installed Servers
+
+To see all registered servers:
+
 ```bash
-# Create servers directory
-mkdir -p config/jarvis/servers
-
-# Set up environment variables
-export BRAVE_API_KEY="your-brave-api-key"
-export FIRECRAWL_API_KEY="your-firecrawl-api-key"
-export MORPH_API_KEY="your-morph-api-key"
-export TAVILY_API_KEY="your-tavily-api-key"
-export OPENAI_API_KEY="your-openai-api-key"
+mcpm list
 ```
 
-### **Step 2: Create Configuration Files**
+### Updating Servers
 
-Create individual JSON files for each server:
+To update a specific server to the latest version:
 
 ```bash
-# Create context7 config
-cat > config/jarvis/servers/context7.json << 'EOF'
-{
-  "name": "context7",
-  "transport": "streamable_http",
-  "description": "Documentation lookup via llms.txt",
-  "url": "https://mcp.context7.com/mcp"
-}
-EOF
-
-# Create brave-search config
-cat > config/jarvis/servers/brave-search.json << 'EOF'
-{
-  "name": "brave-search",
-  "transport": "stdio",
-  "description": "Web search via Brave Search API",
-  "command": "npx",
-  "args": ["-y", "@brave/brave-search-mcp-server"],
-  "env": {
-    "BRAVE_API_KEY": "${BRAVE_API_KEY}"
-  },
-  "timeout": 60
-}
-EOF
-
-# Create filesystem config
-cat > config/jarvis/servers/filesystem.json << 'EOF'
-{
-  "name": "filesystem",
-  "transport": "stdio",
-  "description": "File system operations with security restrictions",
-  "command": "npx",
-  "args": ["-y", "@modelcontextprotocol/server-filesystem", "/host"],
-  "timeout": 30
-}
-EOF
-
-# Create firecrawl config
-cat > config/jarvis/servers/firecrawl.json << 'EOF'
-{
-  "name": "firecrawl",
-  "transport": "stdio",
-  "description": "Web crawling and content extraction",
-  "command": "npx",
-  "args": ["-y", "firecrawl-mcp"],
-  "env": {
-    "FIRECRAWL_API_KEY": "${FIRECRAWL_API_KEY}"
-  },
-  "timeout": 120
-}
-EOF
-
-# Create morph-fast-apply config
-cat > config/jarvis/servers/morph-fast-apply.json << 'EOF'
-{
-  "name": "morph-fast-apply",
-  "transport": "stdio",
-  "description": "AI-powered code editing and refactoring",
-  "command": "npx",
-  "args": ["-y", "@morph-llm/morph-fast-apply"],
-  "env": {
-    "MORPH_API_KEY": "${MORPH_API_KEY}",
-    "ALL_TOOLS": "false"
-  },
-  "timeout": 60
-}
-EOF
-
-# Create gpt-researcher config
-cat > config/jarvis/servers/gpt-researcher.json << 'EOF'
-{
-  "name": "gpt-researcher",
-  "transport": "stdio",
-  "description": "AI-powered research and report generation",
-  "command": "/home/jrede/dev/MCP/.venv/bin/python3",
-  "args": ["servers/gpt_researcher_mcp.py"],
-  "env": {
-    "TAVILY_API_KEY": "${TAVILY_API_KEY}",
-    "OPENAI_API_KEY": "${OPENAI_API_KEY}"
-  },
-  "timeout": 300
-}
-EOF
+mcpm update @modelcontextprotocol/server-github
 ```
 
-### **Step 3: Register All Servers**
-```bash
-# Register HTTP servers
-mcpjungle register -c config/jarvis/servers/context7.json
+To update all installed servers:
 
-# Register STDIO servers
-mcpjungle register -c config/jarvis/servers/brave-search.json
-mcpjungle register -c config/jarvis/servers/filesystem.json
-mcpjungle register -c config/jarvis/servers/firecrawl.json
-mcpjungle register -c config/jarvis/servers/morph-fast-apply.json
-mcpjungle register -c config/jarvis/servers/gpt-researcher.json
+```bash
+mcpm update all
+```
+
+### Uninstalling Servers
+
+To remove a server and its configuration:
+
+```bash
+mcpm uninstall @modelcontextprotocol/server-github
 ```
 
 ---
 
-## Verification Steps
+## 4. Advanced Registration
 
-### **List Registered Servers**
+### Registering Local/Custom Servers
+
+If you are developing your own MCP server or have a local script, you can register it manually:
+
 ```bash
-# List all servers
-mcpjungle list servers
-
-# Expected output:
-# context7
-# brave-search
-# filesystem
-# firecrawl
-# morph-fast-apply
-# gpt-researcher
+mcpm register my-local-server \
+  --command "python3" \
+  --args "/path/to/my/server.py" \
+  --env MY_VAR=value
 ```
 
-### **List Available Tools**
+### Registering HTTP Servers
+
+For remote MCP servers accessible via HTTP:
+
 ```bash
-# List all tools from all servers
-mcpjungle list tools
-
-# List tools from specific server
-mcpjungle list tools --server context7
-
-# List tools with descriptions
-mcpjungle list tools --format detailed
-```
-
-### **Test Tool Invocation**
-```bash
-# Test context7
-mcpjungle invoke context7__get-library-docs \
-  --input '{"library": "lodash/lodash"}'
-
-# Test brave-search
-mcpjungle invoke brave-search__brave_web_search \
-  --input '{"query": "MCP protocol specification"}'
-
-# Test filesystem
-mcpjungle invoke filesystem__read_file \
-  --input '{"path": "README.md"}'
+mcpm register remote-server \
+  --url "https://api.example.com/mcp" \
+  --transport "sse"
 ```
 
 ---
 
-## Advanced Configuration
+## 5. Troubleshooting
 
-### **Server Timeouts**
-```json
-{
-  "name": "gpt-researcher",
-  "transport": "stdio",
-  "description": "AI research with extended timeout",
-  "command": "python3",
-  "args": ["servers/gpt_researcher_mcp.py"],
-  "timeout": 600,  // 10 minutes for long research
-  "env": {
-    "TAVILY_API_KEY": "${TAVILY_API_KEY}"
-  }
-}
-```
+### Installation Failures
 
-### **Environment Variables**
-```json
-{
-  "name": "brave-search",
-  "transport": "stdio",
-  "description": "Brave search with API key",
-  "command": "npx",
-  "args": ["-y", "@brave/brave-search-mcp-server"],
-  "env": {
-    "BRAVE_API_KEY": "${BRAVE_API_KEY}",
-    "BRAVE_SAFESEARCH": "moderate",  // Additional env vars
-    "BRAVE_COUNTRY": "US"
-  }
-}
-```
+*   **Network Issues:** Ensure you have internet access and can reach the npm registry.
+*   **Permissions:** If you encounter permission errors, try running with appropriate user privileges (avoid `sudo` if possible, or fix npm permissions).
 
-### **Working Directory**
-```json
-{
-  "name": "filesystem",
-  "transport": "stdio",
-  "description": "Filesystem with custom working directory",
-  "command": "npx",
-  "args": ["-y", "@modelcontextprotocol/server-filesystem", "/custom/path"],
-  "working_directory": "/home/user/projects"
-}
-```
+### Server Not Starting
 
----
+*   **Check Logs:** Use `mcpm logs <server-name>` (if available) or check your IDE's output.
+*   **Verify Command:** Run `mcpm inspect <server-name>` to ensure the command and arguments are correct.
+*   **Test Manually:** Try running the command string manually in your terminal to see if it errors out.
 
-## Docker-Specific Configuration
+### Environment Variables Not Picked Up
 
-### **Volume Mounts for Filesystem Access**
-```json
-{
-  "name": "filesystem",
-  "transport": "stdio",
-  "description": "Filesystem with Docker volume access",
-  "command": "npx",
-  "args": ["-y", "@modelcontextprotocol/server-filesystem", "/host"],
-  "working_directory": "/host"
-}
-```
-
-**Docker Compose Setup**:
-```yaml
-services:
-  mcpjungle:
-    image: mcpjungle/mcpjungle:latest-stdio
-    volumes:
-      - ./data:/data
-      - .:/host  # Mount current directory as /host
-```
-
----
-
-## Server Management
-
-### **Enable/Disable Servers**
-```bash
-# Disable a server (keeps registration, disables tools)
-mcpjungle disable server context7
-
-# Re-enable server
-mcpjungle enable server context7
-
-# Check server status
-mcpjungle get server context7
-```
-
-### **Update Server Configuration**
-```bash
-# Deregister first
-mcpjungle deregister context7
-
-# Register with new config
-mcpjungle register -c updated-context7.json
-```
-
-### **Bulk Operations**
-```bash
-# Register multiple servers at once
-for config in config/jarvis/servers/*.json; do
-  mcpjungle register -c "$config"
-done
-
-# Disable all servers (for maintenance)
-mcpjungle list servers | xargs -I {} mcpjungle disable server {}
-```
-
----
-
-## Troubleshooting
-
-### **Registration Failures**
-
-#### **HTTP Server Connection Issues**
-```bash
-# Test HTTP endpoint manually
-curl -I https://mcp.context7.com/mcp
-
-# Check if server is accessible
-curl -X POST https://mcp.context7.com/mcp \
-  -H "Content-Type: application/json" \
-  -d '{"jsonrpc":"2.0","method":"tools/list","id":1}'
-```
-
-#### **STDIO Server Issues**
-```bash
-# Test command manually
-npx -y @brave/brave-search-mcp-server --help
-
-# Check if npx is available
-which npx
-npx --version
-
-# Test with environment variables
-BRAVE_API_KEY="your-key" npx -y @brave/brave-search-mcp-server
-```
-
-#### **Permission Issues**
-```bash
-# Check file permissions
-ls -la config/jarvis/servers/
-
-# Fix permissions
-chmod 644 config/jarvis/servers/*.json
-
-# Check if commands are executable
-which python3
-which npx
-```
-
-### **Runtime Issues**
-
-#### **Tool Invocation Failures**
-```bash
-# Check server logs
-docker compose logs mcpjungle | grep -i error
-
-# Test specific tool
-mcpjungle invoke brave-search__brave_web_search \
-  --input '{"query": "test"}' \
-  --verbose
-
-# Check tool availability
-mcpjungle list tools --server brave-search
-```
-
-#### **Timeout Issues**
-```bash
-# Increase timeout in config
-# Update timeout value in JSON configuration
-# Restart server after changes
-```
-
----
-
-## Best Practices
-
-### **Configuration Management**
-- Store configs in version control
-- Use environment variables for secrets
-- Document server dependencies
-- Test configurations before production
-
-### **Security**
-- Never commit API keys to version control
-- Use environment variable substitution
-- Restrict filesystem access appropriately
-- Validate server URLs and commands
-
-### **Performance**
-- Set appropriate timeouts
-- Use connection pooling where available
-- Monitor server resource usage
-- Implement health checks
-
-### **Maintenance**
-- Regular backup of configurations
-- Monitor for server updates
-- Test new server versions
-- Document custom configurations
-
----
-
-## Configuration Templates Repository
-
-Create a repository structure for server configurations:
-
-```
-config/jarvis/
-├── servers/
-│   ├── http/
-│   │   ├── context7.json
-│   │   ├── semgrep.json
-│   │   └── huggingface.json
-│   ├── stdio/
-│   │   ├── brave-search.json
-│   │   ├── filesystem.json
-│   │   ├── firecrawl.json
-│   │   ├── morph-fast-apply.json
-│   │   └── gpt-researcher.json
-│   └── memory/
-│       ├── memory-bank.json
-│       ├── cipher-default.json
-│       └── custom-memory.json
-├── groups/
-│   ├── development.json
-│   ├── research.json
-│   └── minimal.json
-└── environments/
-    ├── development.json
-    ├── staging.json
-    └── production.json
-```
-
----
-
-## Automation Scripts
-
-### **Bulk Registration Script**
-```bash
-#!/bin/bash
-# register-all-servers.sh
-
-SERVERS_DIR="config/jarvis/servers"
-echo "Registering all MCP servers..."
-
-for config in "$SERVERS_DIR"/*.json; do
-  if [ -f "$config" ]; then
-    echo "Registering: $(basename "$config")"
-    mcpjungle register -c "$config"
-
-    if [ $? -eq 0 ]; then
-      echo "✅ Success: $(basename "$config")"
-    else
-      echo "❌ Failed: $(basename "$config")"
-    fi
-  fi
-done
-
-echo "Registration complete!"
-```
-
-### **Validation Script**
-```bash
-#!/bin/bash
-# validate-servers.sh
-
-echo "Validating MCP server registrations..."
-
-# List all registered servers
-echo "Registered servers:"
-mcpjungle list servers
-
-# Test each server
-for server in $(mcpjungle list servers | tail -n +2); do
-  echo "Testing server: $server"
-  mcpjungle list tools --server "$server" > /dev/null 2>&1
-
-  if [ $? -eq 0 ]; then
-    echo "✅ $server - OK"
-  else
-    echo "❌ $server - FAILED"
-  fi
-done
-```
-
----
-
-## Version History
-
-| Version | Date | Author | Changes |
-|---------|------|--------|---------|
-| 1.0 | 2025-11-18 | Kilo Code | Initial server registration guide |
-| 1.1 | TBD | TBD | Add troubleshooting section |
-| 1.2 | TBD | TBD | Add automation scripts |
-
-**Status**: ✅ **Complete** - Server registration procedures documented
-
-**Next Steps**:
-1. Test registration procedures during Phase 1
-2. Update configurations with actual testing results
-3. Add any new servers discovered during implementation
+*   Ensure you used `mcpm env set` and not just exported them in your shell (unless the server is configured to inherit shell envs).
+*   Regenerate your IDE configuration after changing environment variables.
