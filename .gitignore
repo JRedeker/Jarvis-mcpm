@@ -52,3 +52,6 @@ htmlcov/
 # Runtime PID / backup files
 *.pid
 *.backup-*
+
+# Reference material
+mcpm_source/

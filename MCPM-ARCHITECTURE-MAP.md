@@ -4,15 +4,14 @@ This document provides a comprehensive map of the MCPM (Model Context Protocol M
 
 ## 1. System Overview
 
-**MCPJungle (jarvis)** is a centralized gateway and registry for Model Context Protocol (MCP) servers. It simplifies the connection between AI clients (IDEs like Cline, Cursor) and various MCP tools by providing a single aggregation point.
+**MCPM (Model Context Protocol Manager)** is the core tool for managing MCP servers. **MCPM** focuses on managing individual server installations and configurations that IDEs (Cline, Cursor) connect to directly or via generated configurations.
 
 ### Core Components
 
-*   **Jarvis (MCP Gateway):** The central server (running on port 8080) that aggregates tools from multiple registered MCP servers.
-*   **MCP Servers:** Independent services providing specific capabilities (e.g., file system access, web search, GitHub integration).
-*   **PostgreSQL:** The backend database for storing server registrations, tool configurations, and metadata.
-*   **Docker Compose:** Orchestrates the deployment of the Jarvis gateway, database, and other containerized services.
-*   **MCPM (CLI):** A command-line interface (currently transitioning/integrated) for managing packages and server registrations.
+*   **MCPM (CLI):** The primary interface for installing, configuring, and managing MCP servers. It handles package downloads, environment configuration, and IDE config generation.
+*   **MCP Servers:** Independent services providing specific capabilities (e.g., file system access, web search, GitHub integration). These run as local processes (stdio) managed by the IDEs.
+*   **Qdrant:** A vector database used by specific MCP servers (like `memory`) for semantic search and storage.
+*   **PostgreSQL:** Optional backend for specific tools requiring relational data storage.
 
 ## 2. Architecture Diagram
 
@@ -23,99 +22,86 @@ graph TD
         IDE2[Kilo Code IDE]
     end
 
-    subgraph "MCPJungle (Jarvis) Host"
-        Gateway[Jarvis Gateway :8080]
-        DB[(PostgreSQL :5432)]
+    subgraph "Local Environment"
+        MCPM[MCPM CLI]
         
-        subgraph "Managed MCP Servers"
-            S1[context7 (HTTP)]
-            S2[brave-search (stdio)]
-            S3[filesystem (stdio)]
-            S4[firecrawl (stdio)]
-            S5[morph-fast-apply (stdio)]
-            S6[gpt-researcher (stdio)]
-            S7[fetch (stdio)]
-            S8[github (stdio)]
-            S9[memory (stdio)]
-            S10[playwright (stdio)]
-            S11[sqlite (stdio)]
+        subgraph "Managed Processes (stdio)"
+            S1[brave-search]
+            S2[filesystem]
+            S3[firecrawl]
+            S4[morph-fast-apply]
+            S5[gpt-researcher]
+            S6[fetch]
+            S7[github]
+            S8[memory]
+            S9[playwright]
+            S10[sqlite]
+        end
+        
+        subgraph "Infrastructure Services"
+            DB[(PostgreSQL :5432)]
+            Vector[(Qdrant :6333)]
         end
     end
 
-    IDE1 -->|MCP Protocol| Gateway
-    IDE2 -->|MCP Protocol| Gateway
+    MCPM -->|Installs/Configures| S1
+    MCPM -->|Installs/Configures| S2
+    MCPM -->|Installs/Configures| S8
     
-    Gateway -->|Query/Store| DB
-    Gateway -->|HTTP| S1
-    Gateway -->|stdio| S2
-    Gateway -->|stdio| S3
-    Gateway -->|stdio| S4
-    Gateway -->|stdio| S5
-    Gateway -->|stdio| S6
-    Gateway -->|stdio| S7
-    Gateway -->|stdio| S8
-    Gateway -->|stdio| S9
-    Gateway -->|stdio| S10
-    Gateway -->|stdio| S11
+    IDE1 -->|Spawns| S1
+    IDE1 -->|Spawns| S2
+    IDE2 -->|Spawns| S8
+    
+    S8 -->|Stores Vectors| Vector
+    S10 -->|Stores Data| DB
 ```
 
 ## 3. File Structure & Key Files
 
 ### Root Directory
-*   `README.md`: Project overview, quick start guide, and available tools list.
-*   `docker-compose.yml`: Defines the container services (PostgreSQL, Qdrant).
-*   `package.json`: Node.js dependencies, including `mcpm` and server packages.
+*   `README.md`: Project overview and quick start guide.
+*   `docker-compose.yml`: Defines infrastructure services (PostgreSQL, Qdrant).
+*   `package.json`: Node.js dependencies, including `mcpm`.
+*   `.env`: Environment variables for infrastructure and server configuration.
 *   `config/`: Configuration directory.
-    *   `technologies.toml`: Central registry of all supported MCP technologies and their metadata. **(Critical)**
+    *   `technologies.toml`: Central registry of all supported MCP technologies.
 
 ### Documentation (`docs/`)
-*   `architecture.md`: High-level architecture documentation.
-*   `INFORMATION-ARCHITECTURE.md`: Structure of information within the system.
 *   `architecture/`: Detailed architectural documents.
-    *   `simplified-architecture.md`: Explains the "Jarvis" single-gateway model.
     *   `optimization-roadmap.md`: Plans for system optimization and the role of `mcpm`.
 *   `config/`: Configuration documentation.
-    *   `port-allocation.md`: Matrix of ports used by services.
-    *   `tool-groups.md`: Definitions for tool grouping (Universal, Backend, Frontend).
-    *   `actual-configurations.md`: Reference for deployed configurations.
+    *   `port-allocation.md`: Matrix of ports used by infrastructure services.
+    *   `tool-groups.md`: Definitions for tool grouping strategies.
 *   `guides/`: User and setup guides.
-    *   `server-registration.md`: How to register new servers.
-    *   `ide-configuration.md`: Connecting IDEs to Jarvis.
-*   `runbooks/`: Operational procedures and status reports.
-    *   `phase1b-server-registration-final.md`: Status of server registrations.
-*   `tech/`: Technical documentation for individual MCP servers (e.g., `brave-search-mcp.md`, `filesystem-mcp.md`).
+    *   `server-registration.md`: How to install and register servers using `mcpm`.
+    *   `ide-configuration.md`: Generating IDE configurations with `mcpm`.
+*   `tech/`: Technical documentation for individual MCP servers.
 
 ## 4. Component Relationships
 
-### Jarvis Gateway <-> MCP Servers
-*   **Relationship:** Aggregation / Proxy
-*   **Mechanism:** Jarvis connects to servers via `stdio` (spawning processes) or `HTTP` (remote streams).
-*   **Configuration:** Defined in JSON files (referenced in docs) and stored in PostgreSQL.
-
-### Jarvis Gateway <-> PostgreSQL
-*   **Relationship:** Persistence
-*   **Mechanism:** TCP connection to port 5432.
-*   **Data:** Stores server registry, tool definitions, and potentially configuration state.
-
-### MCPM (CLI) <-> Jarvis
+### MCPM <-> MCP Servers
 *   **Relationship:** Management
-*   **Mechanism:** The CLI interacts with the Jarvis API or configuration files to register/deregister servers.
-*   **Status:** `mcpm` package is a dependency; usage is evolving towards direct integration or helper scripts.
+*   **Mechanism:** `mcpm` installs server packages from npm or git, manages their environment variables, and generates the JSON configuration required by IDEs to spawn them.
 
-### Tool Groups
-*   **Concept:** Logical grouping of tools for specific workflows (Universal, Backend, Frontend).
-*   **Implementation:** Configured within Jarvis to expose specific subsets of tools via dedicated endpoints (e.g., `/v0/groups/universal/mcp`).
+### IDEs <-> MCP Servers
+*   **Relationship:** Execution
+*   **Mechanism:** IDEs read the configuration generated by `mcpm` and spawn server processes directly using `stdio` transport. There is no intermediate gateway.
 
-## 6. Key Data Flows
+### MCP Servers <-> Infrastructure
+*   **Relationship:** Persistence
+*   **Mechanism:** Specific servers connect to local infrastructure services.
+    *   `memory` server connects to **Qdrant** (port 6333) for vector storage.
+    *   `sqlite` or custom servers may connect to **PostgreSQL** (port 5432).
 
-1.  **Registration:** Admin uses CLI/API -> Jarvis records server details -> PostgreSQL.
-2.  **Discovery:** Client (IDE) connects to Jarvis -> Jarvis queries active servers/DB -> Returns list of tools.
-3.  **Invocation:** Client requests tool execution -> Jarvis routes request to appropriate MCP server -> Server executes -> Result returned to Client.
+## 5. Key Data Flows
 
-## 7. Technology Stack
+1.  **Installation:** User runs `mcpm install <server>` -> MCPM downloads package and updates local registry.
+2.  **Configuration:** User runs `mcpm config` -> MCPM outputs JSON config -> User updates IDE settings.
+3.  **Runtime:** IDE starts -> Spawns configured MCP servers -> Servers communicate via stdio -> Servers access local resources or APIs.
 
-*   **Runtime:** Node.js (for most MCP servers and tooling).
-*   **Database:** PostgreSQL (metadata), Qdrant (vector search/memory - planned).
-*   **Containerization:** Docker & Docker Compose.
-*   **Protocol:** Model Context Protocol (MCP).
-*   **Languages:** TypeScript/JavaScript (primary), Python (some servers like `gpt-researcher`).
+## 6. Technology Stack
+
+*   **Management:** `mcpm` (Node.js CLI).
+*   **Runtime:** Node.js (for most servers), Python (for specific AI/ML servers).
+*   **Infrastructure:** Docker (hosting Qdrant, PostgreSQL).
+*   **Protocol:** Model Context Protocol (MCP) over `stdio`.
