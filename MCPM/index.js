@@ -34,19 +34,56 @@ program
     .command('ls')
     .description('List installed MCP servers')
     .action(() => {
-        // In a real implementation, this would check node_modules or a registry file
-        // For now, we'll list what's in package.json dependencies if possible, or just mock it
-        // matching the technologies.toml
         const config = readConfig();
-        console.log(chalk.bold('Available Technologies (from config):'));
+        console.log(chalk.bold('Installed MCP Servers:'));
+        
+        let hasInstalled = false;
         if (config.technologies) {
             for (const group in config.technologies) {
-                console.log(chalk.blue(`\n[${group}]`));
+                let groupPrinted = false;
                 for (const key in config.technologies[group]) {
                     const tech = config.technologies[group][key];
-                    console.log(`- ${key}: ${tech.description || ''}`);
+                    let isInstalled = false;
+                    
+                    // Check if installed in node_modules
+                    // If 'package' is defined, check that. If 'repo' is defined, check the key name?
+                    // Simple check: does node_modules/<package_name> exist?
+                    let pkgName = tech.package || key; // heuristic
+                    
+                    // Handle scoped packages
+                    if (!tech.package && tech.repo && tech.repo.includes('github.com/')) {
+                        // For git repos without explicit package name, we might not know the folder name easily
+                        // unless we enforced a convention.
+                        // For this dev version, let's just check if the key exists in package.json dependencies
+                        try {
+                            const pkgJson = require(path.join(__dirname, 'package.json'));
+                            if (pkgJson.dependencies && pkgJson.dependencies[pkgName]) {
+                                isInstalled = true;
+                            }
+                        } catch (e) {}
+                    } else {
+                         try {
+                            const pkgJson = require(path.join(__dirname, 'package.json'));
+                             if (pkgJson.dependencies && pkgJson.dependencies[pkgName]) {
+                                isInstalled = true;
+                            }
+                        } catch (e) {}
+                    }
+
+                    if (isInstalled) {
+                        if (!groupPrinted) {
+                            console.log(chalk.blue(`\n[${group}]`));
+                            groupPrinted = true;
+                        }
+                        console.log(`- ${key}: ${tech.description || ''} ${chalk.green('(Installed)')}`);
+                        hasInstalled = true;
+                    }
                 }
             }
+        }
+        
+        if (!hasInstalled) {
+            console.log(chalk.gray('No servers currently installed. Use "mcpm install <name>" to add one.'));
         }
     });
 
@@ -59,12 +96,6 @@ program
         let found = false;
         let pkgName = name;
         
-        // Find package name from mapping or config
-        if (config.package_mappings) {
-             // Reverse lookup or direct? The toml has "@pkg" = "name"
-             // We want to find the tech entry for "name"
-        }
-        
         // Simple lookup strategy
         for (const group in config.technologies) {
              if (config.technologies[group][name]) {
@@ -73,11 +104,17 @@ program
                  if (tech.package) {
                      pkgName = tech.package;
                  } else if (tech.repo) {
-                     // For git repos, we might strictly need a package name or install from git
-                     console.log(chalk.yellow(`Note: ${name} is a repository-based tool. Installing from source not fully implemented in this skeleton.`));
-                     return; 
+                     // If it's a repo, we might want to install via git+https
+                     pkgName = `git+${tech.repo}.git`;
                  }
              }
+        }
+
+        // Check package mappings if not found in tech tree but might be a mapped name
+        if (!found && config.package_mappings) {
+             // This logic is a bit circular. Usually mappings map pkg -> shortname.
+             // Here we are looking up shortname -> pkg.
+             // The technologies.toml structure handles shortname -> data.
         }
 
         if (!found) {
@@ -85,7 +122,8 @@ program
         }
 
         try {
-            execSync(`npm install ${pkgName}`, { stdio: 'inherit', cwd: __dirname });
+            // Use --save to ensure it's added to package.json
+            execSync(`npm install ${pkgName} --save`, { stdio: 'inherit', cwd: __dirname });
             console.log(chalk.green(`Successfully installed ${name}`));
         } catch (e) {
             console.error(chalk.red(`Failed to install ${name}: ${e.message}`));
