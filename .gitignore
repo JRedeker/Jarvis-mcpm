@@ -61,3 +61,15 @@ Jarvis/jarvis
 Jarvis/jarvis-server
 *.test
 coverage.out
+
+# Local Configuration & User State
+# Ignore local overrides for the registry or configuration
+*.local
+*.local.toml
+MCPM/config/local.toml
+MCPM/config/user.toml
+MCPM/config/secrets.toml
+
+# Ignore personal server lists/dumps
+mcp-servers.json
+user-tools.json
