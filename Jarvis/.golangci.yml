@@ -7,7 +7,7 @@ linters:
   enable:
     - errcheck
     - gosimple
-    - govets
+    - govet
     - ineffassign
     - staticcheck
     - typecheck
