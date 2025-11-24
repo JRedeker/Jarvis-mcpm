@@ -2,21 +2,17 @@
 
 > **"Just ask, and it shall be configured."**
 
-Jarvis is a specialized **Model Context Protocol (MCP) Server** designed as the autonomous companion to the [MCPM (Model Context Protocol Manager)](https://github.com/pathintegral-institute/mcpm.sh) ecosystem.
+Jarvis is a specialized **Model Context Protocol (MCP) Server** designed to act as an autonomous gateway for managing your local MCP tools and infrastructure.
 
-While **MCPM** provides the CLI and global registry for managing servers, **Jarvis** acts as the intelligent "Hands" that allow AI agents (like Claude, Cursor, or generic LLMs) to autonomously manage their own tools, infrastructure, and configuration.
-
-By connecting Jarvis to your AI client, you give the AI the power to install new capabilities, fix its own environment, and manage local servers without you needing to open a terminal.
+It relies heavily on the fantastic [MCPM (Model Context Protocol Manager)](https://github.com/pathintegral-institute/mcpm.sh) CLI to handle the heavy lifting of package management and registry lookups. Jarvis essentially gives your AI agent "hands" to drive the MCPM CLI, allowing it to self-manage its own capabilities.
 
 ---
 
-## 🌟 Extension of MCPM
+## ❤️ Credits & Disclaimer
 
-Jarvis is built to work seamlessly with MCPM v2.0. It does not replace MCPM but extends it into the agentic realm.
+Jarvis is a standalone open-source project. It is **not** affiliated with, endorsed by, or associated with the official MCPM developers ([Path Integral Institute](https://pathintegral.io)).
 
-*   **Registry Integration:** Jarvis uses the official [MCP Registry](https://mcpm.sh/registry) (via the MCPM CLI) to discover and verify tools.
-*   **Unified Config:** It respects the global configuration model of MCPM, meaning changes made by Jarvis are reflected in your CLI `mcpm ls` and vice-versa.
-*   **Vibes:** Built with the same philosophy: *Open Source. Agent Friendly. Simple.*
+We built Jarvis out of love for the MCPM project, recognizing it as the gold standard for managing MCP servers. We simply wanted to give AI agents a way to use it directly.
 
 ---
 
@@ -105,4 +101,5 @@ If Jarvis reports errors running `mcpm`, ensure you have run the `bootstrap_syst
 Jarvis requires Docker to be running for the database components. If `bootstrap_system` fails, check if Docker Desktop/Engine is active.
 
 ## 📜 License
-MIT License - Compatible with the [MCPM ecosystem](https://github.com/pathintegral-institute/mcpm.sh).
+MIT License
+
