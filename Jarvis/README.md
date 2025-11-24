@@ -4,7 +4,9 @@
 
 Jarvis is a specialized **Model Context Protocol (MCP) Server** designed to act as an autonomous gateway for managing your local MCP tools and infrastructure.
 
-It relies heavily on the fantastic [MCPM (Model Context Protocol Manager)](https://github.com/pathintegral-institute/mcpm.sh) CLI to handle the heavy lifting of package management and registry lookups. Jarvis essentially gives your AI agent "hands" to drive the MCPM CLI, allowing it to self-manage its own capabilities.
+It utilizes a **specialized, bundled fork** of the fantastic [MCPM (Model Context Protocol Manager)](https://github.com/pathintegral-institute/mcpm.sh) logic. While inspired by the official CLI, Jarvis includes a custom Node.js implementation (found in the `MCPM/` directory) to enable agent-specific features like JSON configuration output and Docker-first installation preferences.
+
+Jarvis essentially gives your AI agent "hands" to drive this manager, allowing it to self-manage its own capabilities.
 
 ---
 
@@ -90,7 +92,8 @@ graph LR
 ```
 
 *   **Jarvis (Go):** Handles the high-performance MCP connection, threading, and process lifecycle.
-*   **MCPM (Node.js):** Handles the logic of package resolution, dependency management (`npm`), and file generation.
+*   **MCPM (Node.js Fork):** A custom CLI implementation included in this repo. It handles package resolution, dependency management (`npm`), and file generation.
+    *   *Why a fork?* To support specific agentic workflows (like `docker run` config generation) that are not yet part of the upstream Python-based CLI.
 
 ## 🐛 Troubleshooting
 
