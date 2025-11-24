@@ -1,0 +1,25 @@
+run:
+  timeout: 5m
+  modules-download-mode: readonly
+
+linters:
+  disable-all: true
+  enable:
+    - errcheck
+    - gosimple
+    - govets
+    - ineffassign
+    - staticcheck
+    - typecheck
+    - unused
+    - gocyclo
+    - gofmt
+    - goimports
+    - misspell
+    - revive
+
+linters-settings:
+  gocyclo:
+    min-complexity: 15
+  goimports:
+    local-prefixes: github.com/JRedeker/Jarvis-mcpm
