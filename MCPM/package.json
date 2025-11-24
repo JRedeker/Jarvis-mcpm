@@ -1,20 +1,21 @@
 {
-  "name": "mcp",
+  "name": "mcpm-cli",
   "version": "1.0.0",
-  "description": "<!-- Cleanup note inserted by script - see archive/cleanup-todo-* for details -->",
+  "description": "Model Context Protocol Manager CLI",
   "main": "index.js",
-  "directories": {
-    "doc": "docs"
+  "bin": {
+    "mcpm": "./index.js"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "devDependencies": {
-    "@morph-llm/morph-fast-apply": "^0.8.1",
-    "mcp-fetch-server": "^1.0.2"
+  "dependencies": {
+    "commander": "^11.0.0",
+    "toml": "^3.0.0",
+    "chalk": "^4.1.2",
+    "cli-table3": "^0.6.3",
+    "conf": "^10.2.0"
   },
-  "dependencies": {}
+  "author": "",
+  "license": "ISC"
 }

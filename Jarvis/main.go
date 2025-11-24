@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"sync"
 	"time"
@@ -43,6 +44,57 @@ func main() {
 		server.WithResourceCapabilities(true, true),
 		server.WithLogging(),
 	)
+
+	// Tool: bootstrap_system
+	s.AddTool(mcp.NewTool("bootstrap_system",
+		mcp.WithDescription("Initialize the MCP environment (install dependencies, start infrastructure)"),
+	), func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		// Find the project root. Assuming Jarvis is run from within Jarvis/ directory or root.
+		// We'll try to locate "MCPM" directory.
+		cwd, err := os.Getwd()
+		if err != nil {
+			return mcp.NewToolResultError(fmt.Sprintf("Failed to get current working directory: %v", err)), nil
+		}
+
+		// Logic to find root
+		var rootDir string
+		if _, err := os.Stat(filepath.Join(cwd, "MCPM")); err == nil {
+			rootDir = cwd
+		} else if _, err := os.Stat(filepath.Join(cwd, "..", "MCPM")); err == nil {
+			rootDir = filepath.Join(cwd, "..")
+		} else {
+			return mcp.NewToolResultError("Could not locate MCPM directory. Please run Jarvis from the project root or Jarvis subdirectory."), nil
+		}
+
+		mcpmDir := filepath.Join(rootDir, "MCPM")
+
+		// 1. Install MCPM dependencies
+		// Check if node_modules exists, if so skip? No, safer to install.
+		// fmt.Fprintln(os.Stderr, "Bootstrapping: Installing MCPM dependencies...")
+		cmdInstall := exec.Command("npm", "install")
+		cmdInstall.Dir = mcpmDir
+		if out, err := cmdInstall.CombinedOutput(); err != nil {
+			return mcp.NewToolResultError(fmt.Sprintf("Failed to run npm install in %s: %v\nOutput: %s", mcpmDir, err, string(out))), nil
+		}
+
+		// 2. Link MCPM
+		// fmt.Fprintln(os.Stderr, "Bootstrapping: Linking MCPM...")
+		cmdLink := exec.Command("npm", "link")
+		cmdLink.Dir = mcpmDir
+		if out, err := cmdLink.CombinedOutput(); err != nil {
+			return mcp.NewToolResultError(fmt.Sprintf("Failed to run npm link in %s: %v\nOutput: %s", mcpmDir, err, string(out))), nil
+		}
+
+		// 3. Start Infrastructure
+		// fmt.Fprintln(os.Stderr, "Bootstrapping: Starting Infrastructure...")
+		cmdCompose := exec.Command("docker-compose", "up", "-d")
+		cmdCompose.Dir = rootDir
+		if out, err := cmdCompose.CombinedOutput(); err != nil {
+			return mcp.NewToolResultError(fmt.Sprintf("Failed to run docker-compose up in %s: %v\nOutput: %s", rootDir, err, string(out))), nil
+		}
+
+		return mcp.NewToolResultText("System bootstrapped successfully! MCPM installed and Infrastructure started."), nil
+	})
 
 	// Tool: list_servers
 	s.AddTool(mcp.NewTool("list_servers",

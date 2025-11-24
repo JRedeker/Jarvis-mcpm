@@ -76,19 +76,31 @@ graph TD
 *   **Environment:** Linux/macOS (Windows via WSL2).
 
 ### 4.2. Initialization Sequence
-```bash
-# 1. Start Infrastructure
-docker-compose up -d
 
-# 2. Install MCPM Core
-cd MCPM && npm install && npm link
+The system is designed to be bootstrapped by the agent itself.
 
-# 3. Build Jarvis Gateway
-cd ../Jarvis && go build -o jarvis .
+1.  **Build Jarvis:**
+    ```bash
+    cd Jarvis
+    go build -o jarvis .
+    ```
 
-# 4. Verify System Status
-./jarvis -mode=diagnose
-```
+2.  **Configure Agent:**
+    Add the built `jarvis` binary to your MCP client configuration (e.g., `claude_desktop_config.json` or Cline settings).
+    - **Command:** Absolute path to `.../MCP/Jarvis/jarvis`
+    - **Args:** None required
+
+3.  **Bootstrap via Agent:**
+    Start your agent and give the instruction:
+    > "Please bootstrap the system."
+
+    Jarvis will automatically:
+    - Install the MCPM CLI dependencies.
+    - Link the `mcpm` command to your system.
+    - Start the Docker infrastructure (Postgres & Qdrant).
+
+4.  **Verify:**
+    Ask the agent: *"Check system status"* to confirm everything is running.
 
 ## 5. Documentation Index
 
