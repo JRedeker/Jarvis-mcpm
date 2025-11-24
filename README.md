@@ -1,113 +1,115 @@
-# MCP Ecosystem: Technical Reference
+# 🤖 Jarvis - MCP Automation Gateway
 
-**System Context:** Model Context Protocol (MCP) Management & Execution Environment
-**Primary Function:** Orchestration of MCP servers via CLI management and agentic gateways.
+> **"Just ask, and it shall be configured."**
 
-## 1. System Architecture
+Jarvis is a specialized **Model Context Protocol (MCP) Server** designed to act as an autonomous gateway for managing your local MCP tools and infrastructure.
 
-The repository implements a layered architecture separating infrastructure, package management, and execution gateways.
+It utilizes a **specialized, bundled fork** of the fantastic [MCPM (Model Context Protocol Manager)](https://github.com/pathintegral-institute/mcpm.sh) logic. While inspired by the official CLI, Jarvis includes a custom Node.js implementation (found in the `MCPM/` directory) to enable agent-specific features like JSON configuration output and Docker-first installation preferences.
 
-```mermaid
-graph TD
-    subgraph "Layer 1: Infrastructure"
-        Docker[Docker Compose] -->|Hosts| DB[(PostgreSQL :5432)]
-        Docker -->|Hosts| Vector[(Qdrant :6333)]
-    end
+Jarvis essentially gives your AI agent "hands" to drive this manager, allowing it to self-manage its own capabilities.
 
-    subgraph "Layer 2: Package Management (MCPM)"
-        MCPM_CLI[MCPM CLI] -->|Reads| Registry[Technology Registry]
-        MCPM_CLI -->|Generates| IDE_Config[IDE Configurations]
-        MCPM_CLI -->|Manages| Server_Bin[Server Binaries]
-    end
+---
 
-    subgraph "Layer 3: Execution Gateway (Jarvis)"
-        Agent[AI Agent] -->|MCP Protocol| Jarvis[Jarvis Server]
-        Jarvis -->|Subprocess| MCPM_CLI
-        Jarvis -->|Exposes| Tools[Management Tools]
-    end
+## ❤️ Credits & Disclaimer
 
-    MCPM_CLI -.->|Depends On| Docker
+Jarvis is a standalone open-source project. It is **not** affiliated with, endorsed by, or associated with the official MCPM developers ([Path Integral Institute](https://pathintegral.io)).
+
+We built Jarvis out of love for the MCPM project, recognizing it as the gold standard for managing MCP servers. We simply wanted to give AI agents a way to use it directly.
+
+---
+
+## 🚀 Quick Start
+
+### 1. Build Jarvis
+Jarvis is a single binary. You only need Go installed to build it.
+
+```bash
+cd Jarvis
+go build -o jarvis .
 ```
 
-## 2. Component Specifications
+### 2. Connect Your Agent
+Add Jarvis to your MCP client configuration.
 
-### 2.1. Jarvis Gateway (`./Jarvis/`)
-*   **Type:** MCP Server (Go)
-*   **Role:** Agentic Interface for System Management.
-*   **Mechanism:** Wraps `mcpm` CLI commands into executable MCP tools.
-*   **Key Tools:**
-    *   `install_server(name: str)`: Invokes `mcpm install`.
-    *   `list_servers()`: Invokes `mcpm list --json`.
-    *   `check_status()`: Diagnostics via `mcpm doctor`.
-*   **Dependency:** Requires `mcpm` binary in system PATH.
+**For Claude Desktop (`~/Library/Application Support/Claude/claude_desktop_config.json`):**
+```json
+{
+  "mcpServers": {
+    "jarvis": {
+      "command": "/absolute/path/to/MCP/Jarvis/jarvis",
+      "args": []
+    }
+  }
+}
+```
 
-### 2.2. MCPM Core (`./MCPM/`)
-*   **Type:** Node.js CLI Application
-*   **Role:** Package Manager & Configuration Generator.
-*   **Data Source:** `config/technologies.toml` (Registry of supported servers).
-*   **Outputs:**
-    *   `cline_mcp_settings.json`: Configuration for Cline IDE.
-    *   `cursor_mcp_settings.json`: Configuration for Cursor IDE.
+*(Ensure the path points to where you cloned this repository)*
 
-### 2.3. Infrastructure (`./`)
-*   **Container Runtime:** Docker Compose (`docker-compose.yml`).
-*   **Services:**
-    *   **PostgreSQL:** `postgres:15` on port `5432`.
-    *   **Qdrant:** `qdrant/qdrant:latest` on port `6333` (Vector Store).
+### 3. Bootstrap the System
+Once connected, simply open your AI client and type:
 
-## 3. Operational Workflows
+> **"Please bootstrap the MCP system."**
 
-### 3.1. Server Installation Path
-1.  **Trigger:** Agent calls `jarvis.install_server("brave")`.
-2.  **Execution:** Jarvis spawns `mcpm install brave`.
-3.  **Resolution:** MCPM resolves "brave" from `technologies.toml`.
-4.  **Action:** MCPM installs npm package `@modelcontextprotocol/server-brave-search`.
-5.  **Config:** MCPM updates local registry and regenerates IDE config files.
+Jarvis will use its `bootstrap_system` tool to:
+1.  Install the **MCPM** (Package Manager) core dependencies.
+2.  Link the `mcpm` CLI to your system path.
+3.  Start the **Infrastructure** (PostgreSQL & Qdrant) via Docker.
 
-### 3.2. Semantic Search Path (Future)
-1.  **Trigger:** Agent calls `jarvis.search_servers("web search")`.
-2.  **Query:** Jarvis queries Qdrant vector store (via `memory` server or direct client).
-3.  **Result:** Returns relevant server packages based on description embeddings.
+---
 
-## 4. Development Environment Setup
+## 🛠️ Capabilities
 
-### 4.1. Prerequisites
-*   **Runtime:** Go 1.24+, Node.js 18+, Docker Engine.
-*   **Environment:** Linux/macOS (Windows via WSL2).
+Jarvis exposes the following tools to your AI agent:
 
-### 4.2. Initialization Sequence
+### 📦 Package Management
+*   **`install_server(name)`**: Installs a new MCP server from the registry (e.g., "brave", "sqlite").
+*   **`uninstall_server(name)`**: Removes a server and its configuration.
+*   **`list_servers()`**: Shows all currently installed and active servers.
+*   **`search_servers(query)`**: Finds new tools in the `technologies.toml` registry.
+*   **`server_info(name)`**: Displays detailed metadata about a specific tool.
 
-The system is designed to be bootstrapped by the agent itself.
+### ⚙️ System Configuration
+*   **`bootstrap_system()`**: The one-click setup tool. Initializes the entire environment.
+*   **`check_status()`**: Runs a system doctor (checks Node, Docker, Config health).
+*   **`manage_config(action, key, value)`**: Modifies core MCPM settings.
+*   **`manage_profile(action, name)`**: Creates or switches between tool profiles (e.g., "dev", "research").
 
-1.  **Build Jarvis:**
-    ```bash
-    cd Jarvis
-    go build -o jarvis .
-    ```
+### 🌐 Sharing & Tunnels
+*   **`share_server(name)`**: Exposes a local MCP server via a secure public tunnel (great for demos or remote agents).
+*   **`stop_sharing_server(name)`**: Tears down the tunnel.
+*   **`list_shared_servers()`**: Shows active tunnels.
 
-2.  **Configure Agent:**
-    Add the built `jarvis` binary to your MCP client configuration (e.g., `claude_desktop_config.json` or Cline settings).
-    - **Command:** Absolute path to `.../MCP/Jarvis/jarvis`
-    - **Args:** None required
+---
 
-3.  **Bootstrap via Agent:**
-    Start your agent and give the instruction:
-    > "Please bootstrap the system."
+## 🏗️ Architecture
 
-    Jarvis will automatically:
-    - Install the MCPM CLI dependencies.
-    - Link the `mcpm` command to your system.
-    - Start the Docker infrastructure (Postgres & Qdrant).
+Jarvis acts as a **Translation Layer**:
 
-4.  **Verify:**
-    Ask the agent: *"Check system status"* to confirm everything is running.
+```mermaid
+graph LR
+    Agent[AI Agent] <-->|MCP Protocol| Jarvis[Jarvis Server]
+    Jarvis <-->|Exec| CLI[MCPM Node.js CLI]
+    CLI <-->|Manage| Registry[technologies.toml]
+    CLI <-->|Control| Docker[Docker Infrastructure]
+```
 
-## 5. Documentation Index
+*   **Jarvis (Go):** Handles the high-performance MCP connection, threading, and process lifecycle.
+*   **MCPM (Node.js Fork):** A custom CLI implementation included in this repo. It handles package resolution, dependency management (`npm`), and file generation.
+    *   *Why a fork?* To support specific agentic workflows (like `docker run` config generation) that are not yet part of the upstream Python-based CLI.
 
-*   **Architecture:** [`ARCHITECTURE-MAP.md`](./ARCHITECTURE-MAP.md)
-*   **MCPM Spec:** [`docs/MCPM-documentation.md`](./docs/MCPM-documentation.md)
-*   **Server Registry:** [`MCPM/config/technologies.toml`](./MCPM/config/technologies.toml)
+## 🔍 Documentation
 
-## 6. Reference Material
+*   [**Technical Architecture**](docs/TECHNICAL_ARCHITECTURE.md): Deep dive into the system internals and infrastructure.
+*   [**Jarvis Component**](Jarvis/README.md): Development guide for the Go server.
+*   [**MCPM Fork Details**](MCPM/FORK_DETAILS.md): Explanation of the Node.js CLI implementation.
 
-*   **`mcpm_source/`**: This directory contains source code for reference purposes only. It is not part of the active system or build pipeline.
+## 🐛 Troubleshooting
+
+**"Command not found"**
+If Jarvis reports errors running `mcpm`, ensure you have run the `bootstrap_system` tool at least once, or manually run `npm link` inside the `MCPM/` directory.
+
+**Docker issues**
+Jarvis requires Docker to be running for the database components. If `bootstrap_system` fails, check if Docker Desktop/Engine is active.
+
+## 📜 License
+MIT License
