@@ -147,6 +147,7 @@ mcpjungle = {
 
 mindsdb = {
     repo = "https://github.com/mindsdb/mindsdb",
+    docker = "mindsdb/mindsdb:latest",
     category = "tbd",
     notes = "Not yet sure how or what we use this for - needs evaluation",
     transport = "stdio",

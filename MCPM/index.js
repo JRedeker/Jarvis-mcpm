@@ -95,30 +95,40 @@ program
         const config = readConfig();
         let found = false;
         let pkgName = name;
+        let dockerImage = null;
         
         // Simple lookup strategy
         for (const group in config.technologies) {
              if (config.technologies[group][name]) {
                  found = true;
                  const tech = config.technologies[group][name];
+                 if (tech.docker) {
+                     dockerImage = tech.docker;
+                 }
                  if (tech.package) {
                      pkgName = tech.package;
                  } else if (tech.repo) {
-                     // If it's a repo, we might want to install via git+https
                      pkgName = `git+${tech.repo}.git`;
                  }
              }
         }
 
-        // Check package mappings if not found in tech tree but might be a mapped name
-        if (!found && config.package_mappings) {
-             // This logic is a bit circular. Usually mappings map pkg -> shortname.
-             // Here we are looking up shortname -> pkg.
-             // The technologies.toml structure handles shortname -> data.
-        }
-
         if (!found) {
              console.log(chalk.yellow(`Warning: ${name} not found in technologies.toml. Attempting direct npm install...`));
+        }
+
+        // Docker Preference Logic
+        if (dockerImage) {
+            console.log(chalk.blue(`Docker image found: ${dockerImage}. Preferring Docker installation...`));
+            try {
+                execSync(`docker pull ${dockerImage}`, { stdio: 'inherit' });
+                console.log(chalk.green(`Successfully pulled Docker image for ${name}`));
+                return; // Exit after docker install
+            } catch (e) {
+                console.log(chalk.red(`Failed to pull docker image: ${e.message}`));
+                console.log(chalk.yellow(`Falling back to npm/git installation...`));
+                // Fallthrough to npm
+            }
         }
 
         try {
