@@ -1,10 +1,22 @@
-# 🤖 Jarvis: The MCP Automation Gateway
+# 🤖 Jarvis - MCP Automation Gateway
 
 > **"Just ask, and it shall be configured."**
 
-Jarvis is a specialized **Model Context Protocol (MCP) Server** written in Go. It acts as the intelligent "Hands" of the MCP ecosystem, allowing AI agents (like Claude, Cursor, or generic LLMs) to autonomously manage their own tools, infrastructure, and configuration.
+Jarvis is a specialized **Model Context Protocol (MCP) Server** designed as the autonomous companion to the [MCPM (Model Context Protocol Manager)](https://github.com/pathintegral-institute/mcpm.sh) ecosystem.
+
+While **MCPM** provides the CLI and global registry for managing servers, **Jarvis** acts as the intelligent "Hands" that allow AI agents (like Claude, Cursor, or generic LLMs) to autonomously manage their own tools, infrastructure, and configuration.
 
 By connecting Jarvis to your AI client, you give the AI the power to install new capabilities, fix its own environment, and manage local servers without you needing to open a terminal.
+
+---
+
+## 🌟 Extension of MCPM
+
+Jarvis is built to work seamlessly with MCPM v2.0. It does not replace MCPM but extends it into the agentic realm.
+
+*   **Registry Integration:** Jarvis uses the official [MCP Registry](https://mcpm.sh/registry) (via the MCPM CLI) to discover and verify tools.
+*   **Unified Config:** It respects the global configuration model of MCPM, meaning changes made by Jarvis are reflected in your CLI `mcpm ls` and vice-versa.
+*   **Vibes:** Built with the same philosophy: *Open Source. Agent Friendly. Simple.*
 
 ---
 
@@ -39,7 +51,7 @@ Once connected, simply open your AI client and type:
 > **"Please bootstrap the MCP system."**
 
 Jarvis will use its `bootstrap_system` tool to:
-1.  Install the **MCPM** (Package Manager) core dependencies (Node.js).
+1.  Install the **MCPM** (Package Manager) core dependencies.
 2.  Link the `mcpm` CLI to your system path.
 3.  Start the **Infrastructure** (PostgreSQL & Qdrant) via Docker.
 
@@ -93,4 +105,4 @@ If Jarvis reports errors running `mcpm`, ensure you have run the `bootstrap_syst
 Jarvis requires Docker to be running for the database components. If `bootstrap_system` fails, check if Docker Desktop/Engine is active.
 
 ## 📜 License
-Part of the MCP Jungle ecosystem. Internal Research Preview.
+MIT License - Compatible with the [MCPM ecosystem](https://github.com/pathintegral-institute/mcpm.sh).
