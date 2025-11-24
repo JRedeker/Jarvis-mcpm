@@ -1,4 +1,4 @@
-# 🤖 Jarvis: Give Your AI Agent "Hands"
+# 🤖 Jarvis: Give Your AI Agent the Ability to Manage MCP Tooling
 
 **The missing link between your AI and your local tools.**
 
