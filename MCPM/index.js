@@ -117,12 +117,32 @@ program
              console.log(chalk.yellow(`Warning: ${name} not found in technologies.toml. Attempting direct npm install...`));
         }
 
+        // Helper to print config snippet
+        const printConfigSnippet = (toolName, type, target) => {
+            console.log(chalk.magenta(`\nConfiguration Snippet (Add to your Client Config):`));
+            let config = {};
+            if (type === 'docker') {
+                config = {
+                    command: "docker",
+                    args: ["run", "-i", "--rm", target]
+                };
+            } else {
+                // npm/node
+                config = {
+                    command: "node",
+                    args: [path.join(__dirname, 'node_modules', target, 'index.js')]
+                };
+            }
+            console.log(JSON.stringify({ [toolName]: config }, null, 2));
+        };
+
         // Docker Preference Logic
         if (dockerImage) {
             console.log(chalk.blue(`Docker image found: ${dockerImage}. Preferring Docker installation...`));
             try {
                 execSync(`docker pull ${dockerImage}`, { stdio: 'inherit' });
                 console.log(chalk.green(`Successfully pulled Docker image for ${name}`));
+                printConfigSnippet(name, 'docker', dockerImage);
                 return; // Exit after docker install
             } catch (e) {
                 console.log(chalk.red(`Failed to pull docker image: ${e.message}`));
@@ -135,6 +155,16 @@ program
             // Use --save to ensure it's added to package.json
             execSync(`npm install ${pkgName} --save`, { stdio: 'inherit', cwd: __dirname });
             console.log(chalk.green(`Successfully installed ${name}`));
+            // For npm, the target is the package name (or mapped name)
+            // We need to know the actual folder in node_modules. usually pkgName unless it's a git url.
+            // For git urls, npm usually installs to the repo name. 
+            // For this prototype, we'll assume the user provided 'name' matches the folder or we'd need to parse pkgName.
+            let folderName = pkgName;
+            if (pkgName.startsWith('git+')) {
+                // simplistic fallback
+                folderName = name; 
+            }
+            printConfigSnippet(name, 'npm', folderName);
         } catch (e) {
             console.error(chalk.red(`Failed to install ${name}: ${e.message}`));
             process.exit(1);
