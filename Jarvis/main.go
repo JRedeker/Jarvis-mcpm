@@ -1,15 +1,41 @@
 package main
 
 import (
+	"bufio"
 	"context"
 	"fmt"
+	"os"
 	"os/exec"
+	"strings"
+	"sync"
+	"time"
 
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"
 )
 
+var (
+	sharedServers      = make(map[string]*exec.Cmd)
+	sharedServersMutex sync.Mutex
+)
+
+func printBanner() {
+	banner := `
+     ██╗ █████╗ ██████╗ ██╗   ██╗██╗███████╗
+     ██║██╔══██╗██╔══██╗██║   ██║██║██╔════╝
+     ██║███████║██████╔╝██║   ██║██║███████╗
+██   ██║██╔══██║██╔══██╗╚██╗ ██╔╝██║╚════██║
+╚█████╔╝██║  ██║██║  ██║ ╚████╔╝ ██║███████║
+ ╚════╝ ╚═╝  ╚═╝╚═╝  ╚═╝  ╚═══╝  ╚═╝╚══════╝
+`
+	// Print to Stderr to avoid interfering with MCP stdio protocol
+	fmt.Fprintln(os.Stderr, "\033[36m"+banner+"\033[0m")
+	fmt.Fprintln(os.Stderr, "\033[1;32m>> JARVIS MCP Gateway v1.0.0 initialized <<\033[0m")
+}
+
 func main() {
+	printBanner()
+
 	// Create a new MCP server
 	s := server.NewMCPServer(
 		"jarvis",
@@ -22,7 +48,7 @@ func main() {
 	s.AddTool(mcp.NewTool("list_servers",
 		mcp.WithDescription("List all installed MCP servers managed by MCPM"),
 	), func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-		output, err := runMcpmCommand("list")
+		output, err := runMcpmCommand("ls")
 		if err != nil {
 			return mcp.NewToolResultError(fmt.Sprintf("Failed to list servers: %v", err)), nil
 		}
@@ -143,9 +169,22 @@ func main() {
 			mcp.Description("Name of the server to edit"),
 			mcp.Required(),
 		),
+		mcp.WithString("command",
+			mcp.Description("New command (for stdio servers)"),
+		),
+		mcp.WithString("args",
+			mcp.Description("New arguments (space-separated)"),
+		),
+		mcp.WithString("env",
+			mcp.Description("New environment variables (KEY=value,...)"),
+		),
+		mcp.WithString("url",
+			mcp.Description("New URL (for remote servers)"),
+		),
+		mcp.WithString("headers",
+			mcp.Description("New headers (KEY=value,...)"),
+		),
 	), func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-		// Note: 'edit' is interactive by default. We might need to handle this carefully or assume non-interactive mode via env vars if supported.
-		// For now, we'll just run it, but it might fail if it prompts for input.
 		args, ok := request.Params.Arguments.(map[string]interface{})
 		if !ok {
 			return mcp.NewToolResultError("invalid arguments"), nil
@@ -155,7 +194,24 @@ func main() {
 			return mcp.NewToolResultError("name argument is required"), nil
 		}
 
-		output, err := runMcpmCommand("edit", name)
+		cmdArgs := []string{"edit", name}
+		if val, ok := args["command"].(string); ok && val != "" {
+			cmdArgs = append(cmdArgs, "--command", val)
+		}
+		if val, ok := args["args"].(string); ok && val != "" {
+			cmdArgs = append(cmdArgs, "--args", val)
+		}
+		if val, ok := args["env"].(string); ok && val != "" {
+			cmdArgs = append(cmdArgs, "--env", val)
+		}
+		if val, ok := args["url"].(string); ok && val != "" {
+			cmdArgs = append(cmdArgs, "--url", val)
+		}
+		if val, ok := args["headers"].(string); ok && val != "" {
+			cmdArgs = append(cmdArgs, "--headers", val)
+		}
+
+		output, err := runMcpmCommand(cmdArgs...)
 		if err != nil {
 			return mcp.NewToolResultError(fmt.Sprintf("Failed to edit server %s: %v", name, err)), nil
 		}
@@ -179,8 +235,14 @@ func main() {
 		mcp.WithString("args",
 			mcp.Description("Command arguments"),
 		),
+		mcp.WithString("env",
+			mcp.Description("Environment variables (KEY=value,...) (stdio only)"),
+		),
 		mcp.WithString("url",
 			mcp.Description("Server URL (required for remote)"),
+		),
+		mcp.WithString("headers",
+			mcp.Description("HTTP headers (KEY=value,...) (remote only)"),
 		),
 	), func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 		args, ok := request.Params.Arguments.(map[string]interface{})
@@ -204,8 +266,14 @@ func main() {
 		if argStr, ok := args["args"].(string); ok && argStr != "" {
 			cmdArgs = append(cmdArgs, "--args", argStr)
 		}
+		if envStr, ok := args["env"].(string); ok && envStr != "" {
+			cmdArgs = append(cmdArgs, "--env", envStr)
+		}
 		if url, ok := args["url"].(string); ok && url != "" {
 			cmdArgs = append(cmdArgs, "--url", url)
+		}
+		if headersStr, ok := args["headers"].(string); ok && headersStr != "" {
+			cmdArgs = append(cmdArgs, "--headers", headersStr)
 		}
 
 		output, err := runMcpmCommand(cmdArgs...)
@@ -230,8 +298,23 @@ func main() {
 	s.AddTool(mcp.NewTool("manage_client",
 		mcp.WithDescription("Manage MCP client configurations"),
 		mcp.WithString("action",
-			mcp.Description("Action to perform (ls|edit|import)"), // Simplified for now
+			mcp.Description("Action to perform (ls|edit|import)"),
 			mcp.Required(),
+		),
+		mcp.WithString("client_name",
+			mcp.Description("Client name (required for edit/import)"),
+		),
+		mcp.WithString("add_server",
+			mcp.Description("Servers to add (comma-separated, edit only)"),
+		),
+		mcp.WithString("remove_server",
+			mcp.Description("Servers to remove (comma-separated, edit only)"),
+		),
+		mcp.WithString("add_profile",
+			mcp.Description("Profiles to add (comma-separated, edit only)"),
+		),
+		mcp.WithString("remove_profile",
+			mcp.Description("Profiles to remove (comma-separated, edit only)"),
 		),
 	), func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 		args, ok := request.Params.Arguments.(map[string]interface{})
@@ -243,12 +326,32 @@ func main() {
 			return mcp.NewToolResultError("action argument is required"), nil
 		}
 
-		// Note: 'client' command might have subcommands. Adjusting based on typical usage.
-		// Assuming 'mcpm client <action>' works or similar.
-		// If 'mcpm client' is interactive, this might fail.
-		// Let's assume basic 'mcpm client' lists clients if no args, but here we take an action.
-		// Actually, 'mcpm client' usually takes subcommands. Let's try passing the action.
-		output, err := runMcpmCommand("client", action)
+		cmdArgs := []string{"client", action}
+
+		if action == "edit" || action == "import" {
+			clientName, ok := args["client_name"].(string)
+			if !ok || clientName == "" {
+				return mcp.NewToolResultError("client_name argument is required for this action"), nil
+			}
+			cmdArgs = append(cmdArgs, clientName)
+		}
+
+		if action == "edit" {
+			if val, ok := args["add_server"].(string); ok && val != "" {
+				cmdArgs = append(cmdArgs, "--add-server", val)
+			}
+			if val, ok := args["remove_server"].(string); ok && val != "" {
+				cmdArgs = append(cmdArgs, "--remove-server", val)
+			}
+			if val, ok := args["add_profile"].(string); ok && val != "" {
+				cmdArgs = append(cmdArgs, "--add-profile", val)
+			}
+			if val, ok := args["remove_profile"].(string); ok && val != "" {
+				cmdArgs = append(cmdArgs, "--remove-profile", val)
+			}
+		}
+
+		output, err := runMcpmCommand(cmdArgs...)
 		if err != nil {
 			return mcp.NewToolResultError(fmt.Sprintf("Failed to manage client: %v", err)), nil
 		}
@@ -259,11 +362,20 @@ func main() {
 	s.AddTool(mcp.NewTool("manage_profile",
 		mcp.WithDescription("Manage MCPM profiles"),
 		mcp.WithString("action",
-			mcp.Description("Action to perform (ls|create|switch|delete)"),
+			mcp.Description("Action to perform (ls|create|edit|delete)"),
 			mcp.Required(),
 		),
 		mcp.WithString("name",
-			mcp.Description("Profile name (required for create/switch/delete)"),
+			mcp.Description("Profile name (required for create/edit/delete)"),
+		),
+		mcp.WithString("new_name",
+			mcp.Description("New profile name (only for edit action to rename)"),
+		),
+		mcp.WithString("add_servers",
+			mcp.Description("Comma-separated list of servers to add (only for edit action)"),
+		),
+		mcp.WithString("remove_servers",
+			mcp.Description("Comma-separated list of servers to remove (only for edit action)"),
 		),
 	), func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 		args, ok := request.Params.Arguments.(map[string]interface{})
@@ -275,9 +387,34 @@ func main() {
 			return mcp.NewToolResultError("action argument is required"), nil
 		}
 
-		cmdArgs := []string{"profile", action}
+		// Map 'delete' to 'rm' for the CLI
+		cliAction := action
+		if action == "delete" {
+			cliAction = "rm"
+		}
+
+		cmdArgs := []string{"profile", cliAction}
 		if name, ok := args["name"].(string); ok && name != "" {
 			cmdArgs = append(cmdArgs, name)
+		}
+
+		// Handle edit arguments
+		if action == "edit" {
+			if newName, ok := args["new_name"].(string); ok && newName != "" {
+				cmdArgs = append(cmdArgs, "--name", newName)
+			}
+			if add, ok := args["add_servers"].(string); ok && add != "" {
+				cmdArgs = append(cmdArgs, "--add-server", add)
+			}
+			if remove, ok := args["remove_servers"].(string); ok && remove != "" {
+				cmdArgs = append(cmdArgs, "--remove-server", remove)
+			}
+		}
+
+		// For delete/rm, we might need force to avoid interactive prompt if it exists (though profile rm might not prompt by default, safe to add if supported)
+		// Checking help, 'rm' has --force.
+		if cliAction == "rm" {
+			cmdArgs = append(cmdArgs, "--force")
 		}
 
 		output, err := runMcpmCommand(cmdArgs...)
@@ -336,6 +473,163 @@ func main() {
 		return mcp.NewToolResultText(output), nil
 	})
 
+	// Tool: share_server
+	s.AddTool(mcp.NewTool("share_server",
+		mcp.WithDescription("Share a local server via a secure tunnel"),
+		mcp.WithString("name",
+			mcp.Description("Name of the server to share"),
+			mcp.Required(),
+		),
+		mcp.WithString("port",
+			mcp.Description("Port to run the shared server on"),
+		),
+		mcp.WithBoolean("no_auth",
+			mcp.Description("Disable authentication for the shared server"),
+		),
+	), func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		args, ok := request.Params.Arguments.(map[string]interface{})
+		if !ok {
+			return mcp.NewToolResultError("invalid arguments"), nil
+		}
+		name, ok := args["name"].(string)
+		if !ok {
+			return mcp.NewToolResultError("name argument is required"), nil
+		}
+
+		sharedServersMutex.Lock()
+		if _, exists := sharedServers[name]; exists {
+			sharedServersMutex.Unlock()
+			return mcp.NewToolResultError(fmt.Sprintf("Server %s is already being shared", name)), nil
+		}
+		sharedServersMutex.Unlock()
+
+		cmdArgs := []string{"share", name}
+		if port, ok := args["port"].(string); ok && port != "" {
+			cmdArgs = append(cmdArgs, "--port", port)
+		}
+		if noAuth, ok := args["no_auth"].(bool); ok && noAuth {
+			cmdArgs = append(cmdArgs, "--no-auth")
+		}
+
+		// Run mcpm share in background
+		cmd := exec.Command("mcpm", cmdArgs...)
+		cmd.Env = append(os.Environ(), "MCPM_NON_INTERACTIVE=true", "MCPM_FORCE=true")
+
+		// Create pipes for stdout/stderr
+		stdout, err := cmd.StdoutPipe()
+		if err != nil {
+			return mcp.NewToolResultError(fmt.Sprintf("Failed to create stdout pipe: %v", err)), nil
+		}
+		// stderr, err := cmd.StderrPipe() // Optional: capture stderr for logging
+
+		if err := cmd.Start(); err != nil {
+			return mcp.NewToolResultError(fmt.Sprintf("Failed to start share command: %v", err)), nil
+		}
+
+		// Register the process immediately
+		sharedServersMutex.Lock()
+		sharedServers[name] = cmd
+		sharedServersMutex.Unlock()
+
+		// Read stdout to find the URL
+		scanner := bufio.NewScanner(stdout)
+		success := make(chan string)
+		failure := make(chan string)
+
+		go func() {
+			outputBuilder := strings.Builder{}
+			// Set a timeout for startup
+			timeout := time.After(30 * time.Second)
+
+			for {
+				select {
+				case <-timeout:
+					failure <- fmt.Sprintf("Timed out waiting for share URL. Output so far:\n%s", outputBuilder.String())
+					return
+				default:
+					if !scanner.Scan() {
+						failure <- fmt.Sprintf("Process exited unexpectedly. Output:\n%s", outputBuilder.String())
+						return
+					}
+					line := scanner.Text()
+					outputBuilder.WriteString(line + "\n")
+
+					// Look for success indicators
+					// Adjust these checks based on actual mcpm share output
+					if strings.Contains(line, "Public URL:") || strings.Contains(line, "https://") {
+						success <- outputBuilder.String()
+						return
+					}
+				}
+			}
+		}()
+
+		select {
+		case output := <-success:
+			return mcp.NewToolResultText(output), nil
+		case errStr := <-failure:
+			// Cleanup if failed
+			_ = cmd.Process.Kill()
+			sharedServersMutex.Lock()
+			delete(sharedServers, name)
+			sharedServersMutex.Unlock()
+			return mcp.NewToolResultError(errStr), nil
+		}
+	})
+
+	// Tool: stop_sharing_server
+	s.AddTool(mcp.NewTool("stop_sharing_server",
+		mcp.WithDescription("Stop sharing a server"),
+		mcp.WithString("name",
+			mcp.Description("Name of the server to stop sharing"),
+			mcp.Required(),
+		),
+	), func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		args, ok := request.Params.Arguments.(map[string]interface{})
+		if !ok {
+			return mcp.NewToolResultError("invalid arguments"), nil
+		}
+		name, ok := args["name"].(string)
+		if !ok {
+			return mcp.NewToolResultError("name argument is required"), nil
+		}
+
+		sharedServersMutex.Lock()
+		cmd, exists := sharedServers[name]
+		if !exists {
+			sharedServersMutex.Unlock()
+			return mcp.NewToolResultError(fmt.Sprintf("Server %s is not currently shared", name)), nil
+		}
+		delete(sharedServers, name)
+		sharedServersMutex.Unlock()
+
+		if err := cmd.Process.Kill(); err != nil {
+			return mcp.NewToolResultError(fmt.Sprintf("Failed to stop sharing server %s: %v", name, err)), nil
+		}
+
+		return mcp.NewToolResultText(fmt.Sprintf("Stopped sharing server %s", name)), nil
+	})
+
+	// Tool: list_shared_servers
+	s.AddTool(mcp.NewTool("list_shared_servers",
+		mcp.WithDescription("List currently shared servers"),
+	), func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		sharedServersMutex.Lock()
+		defer sharedServersMutex.Unlock()
+
+		if len(sharedServers) == 0 {
+			return mcp.NewToolResultText("No servers are currently being shared."), nil
+		}
+
+		var builder strings.Builder
+		builder.WriteString("Currently shared servers:\n")
+		for name := range sharedServers {
+			builder.WriteString(fmt.Sprintf("- %s\n", name))
+		}
+
+		return mcp.NewToolResultText(builder.String()), nil
+	})
+
 	// Start the server using Stdio transport
 	if err := server.ServeStdio(s); err != nil {
 		fmt.Printf("Server error: %v\n", err)
@@ -344,14 +638,13 @@ func main() {
 
 // Helper function to run mcpm commands
 func runMcpmCommand(args ...string) (string, error) {
-	// We assume 'mcpm' is available in the PATH or mounted into the container
+	// mcpm is now available in PATH
 	cmd := exec.Command("mcpm", args...)
-	// Ensure non-interactive mode where possible
-	cmd.Env = append(cmd.Env, "MCPM_NON_INTERACTIVE=true", "MCPM_FORCE=true")
+	cmd.Env = append(os.Environ(), "MCPM_NON_INTERACTIVE=true", "MCPM_FORCE=true")
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		return "", fmt.Errorf("command failed: %s, output: %s", err, string(output))
+		return "", fmt.Errorf("🚫 command failed: %s, output: %s", err, string(output))
 	}
 	return string(output), nil
 }

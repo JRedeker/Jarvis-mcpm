@@ -55,3 +55,9 @@ htmlcov/
 
 # Reference material
 mcpm_source/
+
+# Go build artifacts
+Jarvis/jarvis
+Jarvis/jarvis-server
+*.test
+coverage.out

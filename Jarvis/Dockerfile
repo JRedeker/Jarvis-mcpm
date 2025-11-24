@@ -10,14 +10,21 @@ COPY . .
 RUN CGO_ENABLED=0 GOOS=linux go build -o jarvis .
 
 # Runtime stage
-FROM alpine:latest
+FROM debian:bookworm-slim
 
 WORKDIR /app
 
-# Install mcpm dependencies if needed (or we mount the binary)
-# For now, we assume we will mount the host's mcpm binary or config.
-# But to be safe, let's ensure basic tools are present.
-RUN apk --no-cache add ca-certificates
+# Install dependencies: python3, pipx
+RUN apt-get update && apt-get install -y \
+    ca-certificates \
+    python3 \
+    pipx \
+    && rm -rf /var/lib/apt/lists/*
+
+ENV PATH="/root/.local/bin:$PATH"
+
+# Install mcpm via pipx
+RUN pipx install mcpm
 
 COPY --from=builder /app/jarvis .
 
