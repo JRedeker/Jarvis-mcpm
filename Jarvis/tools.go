@@ -167,6 +167,146 @@ func handleFetchDiffContext(_ context.Context, request mcp.CallToolRequest) (*mc
 	return mcp.NewToolResultText(report), nil
 }
 
+func handleScaffoldProject(_ context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	args, _ := request.Params.Arguments.(map[string]interface{})
+	projectType, _ := args["project_type"].(string)
+	enableAiReview, _ := args["enable_ai_review"].(bool)
+
+	cwd, err := os.Getwd()
+	if err != nil {
+		return mcp.NewToolResultError(fmt.Sprintf("Failed to get CWD: %v", err)), nil
+	}
+
+	log := []string{fmt.Sprintf("🚀 Scaffolding '%s' project in %s...", projectType, cwd)}
+
+	// 1. Initialize Git
+	if _, err := os.Stat(".git"); os.IsNotExist(err) {
+		cmd := exec.Command("git", "init")
+		if out, err := cmd.CombinedOutput(); err != nil {
+			return mcp.NewToolResultError(fmt.Sprintf("Git init failed: %s", out)), nil
+		}
+		log = append(log, "✅ Initialized git repository")
+	} else {
+		log = append(log, "ℹ️ Git repository already exists")
+	}
+
+	// 2. Write .pre-commit-config.yaml
+	// Default config content
+	preCommitConfig := `# See https://pre-commit.com for more information
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+      - id: check-merge-conflict
+
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.18.2
+    hooks:
+      - id: gitleaks
+`
+	// Language specific hooks
+	switch projectType {
+	case "python":
+		preCommitConfig += `
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.3.0
+    hooks:
+      - id: ruff
+        args: [ --fix ]
+      - id: ruff-format
+`
+	case "go":
+		preCommitConfig += `
+  - repo: https://github.com/dnephin/pre-commit-golang
+    rev: v0.5.1
+    hooks:
+      - id: go-fmt
+      # - id: go-imports # Uncomment if installed locally
+`
+	case "node", "typescript", "javascript":
+		preCommitConfig += `
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v4.0.0
+    hooks:
+      - id: prettier
+`
+	}
+
+	if err := os.WriteFile(".pre-commit-config.yaml", []byte(preCommitConfig), 0644); err != nil {
+		return mcp.NewToolResultError(fmt.Sprintf("Failed to write pre-commit config: %v", err)), nil
+	}
+	log = append(log, "✅ Created .pre-commit-config.yaml")
+
+	// 3. Install pre-commit
+	// Check if pip is available
+	if _, err := exec.LookPath("pip"); err == nil {
+		// Install package
+		exec.Command("pip", "install", "pre-commit").Run()
+		// Install hooks
+		cmd := exec.Command("pre-commit", "install")
+		if out, err := cmd.CombinedOutput(); err != nil {
+			log = append(log, fmt.Sprintf("⚠️ Failed to install git hooks (is pre-commit in PATH?): %s", out))
+		} else {
+			log = append(log, "✅ Installed git hooks")
+		}
+	} else {
+		log = append(log, "⚠️ 'pip' not found. Please install 'pre-commit' manually.")
+	}
+
+	// 4. AI Review (GitHub Actions)
+	if enableAiReview {
+		workflowsDir := ".github/workflows"
+		os.MkdirAll(workflowsDir, 0755)
+
+		prAgentConfig := `name: AI Code Review
+
+on:
+  pull_request:
+    types: [opened, reopened, ready_for_review, synchronize]
+  issue_comment:
+    types: [created, edited]
+
+permissions:
+  issues: write
+  pull-requests: write
+  contents: read
+
+jobs:
+  pr_agent:
+    runs-on: ubuntu-latest
+    name: PR Agent
+    if: ${{ github.event.sender.type != 'Bot' }}
+    steps:
+      - id: pr-agent
+        uses: Codium-ai/pr-agent@main
+        env:
+          OPENAI_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_REVIEW__EXTRA_INSTRUCTIONS: "Focus on architectural consistency and security."
+          PR_REVIEW__REQUIRE_TESTS_REVIEW: "true"
+          PR_CODE_SUGGESTIONS__NUM_CODE_SUGGESTIONS: 4
+`
+		if err := os.WriteFile(filepath.Join(workflowsDir, "pr_agent.yml"), []byte(prAgentConfig), 0644); err != nil {
+			log = append(log, fmt.Sprintf("⚠️ Failed to write workflow: %v", err))
+		} else {
+			log = append(log, "✅ Created .github/workflows/pr_agent.yml")
+		}
+	}
+
+	// 5. Gitignore (Basic)
+	if _, err := os.Stat(".gitignore"); os.IsNotExist(err) {
+		gitignore := ".env\n.venv/\nnode_modules/\ndist/\n*.log\n.DS_Store\n"
+		os.WriteFile(".gitignore", []byte(gitignore), 0644)
+		log = append(log, "✅ Created default .gitignore")
+	}
+
+	return mcp.NewToolResultText(strings.Join(log, "\n")), nil
+}
+
 func handleListServers(_ context.Context, _ mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	output, err := runMcpmCommand("ls")
 	if err != nil {

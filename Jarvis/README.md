@@ -46,6 +46,25 @@ Located in `main.go`, this critical tool is responsible for self-initialization.
 2.  Runs `npm install` and `npm link` inside `MCPM/`.
 3.  Runs `docker-compose up -d` in the root.
 
+### The `scaffold_project` Tool
+Transforms Jarvis into a Project Architect.
+*   **Input:** `project_type` ("python", "go", "node"), `enable_ai_review` (bool).
+*   **Actions:**
+    1.  **Git:** Runs `git init`.
+    2.  **Pre-Commit:** Generates `.pre-commit-config.yaml` tailored to the language.
+    3.  **Hooks:** Runs `pip install pre-commit && pre-commit install`.
+    4.  **AI Review:** Generates `.github/workflows/pr_agent.yml`.
+    5.  **Ignore:** Creates `.gitignore`.
+
+### The `fetch_diff_context` Tool
+Enables the "Local Review Loop" for agents.
+*   **Input:** `staged` (bool).
+*   **Output:** A formatted Markdown report containing:
+    *   Current Working Directory.
+    *   `git status` output.
+    *   `git diff` content (staged or HEAD).
+*   **Use Case:** Allows the Agent to "see" its own changes before committing, enabling self-correction.
+
 ### The `suggest_profile` Tool (Smart Stacking)
 Jarvis implements a "3-Layer Stacking" logic to determine the active toolset dynamically.
 *   **Input:** `client_name` (string), `testing` (bool).

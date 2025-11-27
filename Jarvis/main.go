@@ -69,6 +69,19 @@ func main() {
 		),
 	), handleFetchDiffContext)
 
+	// Tool: scaffold_project
+	s.AddTool(mcp.NewTool("scaffold_project",
+		mcp.WithDescription("Scaffolds a new project with standard dev tooling (git, pre-commit, AI review)"),
+		mcp.WithString("project_type",
+			mcp.Description("Type of project (python, go, node, general)"),
+			mcp.Required(),
+		),
+		mcp.WithBoolean("enable_ai_review",
+			mcp.Description("Setup GitHub Actions for AI PR review"),
+			mcp.DefaultString("true"),
+		),
+	), handleScaffoldProject)
+
 	// Tool: list_servers
 	s.AddTool(mcp.NewTool("list_servers",
 		mcp.WithDescription("List all installed MCP servers managed by MCPM"),
