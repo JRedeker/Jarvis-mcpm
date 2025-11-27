@@ -46,6 +46,15 @@ Located in `main.go`, this critical tool is responsible for self-initialization.
 2.  Runs `npm install` and `npm link` inside `MCPM/`.
 3.  Runs `docker-compose up -d` in the root.
 
+### The `suggest_profile` Tool (Smart Stacking)
+Jarvis implements a "3-Layer Stacking" logic to determine the active toolset dynamically.
+*   **Input:** `client_name` (string), `testing` (bool).
+*   **Logic:**
+    1.  **Base:** Detects project context (e.g., `project-pokeedge`) from CWD. Defaults to `project-new`.
+    2.  **Adapter:** Appends client-specific profile (e.g., `client-codex`) if `client_name` is provided.
+    3.  **Global:** Appends `memory`. Appends `testing-all-tools` if `testing=true`.
+*   **Output:** JSON array of profile names.
+
 ### Shared Servers (Tunneling)
 Jarvis manages a map of running background processes for the `share_server` tool.
 *   **Concurrency:** Uses `sync.Mutex` to safely manage the state of shared tunnels.

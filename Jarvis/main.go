@@ -45,6 +45,22 @@ func main() {
 		mcp.WithDescription("Initialize the MCP environment (install dependencies, start infrastructure)"),
 	), handleBootstrapSystem)
 
+	// Tool: restart_service
+	s.AddTool(mcp.NewTool("restart_service",
+		mcp.WithDescription("Gracefully restarts the Jarvis MCP server"),
+	), handleRestartService)
+
+	// Tool: suggest_profile
+	s.AddTool(mcp.NewTool("suggest_profile",
+		mcp.WithDescription("Suggests the appropriate MCPM profile stack based on context, client, and mode"),
+		mcp.WithBoolean("testing",
+			mcp.Description("Whether testing mode is active"),
+		),
+		mcp.WithString("client_name",
+			mcp.Description("The name of the client requesting the profile (e.g., 'gemini', 'codex')"),
+		),
+	), handleSuggestProfile)
+
 	// Tool: list_servers
 	s.AddTool(mcp.NewTool("list_servers",
 		mcp.WithDescription("List all installed MCP servers managed by MCPM"),

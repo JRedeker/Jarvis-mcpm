@@ -46,12 +46,30 @@ Tell your AI client where Jarvis lives.
 }
 ```
 
+**Critical Rule:** Always configure Jarvis **directly** (as shown above). Do not put it inside an MCPM profile. This ensures Jarvis is always available to fix things, even if your tool profiles break.
+
 ### 3. The "Bootstrap" Moment
-This is the cool part. Open your AI client and just say:
+Open your AI client and just say:
 
 > **"Please bootstrap the MCP system."**
 
-Jarvis will spin up the necessary infrastructure (Package Manager + Docker DBs) for you. You don't need to memorize CLI commands.
+Jarvis will spin up the necessary infrastructure.
+
+---
+
+## 🏗️ The 3-Layer Stack Architecture
+
+We use a modular "Stacking" strategy to manage tools across different projects and clients. Jarvis intelligently combines these layers for you:
+
+1.  **Layer 1: Environment (`project-name`)**
+    *   Base tools for your specific workspace (e.g., `fetch`, `search`, `db-tools`).
+    *   Default: `project-new` (Standard scaffolding kit).
+2.  **Layer 2: Client Adapter (`client-name`)**
+    *   Tools specific to your AI client (e.g., `morph-fast-apply` for Codex).
+3.  **Layer 3: Global (`memory`)**
+    *   Always-on capabilities like Long-Term Memory.
+
+**Pro Tip:** Your agent can ask Jarvis: *"Which profiles should I use?"* and Jarvis will analyze the current directory and client to suggest the perfect stack (e.g., `["project-pokeedge", "client-codex", "memory"]`).
 
 ---
 

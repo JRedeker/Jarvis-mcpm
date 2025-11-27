@@ -58,6 +58,75 @@ func handleBootstrapSystem(_ context.Context, _ mcp.CallToolRequest) (*mcp.CallT
 	return mcp.NewToolResultText("System bootstrapped successfully! MCPM installed and Infrastructure started."), nil
 }
 
+func handleRestartService(_ context.Context, _ mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	go func() {
+		time.Sleep(1 * time.Second)
+		os.Exit(0)
+	}()
+	return mcp.NewToolResultText("Restarting Jarvis service..."), nil
+}
+
+func handleSuggestProfile(_ context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	args, _ := request.Params.Arguments.(map[string]interface{})
+	testingMode, _ := args["testing"].(bool)
+	clientName, _ := args["client_name"].(string)
+
+	cwd, err := os.Getwd()
+	if err != nil {
+		return mcp.NewToolResultError(fmt.Sprintf("Failed to get current working directory: %v", err)), nil
+	}
+
+	// Normalize path
+	path := strings.ToLower(cwd)
+	var profiles []string
+
+	// LAYER 1: ENVIRONMENT (Base)
+	// Mutually exclusive. Determines the workspace context.
+	if strings.Contains(path, "pokeedge") {
+		profiles = append(profiles, "project-pokeedge")
+	} else if strings.Contains(path, "codex") {
+		profiles = append(profiles, "project-codex") // Legacy support if folder exists
+	} else {
+		// Fallback for new/unrecognized projects
+		profiles = append(profiles, "project-new")
+	}
+
+	// LAYER 2: CLIENT ADAPTERS (Additive)
+	// Adds client-specific capabilities (e.g., morph-fast-apply)
+	if clientName != "" {
+		// Normalize client name
+		cn := strings.ToLower(clientName)
+		if strings.Contains(cn, "codex") {
+			profiles = append(profiles, "client-codex")
+		} else if strings.Contains(cn, "gemini") {
+			profiles = append(profiles, "client-gemini")
+		}
+	}
+
+	// LAYER 3: GLOBAL CAPABILITIES (Augment)
+	// Always active layers (like memory) or toggles (like testing)
+	
+	// Memory is standard for all our agents
+	profiles = append(profiles, "memory")
+
+	if testingMode {
+		profiles = append(profiles, "testing-all-tools")
+	}
+
+	// Format as JSON-like string for easy parsing by agents
+	// e.g., "[\"pokeedge\", \"testing-all-tools\"]"
+	result := "["
+	for i, p := range profiles {
+		if i > 0 {
+			result += ", "
+		}
+		result += fmt.Sprintf("\"%s\"", p)
+	}
+	result += "]"
+
+	return mcp.NewToolResultText(result), nil
+}
+
 func handleListServers(_ context.Context, _ mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	output, err := runMcpmCommand("ls")
 	if err != nil {
