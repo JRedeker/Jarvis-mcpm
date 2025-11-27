@@ -1,39 +1,65 @@
-# 🤖 Jarvis: Give Your AI Agent the Ability to Manage MCP Tooling
+# 🤖 Jarvis: The Autonomous DevOps Companion
 
-**The missing link between your AI and your local tools.**
+**The Universal API for Agentic Engineering.**
 
-Let’s be honest: The Model Context Protocol (MCP) ecosystem is exploding, which is awesome. But managing all these local servers manually? That’s friction. You shouldn’t have to context-switch to your terminal just to give your AI a new capability.
+Jarvis is an MCP Server that transforms any LLM—from Gemini Pro to local Llama—into a **Staff DevOps Engineer**. It bridges the gap between *High-Level Intelligence* (your agent) and *Low-Level Infrastructure* (your machine).
 
-**Enter Jarvis.**
-
-Jarvis is an autonomous gateway that lets your AI agent (like Claude, Cursor, or any LLM) manage its *own* infrastructure. It’s the pilot; the package manager is the engine. You just tell the agent what you need, and Jarvis makes it happen.
+For the **AI-Native Engineer**, context switching is dead. Jarvis handles the ops so you can handle the architecture.
 
 ---
 
-## 💡 The "Why"
+## ⚡ The Philosophy: 10x Leverage
 
-We built Jarvis because we wanted a seamless "Agentic" experience.
-*   **Self-Managing:** Your agent can discover, install, and configure its own tools.
-*   **Secure by Default:** It prefers running tools in Docker containers to keep your host machine clean.
-*   **Zero Friction:** No python virtual environment headaches. We bundled a specialized Node.js implementation of the MCPM logic right in.
+We built Jarvis for the engineer who demands the output of a department from a single laptop.
+
+*   **Model Agnostic:** Bring your own brains. Jarvis provides the hands. Whether you use Claude, Codex, or Cursor, Jarvis creates a standard interface to reality.
+*   **Local Sovereignty:** Your tools, your Docker containers, your git history. Jarvis runs locally and securely manages your environment.
+*   **The "Check-Engine" Loop:** Agents are great at writing code but bad at compiling it. Jarvis provides the **Hard Guardrails** (Linters, Pre-commit hooks) that allow Agents to self-correct without human intervention.
 
 ---
 
-## 🚀 Getting Started (The Happy Path)
+## 🚀 Capabilities: The DevOps Stack
 
-We’ve kept this super simple. You’re three steps away from automation.
+Jarvis organizes its tools into four distinct "Roles" for your Agent to assume:
 
-### 1. Build the Binary
-You’ll need Go installed. Just clone this repo and run:
+### 1. The Architect (`scaffold_project`)
+> *"Jarvis, spin up a new Python service with strict security."*
 
+*   **Instant Setup:** Initializes Git, standard ignores, and directory structures.
+*   **Guardrails:** Auto-configures `pre-commit` hooks (Ruff, Gitleaks) tailored to the language.
+*   **CI/CD:** Generates GitHub Actions for automated AI Code Reviews (`pr-agent`).
+
+### 2. The Strategist (`suggest_profile`)
+> *"Context switching to the PokeEdge project."*
+
+*   **Smart Stacking:** Dynamically assembles the perfect toolstack based on your directory.
+    *   *Layer 1:* **Environment** (DBs, APIs specific to the project)
+    *   *Layer 2:* **Client Adapter** (Tools specific to your LLM interface)
+    *   *Layer 3:* **Global** (Memory, Testing)
+
+### 3. The Critic (`fetch_diff_context`)
+> *"Review my changes before I commit."*
+
+*   **Local Feedback:** Your Agent can "see" its own diffs and `git status` in real-time.
+*   **Self-Correction:** Enables the Agent to catch logic errors or debug prints before they ever hit the repo.
+
+### 4. The Mechanic (MCPM Integration)
+*   **Infrastructure:** Installs and manages other MCP servers (Vector DBs, Search Tools).
+*   **Health:** Runs `doctor` checks to keep the system green.
+
+---
+
+## 🛠️ Quick Start
+
+### 1. Build the Runtime
 ```bash
 cd Jarvis
 go build -o jarvis .
 ```
 
-### 2. Connect Your Agent
-Tell your AI client where Jarvis lives.
-*Example for **Claude Desktop** (`~/Library/Application Support/Claude/claude_desktop_config.json`):*
+### 2. Connect Your Brain
+Tell your AI client (Claude/Codex/Gemini) where Jarvis lives.
+*Example for **Claude Desktop**:*
 
 ```json
 {
@@ -46,71 +72,15 @@ Tell your AI client where Jarvis lives.
 }
 ```
 
-**Critical Rule:** Always configure Jarvis **directly** (as shown above). Do not put it inside an MCPM profile. This ensures Jarvis is always available to fix things, even if your tool profiles break.
-
-### 3. The "Bootstrap" Moment
-Open your AI client and just say:
-
-> **"Please bootstrap the MCP system."**
-
-Jarvis will spin up the necessary infrastructure.
+### 3. Bootstrap
+Open your Agent and say: **"Bootstrap the system."**
 
 ---
-
-## 🏗️ The 3-Layer Stack Architecture
-
-We use a modular "Stacking" strategy to manage tools across different projects and clients. Jarvis intelligently combines these layers for you:
-
-1.  **Layer 1: Environment (`project-name`)**
-    *   Base tools for your specific workspace (e.g., `fetch`, `search`, `db-tools`).
-    *   Default: `project-new` (Standard scaffolding kit).
-2.  **Layer 2: Client Adapter (`client-name`)**
-    *   Tools specific to your AI client (e.g., `morph-fast-apply` for Codex).
-3.  **Layer 3: Global (`memory`)**
-    *   Always-on capabilities like Long-Term Memory.
-
-**Pro Tip:** Your agent can ask Jarvis: *"Which profiles should I use?"* and Jarvis will analyze the current directory and client to suggest the perfect stack (e.g., `["project-pokeedge", "client-codex", "memory"]`).
-
----
-
-## 🛠️ What Jarvis Can Do
-
-Once running, Jarvis gives your agent a suite of powerful tools:
-
-*   **📦 Install & Manage:** "Install the `brave` search tool." (It will even generate the exact JSON config you need to paste to finish the setup).
-*   **🧠 Discovery:** "Find me a tool for interacting with GitHub."
-*   **⚙️ System Health:** "Check system status" (Runs a full doctor check on Node, Docker, and Config).
-*   **🌐 Secure Sharing:** "Share my local dev server with a public URL."
-
----
-
-## 🏗️ Under the Hood
-
-For the engineers in the room, here is how the architecture stacks up:
-
-```mermaid
-graph LR
-    Agent[AI Agent] <-->|MCP Protocol| Jarvis[Jarvis Server]
-    Jarvis <-->|Controls| CLI[MCPM Node.js Fork]
-    CLI <-->|Reads| Registry[technologies.toml]
-    CLI <-->|Manages| Docker[Docker Infrastructure]
-```
-
-*   **Jarvis (Go):** The high-performance server handling the connection and lifecycle.
-*   **MCPM (Node.js Fork):** We included a custom, agent-optimized fork of the `mcpm` CLI. It handles the heavy lifting—package resolution, dependency management, and file generation.
-
----
-
-## ❤️ Credits & Disclaimer
-
-Just to be 100% clear: **Jarvis is a standalone open-source project.**
-
-We are **not** affiliated with the official MCPM developers ([Path Integral Institute](https://pathintegral.io)), though we are huge fans of their work. We built Jarvis because we love the standard they set and wanted to extend it specifically for autonomous agents.
 
 ## 📚 Documentation
-*   [**Technical Architecture**](docs/TECHNICAL_ARCHITECTURE.md) - The deep dive.
-*   [**Jarvis Development**](Jarvis/README.md) - For the Go devs.
-*   [**MCPM Bundle Details**](MCPM/README.md) - About our CLI fork.
+*   [**Configuration Strategy**](docs/CONFIGURATION_STRATEGY.md) - The 3-Layer Stack Architecture.
+*   [**Jarvis Development**](Jarvis/README.md) - Source code & Tool definitions.
+*   [**MCPM Source**](mcpm_source/README.md) - Our custom, automation-optimized CLI.
 
 ## 📜 License
-MIT License. Free, open, and ready to build.
+MIT License. Built for the builders.
