@@ -105,7 +105,7 @@ func handleSuggestProfile(_ context.Context, request mcp.CallToolRequest) (*mcp.
 
 	// LAYER 3: GLOBAL CAPABILITIES (Augment)
 	// Always active layers (like memory) or toggles (like testing)
-	
+
 	// Memory is standard for all our agents
 	profiles = append(profiles, "memory")
 
@@ -125,6 +125,46 @@ func handleSuggestProfile(_ context.Context, request mcp.CallToolRequest) (*mcp.
 	result += "]"
 
 	return mcp.NewToolResultText(result), nil
+}
+
+func handleFetchDiffContext(_ context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	args, _ := request.Params.Arguments.(map[string]interface{})
+	staged, _ := args["staged"].(bool)
+
+	cwd, err := os.Getwd()
+	if err != nil {
+		return mcp.NewToolResultError(fmt.Sprintf("Failed to get CWD: %v", err)), nil
+	}
+
+	// 1. Get Status
+	statusCmd := exec.Command("git", "status", "--short")
+	statusOut, err := statusCmd.CombinedOutput()
+	if err != nil {
+		return mcp.NewToolResultError(fmt.Sprintf("Failed to get git status (is this a git repo?): %v", err)), nil
+	}
+
+	// 2. Get Diff
+	diffArgs := []string{"diff"}
+	if staged {
+		diffArgs = append(diffArgs, "--staged")
+	} else {
+		// If not staged, we want HEAD to Working Tree (everything)
+		diffArgs = append(diffArgs, "HEAD")
+	}
+
+	diffCmd := exec.Command("git", diffArgs...)
+	diffOut, err := diffCmd.CombinedOutput()
+	if err != nil {
+		// Fallback: maybe no commits yet? try just diff
+		diffCmd = exec.Command("git", "diff")
+		diffOut, _ = diffCmd.CombinedOutput()
+	}
+
+	// 3. Format Report
+	report := fmt.Sprintf("# Local Review Context\n\n## Working Directory\n`%s`\n\n## Git Status\n```\n%s\n```\n\n## Diff\n```diff\n%s\n```",
+		cwd, string(statusOut), string(diffOut))
+
+	return mcp.NewToolResultText(report), nil
 }
 
 func handleListServers(_ context.Context, _ mcp.CallToolRequest) (*mcp.CallToolResult, error) {

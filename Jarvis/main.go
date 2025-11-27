@@ -61,6 +61,14 @@ func main() {
 		),
 	), handleSuggestProfile)
 
+	// Tool: fetch_diff_context
+	s.AddTool(mcp.NewTool("fetch_diff_context",
+		mcp.WithDescription("Retrieves git diff and status for local AI code review"),
+		mcp.WithBoolean("staged",
+			mcp.Description("If true, only show staged changes. If false, show all changes."),
+		),
+	), handleFetchDiffContext)
+
 	// Tool: list_servers
 	s.AddTool(mcp.NewTool("list_servers",
 		mcp.WithDescription("List all installed MCP servers managed by MCPM"),

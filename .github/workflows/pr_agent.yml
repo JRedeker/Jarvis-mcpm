@@ -1,0 +1,36 @@
+name: AI Code Review
+
+on:
+  pull_request:
+    types: [opened, reopened, ready_for_review, synchronize]
+  issue_comment:
+    types: [created, edited]
+
+permissions:
+  issues: write
+  pull-requests: write
+  contents: read
+
+jobs:
+  pr_agent:
+    runs-on: ubuntu-latest
+    name: PR Agent
+    if: ${{ github.event.sender.type != 'Bot' }}
+    steps:
+      - id: pr-agent
+        uses: Codium-ai/pr-agent@main
+        env:
+          # You need to set this secret in your repo settings!
+          OPENAI_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+          # --- Configuration ---
+          # General
+          PR_REVIEW__EXTRA_INSTRUCTIONS: "Focus on architectural consistency, 3-Layer Profile compliance, and security."
+          PR_REVIEW__REQUIRE_TESTS_REVIEW: "true"
+          PR_CODE_SUGGESTIONS__NUM_CODE_SUGGESTIONS: 4
+
+          # Commands enabled
+          PR_COMMANDS__ALLOW_REVIEW: "true"
+          PR_COMMANDS__ALLOW_DESCRIBE: "true"
+          PR_COMMANDS__ALLOW_IMPROVE: "true"
