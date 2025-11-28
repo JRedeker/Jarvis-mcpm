@@ -48,37 +48,39 @@ Jarvis sits between your Agent and your Machine. It acts as a secure, intelligen
 ```mermaid
 flowchart TD
     subgraph "User Layer"
-        User[("👤 You (The Architect)")]
+        User[("👤 You")]
     end
 
     subgraph "Agent Layer"
-        Agent[("🤖 AI Agent (The Engineer)")]
+        Agent[("🤖 AI Agent")]
     end
 
     subgraph "Jarvis Infrastructure Layer"
         Jarvis["⚡ Jarvis (MCP Server)"]
 
         subgraph "Tooling"
-            Analyzer["🔍 Inspector (analyze_project)"]
-            Scaffolder["🏗️ Builder (apply_devops_stack)"]
-            Mechanic["🔧 Docker Ops (restart_infrastructure)"]
+            Static Analysis ["🔍 Tools for project analysis"]
+            DevOps Pipelines ["🏗️ Intelligent DevOps Stack"]
+            MCP Servers["🔧 Dynamic MCP Tooling"]
         end
     end
 
     subgraph "Local System Layer"
-        Files[("📂 Local Files (.git, configs)")]
-        Docker[("🐳 Containers (Postgres/Qdrant)")]
+        Codebase[("📂 Local Files (.git, configs)")]
+        Docker[("🐳 Containers (Databases, MCP-Servers)")]
     end
 
-    User -->|Prompt: 'Fix this broken build'| Agent
-    Agent -->|Tool Call| Jarvis
-    Jarvis -->|Executes| Analyzer
-    Jarvis -->|Executes| Scaffolder
-    Jarvis -->|Executes| Mechanic
+    User -->|Prompt: 'How should we integrate Tool X?'| Agent
+    Agent -->|"Gather Info on Tool X"| Jarvis
+    Jarvis -->|"Let's Install Context7"| Mechanic
+    Jarvis -->|"Let's Fetch Tool X Info with Context7"| Analyzer
+    Jarvis -->|"Let's Setup Proper Pre-Commit Checks for Tool X"| Scaffolder
+    
 
-    Scaffolder -->|Writes| Files
-    Mechanic -->|Manages| Docker
-    Analyzer -->|Reads| Files
+    Mechanic -->|Sets Up New MCP Server| Docker
+    Scaffolder -->|Writes| Configuration Files
+    Analyzer -->|Researches and Downloads| Files
+    
 ```
 
 ---
