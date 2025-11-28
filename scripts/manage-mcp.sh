@@ -48,6 +48,22 @@ function logs() {
     docker compose logs -f
 }
 
+function test() {
+    log "Running full test suite..."
+
+    # Go Tests
+    log "Testing Jarvis (Go)..."
+    cd "$PROJECT_ROOT/Jarvis"
+    go test -v ./... || { log "❌ Go tests failed"; exit 1; }
+
+    # Python Tests
+    log "Testing MCPM (Python)..."
+    cd "$PROJECT_ROOT/mcpm_source"
+    uv run pytest || { log "❌ Python tests failed"; exit 1; }
+
+    log "✅ All tests passed."
+}
+
 case "$1" in
     start)
         start
@@ -64,8 +80,11 @@ case "$1" in
     logs)
         logs
         ;;
+    test)
+        test
+        ;;
     *)
-        echo "Usage: $0 {start|stop|restart|status|logs}"
+        echo "Usage: $0 {start|stop|restart|status|logs|test}"
         exit 1
         ;;
 esac
