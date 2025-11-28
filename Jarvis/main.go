@@ -308,7 +308,7 @@ func main() {
 
 // Helper function to run mcpm commands
 func runMcpmCommand(args ...string) (string, error) {
-	log.Printf("Executing MCPM command: %v")
+	log.Printf("Executing MCPM command: %v", args)
 	// mcpm is now available in PATH
 	cmd := exec.Command("mcpm", args...)
 	cmd.Env = append(os.Environ(), "MCPM_NON_INTERACTIVE=true", "MCPM_FORCE=true")
