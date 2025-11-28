@@ -45,19 +45,31 @@ Jarvis transforms your AI Agent from a passive chat bot into a **Full-Stack DevO
 
 Jarvis sits between your Agent and your Machine. It acts as a secure, intelligent layer that translates "intent" into "infrastructure."
 
-```mermaid
-graph LR
-    User["👤 You (The Architect)"] -->|Prompt: 'Fix this broken build'| Agent["🤖 AI Agent (The Engineer)"]
-
-    subgraph "Jarvis Runtime (Local)"
-        Agent -->|Tool Call| Jarvis["⚡ Jarvis (MCP Server)"]
-        Jarvis -->|analyze_project| Analyzer["🔍 Inspector"]
-        Jarvis -->|apply_devops_stack| Scaffolder["🏗️ Builder"]
-        Jarvis -->|restart_infrastructure| Mechanic["🔧 Docker Ops"]
-    end
-
-    Scaffolder -->|Write| Files["📂 Local Files (.git, configs)"]
-    Mechanic -->|Manage| Docker["🐳 Containers (Postgres/Qdrant)"]
+```text
+┌───────────────────────┐
+│ 👤 YOU (The Architect)│
+└───────────┬───────────┘
+            │ "Fix this broken build"
+            ▼
+┌──────────────────────────┐
+│ 🤖 AI AGENT (The Engineer)│
+└───────────┬──────────────┘
+            │ Tool Call: jarvis.restart_infrastructure()
+            ▼
+┌───────────────────────────────────────┐
+│ ⚡ JARVIS (The Infrastructure Layer)   │
+│ ┌───────────────────────────────────┐ │
+│ │ 🔍 ANALYZE   (analyze_project)    │ │
+│ │ 🏗️ INTEGRATE (apply_devops_stack) │ │
+│ │ 🔧 REPAIR    (restart_infrastructure)│ │
+│ └──────────────────┬────────────────┘ │
+└────────────────────┼──────────────────┘
+                     ▼
+┌────────────────────┴──────────────────┐
+│ 📂 LOCAL SYSTEM                       │
+│    ├── 🐳 Docker Containers           │
+│    └── 📄 Local Files (.git, configs) │
+└───────────────────────────────────────┘
 ```
 
 ---
