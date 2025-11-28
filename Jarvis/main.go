@@ -325,27 +325,33 @@ func runMcpmCommand(args ...string) (string, error) {
 	output, err := cmd.CombinedOutput()
 	outputStr := string(output)
 
-	// Basic ANSI strip (in case NO_COLOR doesn't catch everything)
-	// precise regex is complex, but we can try to rely on NO_COLOR first.
+	// Strip common noise from MCPM output
+	outputStr = stripMcpmNoise(outputStr)
 
 	if err != nil {
 		log.Printf("Command failed: %v. Output: %s", err, outputStr)
-		// Format error for the agent with futuristic border
-		return fmt.Sprintf("```\n╔═══════════════════════════════════════════════════════════════╗\n║ ⚠️  JARVIS SYSTEM ERROR                                       ║\n╠═══════════════════════════════════════════════════════════════╣\n║ Error: %-55s║\n╠═══════════════════════════════════════════════════════════════╣\n║ OUTPUT:                                                       ║\n╠═══════════════════════════════════════════════════════════════╣\n\n%s\n\n╚═══════════════════════════════════════════════════════════════╝\n```", err, outputStr), fmt.Errorf("command failed: %v", err)
+		return fmt.Sprintf("Error: %v\n\n%s", err, outputStr), fmt.Errorf("command failed: %v", err)
 	}
 	log.Printf("Command success. Output length: %d", len(output))
 
-	// Format success output with futuristic border
-	// If the output looks like a table (contains box drawing characters), wrap it in a text block
-	if strings.Contains(outputStr, "┏") || strings.Contains(outputStr, "┌") || strings.Contains(outputStr, "+-") {
-		return fmt.Sprintf("```\n╔═══════════════════════════════════════════════════════════════╗\n║ ✨ JARVIS RESPONSE                                            ║\n╚═══════════════════════════════════════════════════════════════╝\n\n%s\n\n╔═══════════════════════════════════════════════════════════════╗\n║ 🚀 ALL SYSTEMS GO!                                            ║\n╚═══════════════════════════════════════════════════════════════╝\n```", outputStr), nil
+	return strings.TrimSpace(outputStr), nil
+}
+
+// stripMcpmNoise removes common warnings and noise from MCPM output
+func stripMcpmNoise(output string) string {
+	lines := strings.Split(output, "\n")
+	cleaned := make([]string, 0, len(lines))
+
+	for _, line := range lines {
+		// Skip warning lines
+		if strings.Contains(line, "Warning: Input is not a terminal") {
+			continue
+		}
+		if strings.Contains(line, "(fd=0)") && strings.Contains(line, "Warning:") {
+			continue
+		}
+		cleaned = append(cleaned, line)
 	}
 
-	// If it's a simple success message (short), just return it with checkmark
-	if len(strings.Split(outputStr, "\n")) <= 5 {
-		return fmt.Sprintf("```\n╔═══════════════════════════════════════════════════════════════╗\n║ ✨ JARVIS                                                      ║\n╚═══════════════════════════════════════════════════════════════╝\n\n%s\n\n╔═══════════════════════════════════════════════════════════════╗\n║ ✅ Operation Complete                                          ║\n╚═══════════════════════════════════════════════════════════════╝\n```", strings.TrimSpace(outputStr)), nil
-	}
-
-	// Default multiline
-	return fmt.Sprintf("```\n╔═══════════════════════════════════════════════════════════════╗\n║ ✨ JARVIS RESPONSE                                            ║\n╚═══════════════════════════════════════════════════════════════╝\n\n%s\n\n╔═══════════════════════════════════════════════════════════════╗\n║ ✅ Operation Complete                                          ║\n╚═══════════════════════════════════════════════════════════════╝\n```", outputStr), nil
+	return strings.Join(cleaned, "\n")
 }

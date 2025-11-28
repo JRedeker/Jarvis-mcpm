@@ -121,7 +121,7 @@ func handleRestartInfrastructure(_ context.Context, _ mcp.CallToolRequest) (*mcp
 func handleSuggestProfile(_ context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	args, _ := request.Params.Arguments.(map[string]interface{})
 	testingMode, _ := args["testing"].(bool)
-	clientName, _ := args["client_name"].(string)
+	_ = args["client_name"] // client_name available but not used in current architecture
 
 	cwd, err := os.Getwd()
 	if err != nil {
@@ -132,31 +132,30 @@ func handleSuggestProfile(_ context.Context, request mcp.CallToolRequest) (*mcp.
 	path := strings.ToLower(cwd)
 	var profiles []string
 
-	// LAYER 1: ENVIRONMENT (Base)
+	// NEW 3-LAYER ARCHITECTURE:
+	// 1. PROJECT - Workspace-specific tools (auto-detected from cwd)
+	// 2. CAPABILITY - Opt-in tool sets like 'morph', 'qdrant' (manually configured in client config)
+	// 3. ENVIRONMENT - Global/always-active tools (auto-applied)
+
+	// LAYER 1: PROJECT (Auto-detected)
 	// Mutually exclusive. Determines the workspace context.
 	if strings.Contains(path, "pokeedge") {
-		profiles = append(profiles, "project-pokeedge")
+		profiles = append(profiles, "p-pokeedge")
 	} else if strings.Contains(path, "codex") {
-		profiles = append(profiles, "project-codex") // Legacy support if folder exists
+		profiles = append(profiles, "p-codex") // Legacy support if folder exists
 	} else {
 		// Fallback for new/unrecognized projects
-		profiles = append(profiles, "project-new")
+		profiles = append(profiles, "p-new")
 	}
 
-	// LAYER 2: CLIENT ADAPTERS (Additive)
-	// Adds client-specific capabilities (e.g., morph-fast-apply)
-	if clientName != "" {
-		// Normalize client name
-		cn := strings.ToLower(clientName)
-		if strings.Contains(cn, "codex") {
-			profiles = append(profiles, "client-codex")
-		} else if strings.Contains(cn, "gemini") {
-			profiles = append(profiles, "client-gemini")
-		}
-	}
+	// LAYER 2: CAPABILITY (Not auto-suggested)
+	// Users manually add these to their client configs based on needs:
+	// - 'morph' - AI refactoring (for clients without built-in morph like Kilocode)
+	// - 'qdrant' - Vector search capabilities
+	// These are NOT returned by suggest_profile - they're opt-in.
 
-	// LAYER 3: GLOBAL CAPABILITIES (Augment)
-	// Always active layers (like memory) or toggles (like testing)
+	// LAYER 3: ENVIRONMENT (Auto-applied globals)
+	// Always active layers (like memory) or conditional toggles (like testing)
 
 	// Memory is standard for all our agents
 	profiles = append(profiles, "memory")
