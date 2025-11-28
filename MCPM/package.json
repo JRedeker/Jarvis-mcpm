@@ -14,7 +14,7 @@
     "toml": "^3.0.0",
     "chalk": "^4.1.2",
     "cli-table3": "^0.6.3",
-    "conf": "^10.2.0"
+    "conf": "^15.0.2"
   },
   "author": "",
   "license": "ISC"
