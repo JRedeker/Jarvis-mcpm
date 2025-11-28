@@ -1,63 +1,82 @@
 # Jarvis
 
-**The DevOps Hand of the AI Agent.**
+**The Local Infrastructure Layer for AI Agents.**
 
-Jarvis is an MCP server that allows an AI Agent (like Claude, Codex, or Gemini) to securely control your local development environment.
-
-It is not a CLI tool for humans. It is an API for your Agent.
+> *"Agents are great at logic, but bad at logistics. Jarvis gives them hands."*
 
 ![Go Version](https://img.shields.io/badge/go-1.24+-00ADD8?logo=go&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![MCP Compliant](https://img.shields.io/badge/MCP-Compliant-blue)
+![Docker](https://img.shields.io/badge/infrastructure-docker-2496ED?logo=docker&logoColor=white)
 
 ---
 
-## The Concept: Agent-Driven Engineering
+## ⚡ The "Prime" Stack for AI Engineering
 
-In a traditional workflow, you are the engineer and the AI is just a text generator.
-With Jarvis, you become the **Architect**, and the AI Agent becomes the **Engineer**.
+Jarvis is not just a CLI tool. It is a **Model Context Protocol (MCP) Server** that transforms your AI Agent (Claude, Gemini, Codex) into a **Full-Stack DevOps Engineer**. It enforces a strict "Prime" stack on every project it touches:
 
-**Jarvis provides the tools that the Agent needs to do the job.**
+| Component | Technology | Agent's Role |
+| :--- | :--- | :--- |
+| **Guardrails** | `pre-commit` + `gitleaks` | **The Guardian:** Blocks secrets & bad formatting before commit. |
+| **Review** | `CodiumAI PR-Agent` | **The Critic:** Auto-reviews PRs with `/review` & `/improve`. |
+| **Memory** | `Qdrant` (Vector DB) | **The Librarian:** Remembers codebase context across sessions. |
+| **Scaffold** | `Ruff`, `GoFmt`, `Prettier` | **The Architect:** Enforces language-specific standards. |
+| **Search** | `Brave Search` | **The Researcher:** Fetches live docs via the web. |
+
+---
+
+## 🧠 How It Works
+
+Jarvis sits between your Agent and your Machine. It acts as a secure, intelligent layer that translates "intent" into "infrastructure."
 
 ```mermaid
 graph LR
-    User["You (The Architect)"] -->|Prompt: 'Setup this project'| Agent["AI Agent"]
-    Agent -->|Tool Call: 'apply_devops_stack'| Jarvis["Jarvis (MCP Server)"]
-    Jarvis -->|Executes| Infrastructure["Local System (Git, Docker, Files)"]
+    User["👤 You (The Architect)"] -->|Prompt: 'Fix this broken build'| Agent["🤖 AI Agent (The Engineer)"]
+
+    subgraph "Jarvis Runtime (Local)"
+        Agent -->|Tool Call| Jarvis["⚡ Jarvis (MCP Server)"]
+        Jarvis -->|analyze_project| Analyzer["🔍 Inspector"]
+        Jarvis -->|apply_devops_stack| Scaffolder["🏗️ Builder"]
+        Jarvis -->|restart_infrastructure| Mechanic["🔧 Docker Ops"]
+    end
+
+    Scaffolder -->|Write| Files["📂 Local Files (.git, configs)"]
+    Mechanic -->|Manage| Docker["🐳 Containers (Postgres/Qdrant)"]
 ```
 
 ---
 
-## 🤖 What Jarvis Enables Your Agent To Do
+## 🚀 Core Capabilities
 
-Jarvis transforms your LLM from a "text generator" into a **Full-Stack Operator**. It works silently in the background, giving the agent the hands it needs to touch the world.
+### 🏗️ The Architect (`apply_devops_stack`)
+**Goal:** Eliminate "blank page" paralysis and ensure security from line 1.
 
-### 1. 🧠 Intelligent Context Switching
-**The Challenge:** You work on multiple projects (`frontend-app`, `backend-api`, `data-pipeline`). Each needs different tools.
-**The Jarvis Fix:**
-*   **Dynamic Profiling:** When you switch directories, Jarvis auto-detects the context (e.g., "I see `go.mod`, loading Go tools").
-*   **Client Adaptation:** It knows if you are using Claude or Gemini and loads specific adapter tools (like `morph-fast-apply` for code application) optimized for that model's capabilities.
-*   **Zero-Config Transitions:** Your agent seamlessly drops specialized tools from the previous project and picks up the new ones without you restarting the session.
+<details>
+<summary><strong>Click to see the Agent's Workflow</strong></summary>
 
-### 2. 🏭 Agentic Infrastructure Management
-**The Challenge:** "I need a vector database for this RAG app."
-**The Jarvis Fix:**
-*   **Self-Healing Infrastructure:** Your agent can spin up, stop, and *restart* Docker containers (Postgres, Qdrant) on demand.
-*   **Health Diagnostics:** If a service fails, the agent can run diagnostics, read the logs, and fix the config—without waking you up.
-*   **Secure Tunnels:** Need to show a demo? Your agent can securely expose a local server to the internet via `mcpm share` so you can send a link to your team.
+1.  **Analysis:** The Agent calls `jarvis.analyze_project()` to detect languages.
+    ```json
+    { "languages": ["python"], "has_gitleaks": false }
+    ```
+2.  **Decision:** "Security risk detected. Missing secret scanning."
+3.  **Action:** The Agent calls `jarvis.apply_devops_stack(project_type="python", force=true)`.
+4.  **Result:** Jarvis writes a strict `.pre-commit-config.yaml` with `ruff` and `gitleaks`.
+</details>
 
-### 3. 🛡️ The "Prime" DevOps Pipeline
-**The Challenge:** "Agents write buggy code and ignore security."
-**The Jarvis Fix:**
-*   **One-Shot Scaffolding:** `jarvis.apply_devops_stack()` analyzes your legacy repo and instantly retrofits it with a modern CI/CD pipeline.
-*   **Enforced Quality:** It installs **Pre-commit hooks** that block the agent (and you) from committing secrets, trailing whitespace, or unformatted code.
-*   **AI Code Review:** It sets up **GitHub Actions** that auto-review every Pull Request, allowing the AI to critique its own work before merging.
+### 🛡️ The Guardian (Automatic Safety)
+**Goal:** Stop the Agent from hallucinating broken code into your repo.
 
-### 4. 🔌 Autonomous Tool Installation
-**The Challenge:** "I need to search the web, but I don't have a browser tool."
-**The Jarvis Fix:**
-*   **Self-Expansion:** The agent can say, *"I need web search capability."* Jarvis will find the `brave-search` MCP package, install it, configure the API keys, and hot-load it into the session.
-*   **Registry Access:** Immediate access to the entire MCPM registry of 800+ tools (Filesystem, GitHub, Slack, Google Drive).
+*   **Secret Scanning:** Jarvis refuses to let the Agent commit API keys (via `gitleaks`).
+*   **Diff Review:** The Agent calls `fetch_diff_context()` to review its own work against `git status` before finalizing tasks.
+*   **Self-Healing:** If the Agent breaks the DB, it calls `restart_infrastructure()` to reboot the Docker containers.
+
+### 🧩 Intelligent Context Switching
+**Goal:** One Agent, many projects.
+
+| Context | Jarvis Action |
+| :--- | :--- |
+| **User enters `~/backend-go`** | Jarvis loads `go-tools`, `postgres`, and `context7` docs. |
+| **User switches to `~/frontend`** | Jarvis drops Go tools, loads `react-tools`, `brave-search`, and `prettier`. |
 
 ---
 
@@ -80,16 +99,21 @@ The script will output a JSON block.
 Open your Agent and say:
 > **"Bootstrap the system."**
 
-The Agent will call `jarvis.bootstrap_system()`, which will automatically install dependencies, spin up the local Docker infrastructure, and verify the environment is ready.
+The Agent will call `jarvis.bootstrap_system()`, which will:
+1.  Install the **MCPM** package manager.
+2.  Spin up **Postgres** and **Qdrant** (Docker).
+3.  Install the **Guardian Stack** (`context7`, `brave-search`, `github`).
 
 ---
 
-## 📚 Documentation
+## 📚 Documentation Hub
 
-*   [**Examples & Workflows**](docs/EXAMPLES.md) - See Jarvis in action.
-*   [**Technical Architecture**](docs/TECHNICAL_ARCHITECTURE.md) - How Jarvis, MCPM, and the Agent interact.
-*   [**Configuration Strategy**](docs/CONFIGURATION_STRATEGY.md) - How the Agent decides which tools to load.
-*   [**Jarvis Development**](Jarvis/README.md) - Source code documentation.
+| Resource | Description |
+| :--- | :--- |
+| [**Examples & Workflows**](docs/EXAMPLES.md) | See exactly what to say to your Agent to trigger these tools. |
+| [**Technical Architecture**](docs/TECHNICAL_ARCHITECTURE.md) | Deep dive into how Jarvis wraps the CLI and manages state. |
+| [**Configuration Strategy**](docs/CONFIGURATION_STRATEGY.md) | How the "3-Layer Profile Stack" works under the hood. |
+| [**Jarvis Source**](Jarvis/README.md) | Go documentation for contributors. |
 
 ## 📜 License
 
