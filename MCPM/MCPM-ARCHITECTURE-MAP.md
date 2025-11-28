@@ -24,12 +24,12 @@ graph TD
     end
 
     subgraph "Local Environment"
-        
+
         subgraph "Management Layer"
             Jarvis[Jarvis Server]
             MCPM[MCPM CLI]
         end
-        
+
         subgraph "Managed Processes (stdio)"
             S1[brave-search]
             S2[filesystem]
@@ -42,7 +42,7 @@ graph TD
             S9[playwright]
             S10[sqlite]
         end
-        
+
         subgraph "Infrastructure Services"
             DB[(PostgreSQL :5432)]
             Vector[(Qdrant :6333)]
@@ -51,16 +51,16 @@ graph TD
 
     IDE1 -->|Spawns/Uses| Jarvis
     IDE2 -->|Spawns/Uses| Jarvis
-    
+
     Jarvis -->|Executes| MCPM
     MCPM -->|Installs/Configures| S1
     MCPM -->|Installs/Configures| S2
     MCPM -->|Installs/Configures| S8
-    
+
     IDE1 -->|Spawns| S1
     IDE1 -->|Spawns| S2
     IDE2 -->|Spawns| S8
-    
+
     S8 -->|Stores Vectors| Vector
     S10 -->|Stores Data| DB
 ```

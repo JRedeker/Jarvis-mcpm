@@ -15,7 +15,8 @@ FROM node:18-bookworm-slim
 WORKDIR /app
 
 # Install runtime dependencies if needed (e.g. git for some MCP servers)
-RUN apt-get update && apt-get install -y \
+# hadolint ignore=DL3008
+RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     git \
     && rm -rf /var/lib/apt/lists/*
@@ -26,11 +27,11 @@ COPY --from=builder /app/jarvis .
 # We need the MCPM source code to be available and linked
 # Assuming the build context is the root of the repo, but standard docker build context for this file is usually Jarvis/
 # If we want to bundle MCPM with Jarvis image, we need to change how this image is built or copy it in.
-# For now, let's assume we copy MCPM from a 'mcpm_context' or we just don't support the full bundled image yet 
+# For now, let's assume we copy MCPM from a 'mcpm_context' or we just don't support the full bundled image yet
 # because the "bootstrap" flow relies on local folders.
 
 # HOWEVER, to make this image standalone-functional as requested by "working state":
-# We should copy the MCPM directory from the context if possible. 
+# We should copy the MCPM directory from the context if possible.
 # But strictly speaking, the user's new flow is "run jarvis binary locally".
 # So this Dockerfile is for a "containerized jarvis" deployment.
 

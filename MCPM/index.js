@@ -36,7 +36,7 @@ program
     .action(() => {
         const config = readConfig();
         console.log(chalk.bold('Installed MCP Servers:'));
-        
+
         let hasInstalled = false;
         if (config.technologies) {
             for (const group in config.technologies) {
@@ -44,12 +44,12 @@ program
                 for (const key in config.technologies[group]) {
                     const tech = config.technologies[group][key];
                     let isInstalled = false;
-                    
+
                     // Check if installed in node_modules
                     // If 'package' is defined, check that. If 'repo' is defined, check the key name?
                     // Simple check: does node_modules/<package_name> exist?
                     let pkgName = tech.package || key; // heuristic
-                    
+
                     // Handle scoped packages
                     if (!tech.package && tech.repo && tech.repo.includes('github.com/')) {
                         // For git repos without explicit package name, we might not know the folder name easily
@@ -81,7 +81,7 @@ program
                 }
             }
         }
-        
+
         if (!hasInstalled) {
             console.log(chalk.gray('No servers currently installed. Use "mcpm install <name>" to add one.'));
         }
@@ -96,7 +96,7 @@ program
         let found = false;
         let pkgName = name;
         let dockerImage = null;
-        
+
         // Simple lookup strategy
         for (const group in config.technologies) {
              if (config.technologies[group][name]) {
@@ -157,12 +157,12 @@ program
             console.log(chalk.green(`Successfully installed ${name}`));
             // For npm, the target is the package name (or mapped name)
             // We need to know the actual folder in node_modules. usually pkgName unless it's a git url.
-            // For git urls, npm usually installs to the repo name. 
+            // For git urls, npm usually installs to the repo name.
             // For this prototype, we'll assume the user provided 'name' matches the folder or we'd need to parse pkgName.
             let folderName = pkgName;
             if (pkgName.startsWith('git+')) {
                 // simplistic fallback
-                folderName = name; 
+                folderName = name;
             }
             printConfigSnippet(name, 'npm', folderName);
         } catch (e) {
