@@ -110,8 +110,8 @@ func main() {
 		),
 	), handleFetchDiffContext)
 
-	// Tool: scaffold_project
-	s.AddTool(mcp.NewTool("scaffold_project",
+	// Tool: apply_devops_stack
+	s.AddTool(mcp.NewTool("apply_devops_stack",
 		mcp.WithDescription("Applies standard dev tooling (git, pre-commit, AI review) to the project"),
 		mcp.WithString("project_type",
 			mcp.Description("Type of project (python, go, node, general). Optional if you just want to set up generic tools."),
@@ -124,7 +124,7 @@ func main() {
 			mcp.Description("Overwrite existing configuration files if found (dangerous)"),
 			mcp.DefaultString("false"),
 		),
-	), handleScaffoldProject)
+	), handleApplyDevOpsStack)
 
 	// Tool: analyze_project
 	s.AddTool(mcp.NewTool("analyze_project",

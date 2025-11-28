@@ -46,15 +46,26 @@ Located in `main.go`, this critical tool is responsible for self-initialization.
 2.  Runs `npm install` and `npm link` inside `MCPM/`.
 3.  Runs `docker-compose up -d` in the root.
 
-### The `scaffold_project` Tool
+### The `apply_devops_stack` Tool
 Transforms Jarvis into a Project Architect.
-*   **Input:** `project_type` ("python", "go", "node"), `enable_ai_review` (bool).
+*   **Input:** `project_type` (optional), `enable_ai_review` (bool), `force` (bool).
+*   **Safe Mode:** Checks for existing configs first. Use `force=true` to overwrite.
 *   **Actions:**
     1.  **Git:** Runs `git init`.
     2.  **Pre-Commit:** Generates `.pre-commit-config.yaml` tailored to the language.
     3.  **Hooks:** Runs `pip install pre-commit && pre-commit install`.
     4.  **AI Review:** Generates `.github/workflows/pr_agent.yml`.
     5.  **Ignore:** Creates `.gitignore`.
+
+### The `analyze_project` Tool
+Enables intelligent decision making for agents.
+*   **Output:** JSON report of detected languages (`go`, `python`, `node`) and existing configurations (Git, Pre-commit, Workflows).
+*   **Use Case:** Agents call this *before* applying the stack to determine the correct strategy.
+
+### The `restart_infrastructure` Tool
+Self-healing capability for the environment.
+*   **Action:** Executes `scripts/manage-mcp.sh restart`.
+*   **Result:** Safely reboots the Postgres and Qdrant containers and logs the output.
 
 ### The `fetch_diff_context` Tool
 Enables the "Local Review Loop" for agents.

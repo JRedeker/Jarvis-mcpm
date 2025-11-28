@@ -293,7 +293,7 @@ func handleAnalyzeProject(_ context.Context, _ mcp.CallToolRequest) (*mcp.CallTo
 	return mcp.NewToolResultText(string(jsonData)), nil
 }
 
-func handleScaffoldProject(_ context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+func handleApplyDevOpsStack(_ context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	args, _ := request.Params.Arguments.(map[string]interface{})
 	projectType, _ := args["project_type"].(string)
 	enableAiReview, _ := args["enable_ai_review"].(bool)
@@ -304,7 +304,7 @@ func handleScaffoldProject(_ context.Context, request mcp.CallToolRequest) (*mcp
 		return mcp.NewToolResultError(fmt.Sprintf("Failed to get CWD: %v", err)), nil
 	}
 
-	logs := []string{fmt.Sprintf("🚀 Scaffolding project in %s...", cwd)}
+	logs := []string{fmt.Sprintf("🚀 Applying DevOps Stack in %s...", cwd)}
 	if projectType != "" {
 		logs = append(logs, fmt.Sprintf("Project Type: %s", projectType))
 	}
@@ -433,7 +433,7 @@ jobs:
 
           # --- Configuration ---
           # General
-          PR_REVIEW__EXTRA_INSTRUCTIONS: "Focus on architectural consistency, 3-Layer Profile compliance, and security."
+          PR_REVIEW__EXTRA_INSTRUCTIONS: "Focus on architectural consistency, 3-Layer Profile compliance, and security. CHECK DOCUMENTATION: If code logic is changed, ensure comments and markdown docs are updated."
           PR_REVIEW__REQUIRE_TESTS_REVIEW: "true"
           PR_CODE_SUGGESTIONS__NUM_CODE_SUGGESTIONS: 4
 
@@ -467,6 +467,7 @@ jobs:
 
 	return mcp.NewToolResultText(strings.Join(logs, "\n")), nil
 }
+
 func handleListServers(_ context.Context, _ mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	output, err := runMcpmCommand("ls")
 	if err != nil {

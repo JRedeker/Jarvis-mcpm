@@ -36,8 +36,10 @@ graph TD
 *   **Role:** Agentic Interface for System Management.
 *   **Mechanism:** Wraps `mcpm` CLI commands into executable MCP tools.
 *   **Key Tools:**
-    *   `install_server(name: str)`: Invokes `mcpm install`.
-    *   `list_servers()`: Invokes `mcpm list --json`.
+    *   `apply_devops_stack(project_type)`: Scaffolds new projects or upgrades existing ones with safe-mode logic.
+    *   `analyze_project()`: Returns JSON structure of the current directory (languages, configs).
+    *   `restart_infrastructure()`: Reboots the Docker stack via management script.
+    *   `install_server(name)`: Invokes `mcpm install`.
     *   `check_status()`: Diagnostics via `mcpm doctor`.
 *   **Dependency:** Requires `mcpm` binary in system PATH.
 
@@ -50,6 +52,7 @@ graph TD
     *   `cursor_mcp_settings.json`: Configuration for Cursor IDE.
 
 ### 2.3. Infrastructure (`./`)
+*   **Management:** `scripts/manage-mcp.sh` (Unified start/stop/logs/test controller).
 *   **Container Runtime:** Docker Compose (`docker-compose.yml`).
 *   **Services:**
     *   **PostgreSQL:** `postgres:15` on port `5432`.

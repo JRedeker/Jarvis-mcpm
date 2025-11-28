@@ -21,10 +21,11 @@ Jarvis targets engineers who want to stay focused on functionality while still r
 
 Jarvis organizes its tools into four distinct roles for the agent:
 
-### 1. Architect (`scaffold_project`)
-> *"Using Jarvis to spin up a new Python service with strict security."*
+### 1. Architect (`apply_devops_stack`)
+> *"Using Jarvis to upgrade an existing Python project with strict security."*
 
-*   **Instant Setup:** Initializes Git, standard ignores, and directory structures.
+*   **Smart Analysis:** Uses `analyze_project` to detect languages and existing configs before acting.
+*   **Safe Scaffolding:** Initializes standard tooling (Git, Pre-commit, GitHub Workflows) without destroying custom setups.
 *   **Guardrails:** Auto-configures `pre-commit` hooks (Ruff, Gitleaks) tailored to the language.
 *   **CI/CD:** Generates GitHub Actions for automated AI code reviews (`pr-agent`).
 
@@ -42,8 +43,9 @@ Jarvis organizes its tools into four distinct roles for the agent:
 *   **Local Feedback:** The agent can inspect its own diffs and `git status` in real time.
 *   **Self-Correction:** Enables the agent to catch logic errors or debug prints before they are committed.
 
-### 4. Mechanic (MCPM Integration)
-*   **Infrastructure:** Installs and manages other MCP servers (vector DBs, search tools).
+### 4. Mechanic (`restart_infrastructure`)
+*   **Self-Healing:** Agents can restart the entire Docker infrastructure (Postgres, Qdrant) via `restart_infrastructure` if health checks fail.
+*   **Management:** Uses the unified `scripts/manage-mcp.sh` for reliable lifecycle control.
 *   **Health:** Runs `doctor` checks to keep the system healthy.
 
 ---
@@ -76,6 +78,13 @@ Configure the AI client (Claude/Codex/Gemini) to point to Jarvis.
 ### 3. Bootstrap
 
 Open the agent and say: **"Bootstrap the system."**
+
+### 4. Manage Infrastructure
+
+You can also manage the backend manually:
+```bash
+./scripts/manage-mcp.sh [start|stop|restart|logs|test]
+```
 
 ---
 
