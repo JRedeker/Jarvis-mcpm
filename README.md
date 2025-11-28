@@ -1,8 +1,8 @@
 # Jarvis
 
-**The DevOps Hand of the AI Agent.**
+**The Local Infrastructure Layer for AI Agents.**
 
-*The local infrastructure layer that turns text generators into full-stack engineers.*
+> *"Agents are great at logic, but bad at logistics. Jarvis gives them hands."*
 
 ![Go Version](https://img.shields.io/badge/go-1.24+-00ADD8?logo=go&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-green)
@@ -64,9 +64,10 @@ Jarvis empowers your agent to handle complex, multi-step engineering tasks that 
 ### 1. 🏗️ The Architect: Intelligent Scaffolding
 **Scenario:** *You have a messy legacy Python repo with no standards, or a blank folder for a new Go microservice.*
 
-Instead of asking you to manually set up linters, Jarvis allows the Agent to:
-1.  **Analyze:** Call `analyze_project()` to detect the tech stack (e.g., "I see `requirements.txt` and `package.json`").
-2.  **Decide:** Recognize that `pre-commit` config is missing or outdated.
+Instead of a request to your agent to install linters relying on LLM pattern-matching (which often hallucinates outdated configs), Jarvis enables your Agent to **research and identify the best fit linters for your project**. It guides the application of these tools, whether it's a new project or a complex existing one, by leveraging analysis steps to ensure strict project compatibility.
+
+1.  **Analyze:** Call `analyze_project()` to inspect the file structure (e.g., "I see `requirements.txt` and `package.json`").
+2.  **Decide:** Recognize that `pre-commit` config is missing or outdated based on the *actual* detected languages.
 3.  **Execute:** Call `apply_devops_stack(project_type="python", force=true)` to generate:
     *   A hardened `.pre-commit-config.yaml` (Ruff, Black, Gitleaks).
     *   A GitHub Actions workflow for automated AI code reviews.
