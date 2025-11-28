@@ -21,9 +21,9 @@ With Jarvis, you become the **Architect**, and the AI Agent becomes the **Engine
 
 ```mermaid
 graph LR
-    User[You (The Architect)] -->|Prompt: 'Setup this project'| Agent[AI Agent]
-    Agent -->|Tool Call: 'apply_devops_stack'| Jarvis[Jarvis (MCP Server)]
-    Jarvis -->|Executes| Infrastructure[Local System (Git, Docker, Files)]
+    User["You (The Architect)"] -->|Prompt: 'Setup this project'| Agent["AI Agent"]
+    Agent -->|Tool Call: 'apply_devops_stack'| Jarvis["Jarvis (MCP Server)"]
+    Jarvis -->|Executes| Infrastructure["Local System (Git, Docker, Files)"]
 ```
 
 ---
