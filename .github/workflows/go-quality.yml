@@ -18,7 +18,7 @@ jobs:
       run:
         working-directory: ./Jarvis
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions/setup-go@v6
         with:
           go-version: '1.24'
@@ -36,7 +36,7 @@ jobs:
       run:
         working-directory: ./Jarvis
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions/setup-go@v6
         with:
           go-version: '1.24'
