@@ -33,8 +33,9 @@ graph TD
 
 ### 2.1. Jarvis Gateway (`./Jarvis/`)
 *   **Type:** MCP Server (Go)
-*   **Role:** Agentic Interface for System Management.
+*   **Role:** Agentic Interface & Presentation Layer.
 *   **Mechanism:** Wraps `mcpm` CLI commands into executable MCP tools.
+*   **Enhancement:** Acts as a "Presentation Layer" by capturing raw CLI output, stripping ANSI color codes, and wrapping the result in clean Markdown with status emojis (✅/❌) for optimal LLM consumption.
 *   **Key Tools:**
     *   `apply_devops_stack(project_type)`: Scaffolds new projects or upgrades existing ones with safe-mode logic.
     *   `analyze_project()`: Returns JSON structure of the current directory (languages, configs).
@@ -89,9 +90,9 @@ The system is designed to be bootstrapped by the agent itself.
     ```
 
 2.  **Configure Agent:**
-    Add the built `jarvis` binary to your MCP client configuration (e.g., `claude_desktop_config.json` or Cline settings).
-    - **Command:** Absolute path to `.../MCP/Jarvis/jarvis`
-    - **Args:** None required
+    Use the **3-Layer Profile Stack**. Do not just add the binary.
+    *   **Reference:** See `AGENTS.md` or `docs/CONFIGURATION_STRATEGY.md`.
+    *   **Pattern:** Wire `jarvis` (direct) AND `mcpm_profile_<name>` (via mcpm) into your client config.
 
 3.  **Bootstrap via Agent:**
     Start your agent and give the instruction:
