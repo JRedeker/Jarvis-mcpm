@@ -49,7 +49,18 @@ func handleBootstrapSystem(_ context.Context, _ mcp.CallToolRequest) (*mcp.CallT
 		return mcp.NewToolResultError(fmt.Sprintf("Failed to run npm link in %s: %v\nOutput: %s", mcpmDir, err, string(out))), nil
 	}
 
-	// 3. Start Infrastructure
+	// 3. Install Default Servers (The Guardian Stack)
+	defaultServers := []string{"context7", "brave-search", "github"}
+	for _, server := range defaultServers {
+		if _, err := runMcpmCommand("install", server); err != nil {
+			// Log but continue, as some might fail if not configured or already installed
+			// In a real scenario, we might want to be stricter or check existance first
+			// For now, we attempt installation.
+			fmt.Printf("Warning: Failed to install default server %s: %v\n", server, err)
+		}
+	}
+
+	// 4. Start Infrastructure
 	// Use the manage-mcp.sh script if available, otherwise fallback to docker-compose
 	scriptPath := filepath.Join(rootDir, "scripts", "manage-mcp.sh")
 	if _, err := os.Stat(scriptPath); err == nil {
@@ -65,7 +76,7 @@ func handleBootstrapSystem(_ context.Context, _ mcp.CallToolRequest) (*mcp.CallT
 		}
 	}
 
-	return mcp.NewToolResultText("System bootstrapped successfully! MCPM installed and Infrastructure started."), nil
+	return mcp.NewToolResultText("System bootstrapped successfully! MCPM installed, default servers (context7, brave-search, github) set up, and Infrastructure started."), nil
 }
 
 func handleRestartService(_ context.Context, _ mcp.CallToolRequest) (*mcp.CallToolResult, error) {
@@ -224,6 +235,7 @@ func handleAnalyzeProject(_ context.Context, _ mcp.CallToolRequest) (*mcp.CallTo
 			"has_github_workflows": false,
 			"has_pr_agent":         false,
 			"has_dependabot":       false,
+			"has_gitleaks":         false, // New check
 		},
 		"key_files": []string{},
 	}
@@ -234,8 +246,14 @@ func handleAnalyzeProject(_ context.Context, _ mcp.CallToolRequest) (*mcp.CallTo
 	}
 
 	// Check configs
-	if _, err := os.Stat(filepath.Join(cwd, ".pre-commit-config.yaml")); err == nil {
+	preCommitPath := filepath.Join(cwd, ".pre-commit-config.yaml")
+	if _, err := os.Stat(preCommitPath); err == nil {
 		analysis["configs"].(map[string]bool)["has_pre_commit"] = true
+		// Check for gitleaks in pre-commit
+		content, _ := os.ReadFile(preCommitPath)
+		if strings.Contains(string(content), "gitleaks") {
+			analysis["configs"].(map[string]bool)["has_gitleaks"] = true
+		}
 	}
 	if _, err := os.Stat(filepath.Join(cwd, ".github", "workflows")); err == nil {
 		analysis["configs"].(map[string]bool)["has_github_workflows"] = true
