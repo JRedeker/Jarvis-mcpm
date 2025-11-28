@@ -501,7 +501,7 @@ func handleManageClient(_ context.Context, request mcp.CallToolRequest) (*mcp.Ca
 
 	cmdArgs := []string{"client", action}
 
-	if action == "edit" || action == "import" {
+	if action == "edit" || action == "import" || action == "config" {
 		clientName, ok := args["client_name"].(string)
 		if !ok || clientName == "" {
 			return mcp.NewToolResultError("client_name argument is required for this action"), nil
@@ -511,6 +511,15 @@ func handleManageClient(_ context.Context, request mcp.CallToolRequest) (*mcp.Ca
 
 	if action == "edit" {
 		cmdArgs = append(cmdArgs, buildManageClientArgs(args)...)
+	}
+
+	if action == "config" {
+		if path, ok := args["config_path"].(string); ok && path != "" {
+			cmdArgs = append(cmdArgs, "--set-path", path)
+		} else {
+			// If no path provided, assume get path
+			cmdArgs = append(cmdArgs, "--get-path")
+		}
 	}
 
 	output, err := runMcpmCommand(cmdArgs...)

@@ -50,7 +50,7 @@ Manage MCP client configurations (Claude Desktop, Cursor, Windsurf, etc.).
         mcpm client edit claude-desktop   # Interactive server selection for Claude Desktop
         mcpm client edit cursor -e        # Open Cursor config in external editor
         mcpm client import cursor         # Import server configurations from Cursor
-    
+
 
 ### mcpm client ls
 
@@ -75,11 +75,11 @@ Enable/disable MCPM-managed servers in the specified client configuration.
     Use -e to open config in external editor. Use --add/--remove for incremental changes.
 
     CLIENT_NAME is the name of the MCP client to configure (e.g., cursor, claude-desktop, windsurf).
-    
+
 
 **Parameters:**
 
-- `client_name` (REQUIRED): 
+- `client_name` (REQUIRED):
 
 - `-e`, `--external`: Open config file in external editor instead of interactive mode (flag)
 - `-f`, `--file`: Specify a custom path to the client's config file.
@@ -107,6 +107,34 @@ mcpm client edit claude-desktop --set-servers "sqlite,filesystem"
 mcpm client edit cursor --remove-profile old-profile
 ```
 
+### mcpm client config
+
+Configure client settings (e.g., custom config paths).
+
+    Set, get, or clear the stored configuration path for a client.
+    This path is used by default for 'edit' and 'import' commands.
+
+**Parameters:**
+
+- `client_name` (REQUIRED): Name of the client
+
+- `--set-path`: Set a custom configuration file path for the client
+- `--get-path`: Get the currently stored configuration path (flag)
+- `--clear-path`: Clear the stored custom configuration path (flag)
+
+**Examples:**
+
+```bash
+# Set custom path
+mcpm client config cline --set-path /path/to/settings.json
+
+# Get current path
+mcpm client config cline --get-path
+
+# Clear custom path
+mcpm client config cline --clear-path
+```
+
 ### mcpm client import
 
 Import and manage MCP server configurations from a client.
@@ -116,11 +144,11 @@ Import and manage MCP server configurations from a client.
     and replace client config with MCPM managed servers.
 
     CLIENT_NAME is the name of the MCP client to import from (e.g., cursor, claude-desktop, windsurf).
-    
+
 
 **Parameters:**
 
-- `client_name` (REQUIRED): 
+- `client_name` (REQUIRED):
 
 **Examples:**
 
@@ -134,7 +162,7 @@ mcpm client import <arguments>
 Manage MCPM configuration.
 
     Commands for managing MCPM configuration and cache.
-    
+
 
 **Parameters:**
 
@@ -159,7 +187,7 @@ Set MCPM configuration.
     
         mcpm config set                                    # Interactive mode
         mcpm config set --key node_executable --value npx # Non-interactive mode
-    
+
 
 **Parameters:**
 
@@ -183,7 +211,7 @@ List all MCPM configuration settings.
 
     
         mcpm config ls
-    
+
 
 **Parameters:**
 
@@ -204,11 +232,11 @@ Remove a configuration setting.
 
     
         mcpm config unset node_executable
-    
+
 
 **Parameters:**
 
-- `name` (REQUIRED): 
+- `name` (REQUIRED):
 
 - `-h`, `--help`: Show this message and exit. (flag)
 
@@ -227,7 +255,7 @@ Clear the local repository cache.
 
     Examples:
         mcpm config clear-cache    # Clear the local repository cache
-    
+
 
 **Parameters:**
 
@@ -245,11 +273,11 @@ mcpm config clear-cache <arguments>
 Check system health and installed server status.
 
     Performs comprehensive diagnostics of MCPM installation, configuration,
-    and installed servers.
+    and installed servers. Checks command availability and path validity for all registered servers.
 
     Examples:
         mcpm doctor    # Run complete system health check
-    
+
 
 **Parameters:**
 
@@ -268,11 +296,11 @@ Edit a server configuration.
 
     Interactive by default, or use CLI parameters for automation.
     Use -e to open config in external editor, -N to create new server.
-    
+
 
 **Parameters:**
 
-- `server_name` (OPTIONAL): 
+- `server_name` (OPTIONAL):
 
 - `-N`, `--new`: Create a new server configuration (flag)
 - `-e`, `--editor`: Open global config in external editor (flag)
@@ -309,11 +337,11 @@ Display detailed information about a specific MCP server.
     
         mcpm info github            # Show details for the GitHub server
         mcpm info pinecone          # Show details for the Pinecone server
-    
+
 
 **Parameters:**
 
-- `server_name` (REQUIRED): 
+- `server_name` (REQUIRED):
 
 - `-h`, `--help`: Show this message and exit. (flag)
 
@@ -338,11 +366,11 @@ Launch MCP Inspector to test and debug a server from global configuration.
         mcpm inspect mcp-server-browse   # Inspect the browse server
         mcpm inspect filesystem          # Inspect filesystem server
         mcpm inspect time                # Inspect the time server
-    
+
 
 **Parameters:**
 
-- `server_name` (OPTIONAL): 
+- `server_name` (OPTIONAL):
 
 - `-h`, `--help`: Show this message and exit. (flag)
 
@@ -366,11 +394,11 @@ Install an MCP server to the global configuration.
         mcpm install time
         mcpm install everything --force
         mcpm install youtube --alias yt
-    
+
 
 **Parameters:**
 
-- `server_name` (REQUIRED): 
+- `server_name` (REQUIRED):
 
 - `--force`: Force reinstall if server is already installed (flag)
 - `--alias`: Alias for the server
@@ -399,7 +427,7 @@ List all installed MCP servers from global configuration.
         mcpm ls                    # List server names and profiles
         mcpm ls -v                 # List servers with detailed configuration
         mcpm profile ls            # List profiles and their included servers
-    
+
 
 **Parameters:**
 
@@ -423,7 +451,7 @@ Migrate v1 configuration to v2.
     Examples:
         mcpm migrate              # Check for v1 config and migrate if found
         mcpm migrate --force      # Force migration check
-    
+
 
 **Parameters:**
 
@@ -443,11 +471,11 @@ Create a new server configuration.
 
     Interactive by default, or use CLI parameters for automation.
     Set MCPM_NON_INTERACTIVE=true to disable prompts.
-    
+
 
 **Parameters:**
 
-- `server_name` (OPTIONAL): 
+- `server_name` (OPTIONAL):
 
 - `--type`: Server type
 - `--command`: Command to execute (required for stdio servers)
@@ -513,7 +541,7 @@ Create a new MCPM profile.
 
 **Parameters:**
 
-- `profile` (REQUIRED): 
+- `profile` (REQUIRED):
 
 - `--force`: Force add even if profile already exists (flag)
 - `-h`, `--help`: Show this message and exit. (flag)
@@ -531,11 +559,11 @@ Edit a profile's name and server selection.
 
     Interactive by default, or use CLI parameters for automation.
     Use --add-server/--remove-server for incremental changes.
-    
+
 
 **Parameters:**
 
-- `profile_name` (REQUIRED): 
+- `profile_name` (REQUIRED):
 
 - `--name`: New profile name
 - `--servers`: Comma-separated list of server names to include (replaces all)
@@ -567,11 +595,11 @@ Launch MCP Inspector to test and debug servers in a profile.
 
     Creates a FastMCP proxy that aggregates servers and launches the Inspector.
     Use --port, --http, --sse to customize transport options.
-    
+
 
 **Parameters:**
 
-- `profile_name` (REQUIRED): 
+- `profile_name` (REQUIRED):
 
 - `--server`: Inspect only specific servers (comma-separated)
 - `--port`: Port for the FastMCP proxy server
@@ -599,11 +627,11 @@ Create a secure public tunnel to all servers in a profile.
     
         mcpm profile share web-dev           # Share all servers in web-dev profile
         mcpm profile share ai --port 5000    # Share ai profile on specific port
-    
+
 
 **Parameters:**
 
-- `profile_name` (REQUIRED): 
+- `profile_name` (REQUIRED):
 
 - `--port`: Port for the SSE server (random if not specified)
 - `--address`: Remote address for tunnel, use share.mcpm.sh if not specified
@@ -630,11 +658,11 @@ Remove a profile.
     \b
         mcpm profile rm old-profile         # Remove with confirmation
         mcpm profile rm old-profile --force # Remove without confirmation
-    
+
 
 **Parameters:**
 
-- `profile_name` (REQUIRED): 
+- `profile_name` (REQUIRED):
 
 - `--force`, `-f`: Force removal without confirmation (flag)
 - `-h`, `--help`: Show this message and exit. (flag)
@@ -664,11 +692,11 @@ Execute all servers in a profile over stdio, HTTP, or SSE.
         mcpm profile run --http --host 0.0.0.0 web-dev    # Run over HTTP on 0.0.0.0:6276
 
     Debug logging: Set MCPM_DEBUG=1 for verbose output
-    
+
 
 **Parameters:**
 
-- `profile_name` (REQUIRED): 
+- `profile_name` (REQUIRED):
 
 - `--http`: Run profile over HTTP instead of stdio (flag)
 - `--sse`: Run profile over SSE instead of stdio (flag)
@@ -720,11 +748,11 @@ Execute an installed MCP server in stdio (default), HTTP, or SSE mode.
     • Port defaults to **6276**, auto-finds if busy
     • Host defaults to **127.0.0.1**
     • Use `mcpm ls` to see installed servers
-    
+
 
 **Parameters:**
 
-- `server_name` (REQUIRED): 
+- `server_name` (REQUIRED):
 
 - `--http`: Run server in HTTP mode (mutually exclusive with --sse) (flag)
 - `--sse`: Run server in SSE mode (mutually exclusive with --http) (flag)
@@ -755,11 +783,11 @@ Search available MCP servers.
         mcpm search                  # List all available servers (names only)
         mcpm search github           # Search for github server
         mcpm search --table          # Show results in a table with descriptions
-    
+
 
 **Parameters:**
 
-- `query` (OPTIONAL): 
+- `query` (OPTIONAL):
 
 - `--table`: Display results in table format with descriptions (flag)
 - `-h`, `--help`: Show this message and exit. (flag)
@@ -788,11 +816,11 @@ Share a server from global configuration through a tunnel.
         mcpm share mcp-server-browse       # Share the browse server
         mcpm share filesystem --port 5000  # Share filesystem server on specific port
         mcpm share sqlite --retry 3        # Share with auto-retry on errors
-    
+
 
 **Parameters:**
 
-- `server_name` (REQUIRED): 
+- `server_name` (REQUIRED):
 
 - `--port`: Port for the SSE server (random if not specified)
 - `--address`: Remote address for tunnel, use share.mcpm.sh if not specified
@@ -821,11 +849,11 @@ Remove an installed MCP server from global configuration.
     
         mcpm uninstall filesystem
         mcpm uninstall filesystem --force
-    
+
 
 **Parameters:**
 
-- `server_name` (REQUIRED): 
+- `server_name` (REQUIRED):
 
 - `--force`, `-f`: Force removal without confirmation (flag)
 - `-h`, `--help`: Show this message and exit. (flag)
@@ -850,7 +878,7 @@ Display comprehensive analytics and usage data.
         mcpm usage --days 7           # Show usage for last 7 days
         mcpm usage --server browse    # Show usage for specific server
         mcpm usage --profile web-dev  # Show usage for specific profile
-    
+
 
 **Parameters:**
 

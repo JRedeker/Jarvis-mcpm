@@ -74,6 +74,14 @@ Jarvis implements a "3-Layer Stacking" logic to determine the active toolset dyn
     3.  **Global:** Appends `memory`. Appends `testing-all-tools` if `testing=true`.
 *   **Output:** JSON array of profile names.
 
+### Client Configuration Management (`manage_client`)
+Jarvis exposes advanced configuration for MCP clients, including path persistence for custom installations (like Kilo Code or Cline).
+*   **Actions:** `edit`, `import`, `ls`, `config`.
+*   **Path Persistence:**
+    *   Use `action="config"` with `config_path="/path/to/settings.json"` to register a custom config location.
+    *   Jarvis (via MCPM) remembers this path, so subsequent `edit` calls don't require the path argument.
+    *   Essential for managing VS Code extensions that have unique storage paths.
+
 ### Shared Servers (Tunneling)
 Jarvis manages a map of running background processes for the `share_server` tool.
 *   **Concurrency:** Uses `sync.Mutex` to safely manage the state of shared tunnels.
