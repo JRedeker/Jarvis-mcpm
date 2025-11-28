@@ -59,27 +59,30 @@ flowchart TD
         Jarvis["⚡ Jarvis (MCP Server)"]
 
         subgraph "Tooling"
-            Static Analysis ["🔍 Tools for project analysis"]
-            DevOps Pipelines ["🏗️ Intelligent DevOps Stack"]
-            MCP Servers["🔧 Dynamic MCP Tooling"]
+            Analyzer["🔍 Analyzer (Project Analysis)"]
+            Scaffolder["🏗️ Scaffolder (DevOps Stack)"]
+            Mechanic["🔧 Mechanic (MCP Tooling)"]
         end
     end
 
     subgraph "Local System Layer"
-        Codebase[("📂 Local Files (.git, configs)")]
+        Codebase[("📂 Local Files (.git)")]
+        ConfigFiles["📄 Configuration Files"]
         Docker[("🐳 Containers (Databases, MCP-Servers)")]
+        ExternalFiles["🌐 External Docs/Files"]
     end
 
     User -->|Prompt: 'How should we integrate Tool X?'| Agent
     Agent -->|"Gather Info on Tool X"| Jarvis
+
     Jarvis -->|"Let's Install Context7"| Mechanic
     Jarvis -->|"Let's Fetch Tool X Info with Context7"| Analyzer
     Jarvis -->|"Let's Setup Proper Pre-Commit Checks for Tool X"| Scaffolder
 
 
     Mechanic -->|Sets Up New MCP Server| Docker
-    Scaffolder -->|Writes| Configuration Files
-    Analyzer -->|Researches and Downloads| Files
+    Scaffolder -->|Writes| ConfigFiles
+    Analyzer -->|Researches and Downloads| ExternalFiles
 
 ```
 
@@ -162,9 +165,8 @@ git clone https://github.com/JRedeker/Jarvis-mcpm.git && ./Jarvis-mcpm/scripts/s
 
 ### 2. Connect Your Agent
 The script will output a JSON block.
-*   **Option A (Manual):** Copy the JSON into your client's config file (e.g., `claude_desktop_config.json`, `cursor_mcp.json`, or VS Code settings).
-*   **Option B (Agentic):** Just paste the output to your Agent and say:
-    > *"Configure yourself to use this MCP server."*
+*   **Option A (Automatic):** Use the **[3-Layer Profile Stack](docs/CONFIGURATION_STRATEGY.md)**. Jarvis can now self-configure using `manage_client` and `manage_profile` tools. See `AGENTS.md` for instructions.
+*   **Option B (Manual):** Copy the JSON into your client's config file (e.g., `claude_desktop_config.json`, `cursor_mcp.json`, or VS Code settings).
 
 ### 3. Bootstrap
 Open your Agent and say:
