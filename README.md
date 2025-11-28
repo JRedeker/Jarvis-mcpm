@@ -1,74 +1,75 @@
-# 🤖 Jarvis: The Autonomous DevOps Companion
+# Jarvis
 
-Jarvis is an MCP server that lets any LLM—from Gemini Pro to a local Llama—operate as an automated DevOps engineer.
-It connects *High-Level Intelligence* (your agent LLM) with *Low-Level Infrastructure* (your machine).
+**The local infrastructure layer for AI agents.**
 
-For engineers building around AI, Jarvis reduces context switching. Jarvis handles the ops so you can focus on architecture.
+Jarvis is a Model Context Protocol (MCP) server that gives your AI agent "hands." It provides secure, local control over your development environment, enabling agents to scaffold projects, manage Docker infrastructure, and enforce strict engineering standards.
 
----
-
-## ⚡ The Philosophy: Leverage Local
-
-Jarvis targets engineers who want to stay focused on functionality while still respecting DevOps.
-
-*   **Model Agnostic:** Use any model. Whether using Claude, Codex, or Cursor, Jarvis exposes a consistent interface to tools and infrastructure.
-*   **Local Control:** Your tools, your Docker containers, your git history. Jarvis runs locally and securely manages your environment.
-*   **The "Check-Engine" Loop:** Agents are good at writing code but weaker at compiling and enforcing standards. Jarvis provides strict checks (linters, pre-commit hooks) so agents can self-correct with minimal human intervention.
+![Go Version](https://img.shields.io/badge/go-1.24+-00ADD8?logo=go&logoColor=white)
+![License](https://img.shields.io/badge/license-MIT-green)
+![MCP Compliant](https://img.shields.io/badge/MCP-Compliant-blue)
 
 ---
 
-## 🚀 Capabilities: The DevOps Toolbox For AI Agents
+## The Problem: Agents Break Things
+LLMs are excellent at generating code logic but struggle with the "last mile" of engineering:
+*   They hallucinate file paths.
+*   They ignore linter rules and break builds.
+*   They lack context on your local environment (databases, running services).
 
-Jarvis organizes its tools into four distinct roles for the agent:
+## The Solution: Enforced Engineering
+Jarvis acts as a **local runtime** that enforces DevOps best practices. Instead of letting an agent wildly edit files, you give it tools to:
+1.  **Analyze** the project structure first.
+2.  **Scaffold** with strict, pre-configured templates (Git, Pre-commit, GitHub Actions).
+3.  **Verify** its own work by checking diffs and linter outputs before committing.
 
-### 1. Architect (`apply_devops_stack`)
-> *"Using Jarvis to upgrade an existing Python project with strict security."*
+---
 
-*   **Smart Analysis:** Uses `analyze_project` to detect languages and existing configs before acting.
+## 🚀 Core Capabilities
+
+Jarvis organizes its tools into specialized roles to guide the agent's workflow:
+
+### 🏗️ The Architect (`apply_devops_stack`)
+> *"Upgrade this legacy Python repo with modern tooling."*
+
+*   **Smart Analysis:** Detects existing languages and configs via `analyze_project`.
 *   **Safe Scaffolding:** Initializes standard tooling (Git, Pre-commit, GitHub Workflows) without destroying custom setups.
-*   **Guardrails:** Auto-configures `pre-commit` hooks (Ruff, Gitleaks) tailored to the language.
-*   **CI/CD:** Generates GitHub Actions for automated AI code reviews (`pr-agent`).
+*   **Guardrails:** Auto-configures language-specific hooks (Ruff for Python, Gofmt for Go) to catch errors early.
 
-### 2. Strategist (`suggest_profile`)
-> *"Using Jarvis to switch context to the Tesseract project."*
+### 🔧 The Mechanic (`restart_infrastructure`)
+> *"Restart the vector database and check health."*
 
-*   **Smart Stacking:** Dynamically assembles an appropriate tool stack based on the current directory.
-    *   *Layer 1:* **Environment** (DBs, APIs specific to the project)
-    *   *Layer 2:* **Client Adapter** (Tools specific to the LLM interface)
-    *   *Layer 3:* **Global** (Memory, Testing)
+*   **Infrastructure Management:** Controls your local Docker stack (Postgres, Qdrant) via a unified management script.
+*   **Self-Healing:** Agents can detect service failures and trigger restarts automatically.
+*   **Health Checks:** Runs `doctor` diagnostics to ensure the environment is stable.
 
-### 3. Critic (`fetch_diff_context`)
-> *"Using Jarvis to review changes before committing."*
+### 🧐 The Critic (`fetch_diff_context`)
+> *"Review my changes before I commit."*
 
-*   **Local Feedback:** The agent can inspect its own diffs and `git status` in real time.
-*   **Self-Correction:** Enables the agent to catch logic errors or debug prints before they are committed.
-
-### 4. Mechanic (`restart_infrastructure`)
-*   **Self-Healing:** Agents can restart the entire Docker infrastructure (Postgres, Qdrant) via `restart_infrastructure` if health checks fail.
-*   **Management:** Uses the unified `scripts/manage-mcp.sh` for reliable lifecycle control.
-*   **Health:** Runs `doctor` checks to keep the system healthy.
+*   **Local Feedback Loop:** Allows the agent to inspect `git status` and `git diff` in real-time.
+*   **Self-Correction:** Enables the agent to catch logic errors, debug prints, or secret leaks *before* they enter the commit history.
 
 ---
 
-## 🛠️ Quick Start
+## 🛠️ Getting Started
 
-### 1. Build the Runtime
+### 1. Build the Server
+Jarvis is a static Go binary. Build it once, run it anywhere.
+
 ```bash
-cd Jarvis
+git clone https://github.com/JRedeker/Jarvis-mcpm.git
+cd Jarvis-mcpm/Jarvis
 go build -o jarvis .
-````
+```
 
-### 2. Connect Your Model
+### 2. Connect Your Agent
+Configure your MCP client (Claude Desktop, Cursor, etc.) to use the binary.
 
-Configure the AI client (Claude/Codex/Gemini) to point to Jarvis.
-
-*Example for **Claude Desktop**:*
-
+**`claude_desktop_config.json`**:
 ```json
 {
   "mcpServers": {
     "jarvis": {
-      "command": "/absolute/path/to/MCP/Jarvis/jarvis",
+      "command": "/absolute/path/to/Jarvis-mcpm/Jarvis/jarvis",
       "args": []
     }
   }
@@ -76,23 +77,39 @@ Configure the AI client (Claude/Codex/Gemini) to point to Jarvis.
 ```
 
 ### 3. Bootstrap
+Open your agent and say:
+> **"Bootstrap the system."**
 
-Open the agent and say: **"Bootstrap the system."**
+Jarvis will automatically:
+*   Install the internal `mcpm` CLI.
+*   Launch the local infrastructure (Postgres & Qdrant) via Docker Compose.
 
-### 4. Manage Infrastructure
+---
 
-You can also manage the backend manually:
+## ⚡ Advanced Usage
+
+### Infrastructure Management
+You can manually control the underlying services using the master script:
+
 ```bash
-./scripts/manage-mcp.sh [start|stop|restart|logs|test]
+./scripts/manage-mcp.sh [start|stop|restart|logs|status]
 ```
+
+### 3-Layer Configuration Strategy
+Jarvis uses a dynamic "Profile Stacking" system to load tools based on your context:
+1.  **Layer 1 (Environment):** Project-specific tools (e.g., `project-pokeedge`).
+2.  **Layer 2 (Client):** Adapter tools for your specific LLM (e.g., `client-codex`).
+3.  **Layer 3 (Global):** Always-on tools like `memory` and `filesystem`.
+
+[Read the full Configuration Strategy](docs/CONFIGURATION_STRATEGY.md)
 
 ---
 
 ## 📚 Documentation
 
-* [**Configuration Strategy**](docs/CONFIGURATION_STRATEGY.md) - The 3-layer stack architecture.
-* [**Jarvis Development**](Jarvis/README.md) - Source code and tool definitions.
-* [**MCPM Source**](mcpm_source/README.md) - Custom CLI optimized for automation.
+*   [**Technical Architecture**](docs/TECHNICAL_ARCHITECTURE.md) - System design and component map.
+*   [**Jarvis Development**](Jarvis/README.md) - Internals of the Go server.
+*   [**MCPM Source**](mcpm_source/README.md) - The underlying CLI engine.
 
 ## 📜 License
 
