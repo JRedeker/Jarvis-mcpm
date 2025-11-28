@@ -79,22 +79,22 @@ func main() {
 
 	// Tool: bootstrap_system
 	s.AddTool(mcp.NewTool("bootstrap_system",
-		mcp.WithDescription("Initialize the MCP environment (install dependencies, start infrastructure)"),
+		mcp.WithDescription("Complete system initialization: installs MCPM, sets up default servers (context7, brave-search, github), and starts Docker infrastructure (PostgreSQL, Qdrant). One command to get fully operational."),
 	), handleBootstrapSystem)
 
 	// Tool: restart_service
 	s.AddTool(mcp.NewTool("restart_service",
-		mcp.WithDescription("Gracefully restarts the Jarvis MCP server"),
+		mcp.WithDescription("Gracefully restarts Jarvis to apply configuration changes or resolve stuck states. Automatically saves state and reconnects active sessions. Use after editing server configs or when tools become unresponsive."),
 	), handleRestartService)
 
 	// Tool: restart_infrastructure
 	s.AddTool(mcp.NewTool("restart_infrastructure",
-		mcp.WithDescription("Restarts the underlying MCP infrastructure (Docker containers)"),
+		mcp.WithDescription("Safely reboots Docker infrastructure (PostgreSQL, Qdrant) with health checks and automatic reconnection. Resolves database connection issues, clears stale locks, and ensures all services are healthy. Zero data loss."),
 	), handleRestartInfrastructure)
 
 	// Tool: suggest_profile
 	s.AddTool(mcp.NewTool("suggest_profile",
-		mcp.WithDescription("Suggests the appropriate MCPM profile stack based on context, client, and mode"),
+		mcp.WithDescription("Intelligently determines optimal MCPM profile stack by analyzing working directory, client type, and mode. Returns recommended profiles with explanations for why each is needed. Prevents profile conflicts and missing dependencies."),
 		mcp.WithBoolean("testing",
 			mcp.Description("Whether testing mode is active"),
 		),
@@ -105,7 +105,7 @@ func main() {
 
 	// Tool: fetch_diff_context
 	s.AddTool(mcp.NewTool("fetch_diff_context",
-		mcp.WithDescription("Retrieves git diff and status for local AI code review"),
+		mcp.WithDescription("Retrieves git status and diff for AI-powered code review before commits. Includes both staged and unstaged changes, file status (modified/added/deleted), and conflict markers. Essential for self-review workflows."),
 		mcp.WithBoolean("staged",
 			mcp.Description("If true, only show staged changes. If false, show all changes."),
 		),
@@ -113,33 +113,33 @@ func main() {
 
 	// Tool: apply_devops_stack
 	s.AddTool(mcp.NewTool("apply_devops_stack",
-		mcp.WithDescription("Applies standard dev tooling (git, pre-commit, AI review) to the project"),
+		mcp.WithDescription("Scaffold production-ready DevOps: git initialization, pre-commit hooks, language-specific linting (Python/Go/Node), secret detection, and optional AI-powered PR reviews via GitHub Actions."),
 		mcp.WithString("project_type",
-			mcp.Description("Type of project (python, go, node, general). Optional if you just want to set up generic tools."),
+			mcp.Description("Type of project (python, go, node, general). Auto-detected if omitted."),
 		),
 		mcp.WithBoolean("enable_ai_review",
-			mcp.Description("Setup GitHub Actions for AI PR review"),
+			mcp.Description("Setup GitHub Actions for AI PR review (recommended)"),
 			mcp.DefaultString("true"),
 		),
 		mcp.WithBoolean("force",
-			mcp.Description("Overwrite existing configuration files if found (dangerous)"),
+			mcp.Description("Overwrite existing configuration files (use with caution)"),
 			mcp.DefaultString("false"),
 		),
 	), handleApplyDevOpsStack)
 
 	// Tool: analyze_project
 	s.AddTool(mcp.NewTool("analyze_project",
-		mcp.WithDescription("Analyzes the current project structure to detect languages and existing configurations"),
+		mcp.WithDescription("Intelligent project analysis: detects languages (Python/Go/Node/etc.), identifies existing config files (pre-commit, linters, CI/CD), and returns structured JSON. Use before apply_devops_stack."),
 	), handleAnalyzeProject)
 
 	// Tool: list_servers
 	s.AddTool(mcp.NewTool("list_servers",
-		mcp.WithDescription("List all installed MCP servers managed by MCPM"),
+		mcp.WithDescription("Displays all installed MCP servers with installation methods, status, and profile memberships. Shows both global servers and profile-specific servers. Useful for auditing your MCP stack and identifying unused servers."),
 	), handleListServers)
 
 	// Tool: install_server
 	s.AddTool(mcp.NewTool("install_server",
-		mcp.WithDescription("Install a new MCP server using MCPM"),
+		mcp.WithDescription("Install MCP servers with automatic dependency resolution, validation, and clean error messages. Handles Docker, npm, and pip installations seamlessly."),
 		mcp.WithString("name",
 			mcp.Description("Name of the server to install"),
 			mcp.Required(),
@@ -148,7 +148,7 @@ func main() {
 
 	// Tool: server_info
 	s.AddTool(mcp.NewTool("server_info",
-		mcp.WithDescription("Get detailed information about a specific MCP server"),
+		mcp.WithDescription("Detailed server documentation including description, installation methods, environment variables, usage examples, and links. Use this before installing to understand what you're getting."),
 		mcp.WithString("name",
 			mcp.Description("Name of the server"),
 			mcp.Required(),
@@ -157,21 +157,21 @@ func main() {
 
 	// Tool: check_status
 	s.AddTool(mcp.NewTool("check_status",
-		mcp.WithDescription("Check the health and status of the MCPM system"),
+		mcp.WithDescription("Comprehensive system diagnostics: MCPM version, Python/Node environments, config validation, client status, and profile health checks. Your go-to tool for troubleshooting."),
 	), handleCheckStatus)
 
 	// Tool: search_servers
 	s.AddTool(mcp.NewTool("search_servers",
-		mcp.WithDescription("Search available MCP servers"),
+		mcp.WithDescription("Find MCP servers across the registry with fuzzy matching. Returns rich metadata including categories, tags, examples, and installation methods. Perfect for discovering new capabilities."),
 		mcp.WithString("query",
-			mcp.Description("Search query"),
+			mcp.Description("Search query (supports fuzzy matching)"),
 			mcp.Required(),
 		),
 	), handleSearchServers)
 
 	// Tool: uninstall_server
 	s.AddTool(mcp.NewTool("uninstall_server",
-		mcp.WithDescription("Remove an installed MCP server"),
+		mcp.WithDescription("Cleanly removes MCP servers and updates all affected profiles and client configurations. Prevents broken references and orphaned dependencies. Shows impact analysis before removal."),
 		mcp.WithString("name",
 			mcp.Description("Name of the server to uninstall"),
 			mcp.Required(),
@@ -180,7 +180,7 @@ func main() {
 
 	// Tool: edit_server
 	s.AddTool(mcp.NewTool("edit_server",
-		mcp.WithDescription("Edit a server configuration"),
+		mcp.WithDescription("Modify server configurations with validation and automatic client config updates. Change commands, arguments, environment variables, or remote URLs. Useful for updating API keys or fixing connection issues without reinstalling."),
 		mcp.WithString("name",
 			mcp.Description("Name of the server to edit"),
 			mcp.Required(),
@@ -199,7 +199,7 @@ func main() {
 
 	// Tool: create_server
 	s.AddTool(mcp.NewTool("create_server",
-		mcp.WithDescription("Create a new server configuration"),
+		mcp.WithDescription("Register custom MCP servers not in the official registry. Supports both stdio (local) and remote (SSE) transports. Validates configuration before saving. Perfect for internal tools or development servers."),
 		mcp.WithString("name",
 			mcp.Description("Name of the new server"),
 			mcp.Required(),
@@ -222,12 +222,12 @@ func main() {
 
 	// Tool: usage_stats
 	s.AddTool(mcp.NewTool("usage_stats",
-		mcp.WithDescription("Display comprehensive analytics and usage data"),
+		mcp.WithDescription("Analyzes MCP usage patterns with tool call frequency, server popularity, error rates, and performance metrics. Identifies underutilized servers and optimization opportunities. Helps justify infrastructure costs."),
 	), handleUsageStats)
 
 	// Tool: manage_client
 	s.AddTool(mcp.NewTool("manage_client",
-		mcp.WithDescription("Manage MCP client configurations"),
+		mcp.WithDescription("Configure AI clients (Claude Code, Claude Desktop, Codex, Gemini, etc.) with servers and profiles. Lists installed clients, adds/removes configurations, and persists paths automatically."),
 		mcp.WithString("action",
 			mcp.Description("Action to perform (ls|edit|import|config)"),
 			mcp.Required(),
@@ -248,7 +248,7 @@ func main() {
 
 	// Tool: manage_profile
 	s.AddTool(mcp.NewTool("manage_profile",
-		mcp.WithDescription("Manage MCPM profiles"),
+		mcp.WithDescription("Create, edit, and manage MCPM profiles (collections of servers). Supports listing all profiles, adding/removing servers, renaming, and deletion. Essential for organizing your MCP stack."),
 		mcp.WithString("action",
 			mcp.Description("Action to perform (ls|create|edit|delete)"),
 			mcp.Required(),
@@ -265,7 +265,7 @@ func main() {
 
 	// Tool: manage_config
 	s.AddTool(mcp.NewTool("manage_config",
-		mcp.WithDescription("Manage MCPM configuration"),
+		mcp.WithDescription("View and modify MCPM global settings including default profiles, installation preferences, and behavior flags. Changes persist across sessions. Use 'ls' to see all current settings before making changes."),
 		mcp.WithString("action",
 			mcp.Description("Action to perform (ls|set|unset)"),
 			mcp.Required(),
@@ -278,12 +278,12 @@ func main() {
 
 	// Tool: migrate_config
 	s.AddTool(mcp.NewTool("migrate_config",
-		mcp.WithDescription("Migrate v1 configuration to v2"),
+		mcp.WithDescription("Upgrades MCPM v1 configurations to v2 format with automatic backup and validation. Preserves all server definitions, profiles, and client configurations. Run this once when upgrading from legacy MCPM installations."),
 	), handleMigrateConfig)
 
 	// Tool: share_server
 	s.AddTool(mcp.NewTool("share_server",
-		mcp.WithDescription("Share a local server via a secure tunnel"),
+		mcp.WithDescription("Exposes local MCP servers via secure tunnels with optional authentication. Enables remote teams to access your tools without VPN or port forwarding. Auto-generates shareable URLs with configurable access controls."),
 		mcp.WithString("name",
 			mcp.Description("Name of the server to share"),
 			mcp.Required(),
@@ -297,7 +297,7 @@ func main() {
 
 	// Tool: stop_sharing_server
 	s.AddTool(mcp.NewTool("stop_sharing_server",
-		mcp.WithDescription("Stop sharing a server"),
+		mcp.WithDescription("Revokes tunnel access and terminates shared server sessions. Immediately disconnects all remote clients. Changes are logged for security auditing."),
 		mcp.WithString("name",
 			mcp.Description("Name of the server to stop sharing"),
 			mcp.Required(),
@@ -306,7 +306,7 @@ func main() {
 
 	// Tool: list_shared_servers
 	s.AddTool(mcp.NewTool("list_shared_servers",
-		mcp.WithDescription("List currently shared servers"),
+		mcp.WithDescription("Shows all active server shares with tunnel URLs, authentication status, connected clients, and uptime. Useful for monitoring remote access and identifying security risks."),
 	), handleListSharedServers)
 
 	// Start the server using Stdio transport

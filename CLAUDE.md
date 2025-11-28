@@ -129,21 +129,69 @@ golangci-lint run
 - `docs/CONFIGURATION_STRATEGY.md` - 3-Layer Profile Stack details
 - `docs/TECHNICAL_ARCHITECTURE.md` - Component specifications
 
+## Using Jarvis (Primary Interface - ALWAYS PREFER THIS)
+
+**Jarvis is the intelligent gateway to MCPM** designed specifically for AI agents. It provides:
+
+✅ **Clean, Structured Output** - No ANSI codes, stripped warnings, formatted responses
+✅ **Smart Error Handling** - Actionable error messages with suggestions for fixes
+✅ **Validation & Safety** - Prevents common mistakes before they happen
+✅ **Context Awareness** - Understands your project and suggests appropriate actions
+✅ **Batch Operations** - Complex workflows that would require multiple CLI commands
+
+### When to Use Jarvis vs Direct MCPM
+
+**✓ ALWAYS use Jarvis tools:**
+- Installing servers → `install_server(name)` not `mcpm install`
+- Managing profiles → `manage_profile(...)` not `mcpm profile`
+- Checking system health → `check_status()` not `mcpm doctor`
+- Configuring clients → `manage_client(...)` not `mcpm client`
+- Searching servers → `search_servers(query)` not `mcpm search`
+
+**⚠️ Only use direct MCPM CLI when:**
+- Debugging Jarvis itself
+- Running scripts outside of an AI agent context
+- Following documentation that predates Jarvis
+
+### Quick Reference
+
+| Task | Use Jarvis Tool | Not Direct CLI |
+|------|----------------|----------------|
+| Install MCP server | `install_server("brave-search")` | ~~`mcpm install brave-search`~~ |
+| Check system health | `check_status()` | ~~`mcpm doctor`~~ |
+| Add to profile | `manage_profile("edit", "p-pokeedge", add_servers="...")` | ~~`mcpm profile edit`~~ |
+| Search available tools | `search_servers("documentation")` | ~~`mcpm search documentation`~~ |
+| Bootstrap environment | `bootstrap_system()` | ~~Multiple manual steps~~ |
+
 ## Important Jarvis Tools
 
 Jarvis exposes these key tools to AI agents (defined in `tools.go`):
 
-- `bootstrap_system()` - Self-initialization (installs MCPM, starts Docker)
+### System Management
+- `bootstrap_system()` - Self-initialization: installs MCPM, starts Docker infrastructure, installs default servers
+- `check_status()` - Comprehensive system diagnostics with health checks for all components
+- `restart_infrastructure()` - Safely reboots Docker containers (PostgreSQL, Qdrant)
+- `restart_service()` - Restarts Jarvis itself to apply configuration changes
+
+### Server Management
+- `install_server(name)` - Installs MCP servers with automatic dependency resolution and validation
+- `search_servers(query)` - Finds available servers with rich metadata and examples
+- `server_info(name)` - Detailed information about a specific server including installation instructions
+- `uninstall_server(name)` - Cleanly removes servers and updates configurations
+- `list_servers()` - Shows all installed servers across global and profile scopes
+
+### Profile Management
+- `manage_profile(action, name, ...)` - Create, edit, delete MCPM profiles with server management
+- `suggest_profile(testing)` - Intelligently determines which profiles to activate based on context
+
+### Client Configuration
+- `manage_client(action, client_name, ...)` - Configure AI clients with profile and server assignments
+- `manage_config(action, key, value)` - Manage MCPM global configuration settings
+
+### Project Tools
 - `apply_devops_stack(project_type, force, enable_ai_review)` - Scaffolds projects with linting, pre-commit hooks, CI/CD
-- `analyze_project()` - Returns JSON report of detected languages and configs
-- `install_server(name)` - Installs MCP servers via `mcpm install`
-- `search_servers(query)` - Searches available MCP servers
-- `manage_client(action, client_name, ...)` - Manages client configurations with path persistence
-- `manage_profile(action, name, ...)` - Manages MCPM profiles
-- `restart_infrastructure()` - Reboots Docker containers
-- `check_status()` - System diagnostics
-- `fetch_diff_context(staged)` - Returns git status and diff for self-review
-- `suggest_profile(client_name, testing)` - Determines which profiles to activate
+- `analyze_project()` - Returns JSON report of detected languages and existing configurations
+- `fetch_diff_context(staged)` - Returns git status and diff for self-review before commits
 
 ## Configuration Strategy
 

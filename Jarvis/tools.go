@@ -497,12 +497,29 @@ func handleInstallServer(_ context.Context, request mcp.CallToolRequest) (*mcp.C
 		return mcp.NewToolResultError("invalid arguments"), nil
 	}
 	name, ok := args["name"].(string)
-	if !ok {
-		return mcp.NewToolResultError("name argument is required"), nil
+	if !ok || strings.TrimSpace(name) == "" {
+		return mcp.NewToolResultError("❌ Server name is required and cannot be empty.\n\n💡 Tip: Use search_servers(query) to find available servers, or server_info(name) for installation details."), nil
 	}
 
-	output, _ := runMcpmCommand("install", name)
-	return mcp.NewToolResultText(output), nil
+	// Validate server name doesn't contain invalid characters
+	if strings.ContainsAny(name, " /\\") {
+		return mcp.NewToolResultError(fmt.Sprintf("❌ Invalid server name '%s' - server names cannot contain spaces or slashes.\n\n💡 Tip: Server names use hyphens, e.g., 'brave-search' not 'brave search'", name)), nil
+	}
+
+	output, err := runMcpmCommand("install", name)
+
+	// Add helpful context on common errors
+	if err != nil {
+		if strings.Contains(output, "not found") || strings.Contains(output, "404") {
+			// Suggest searching for similar servers
+			return mcp.NewToolResultError(fmt.Sprintf("❌ Server '%s' not found in registry.\n\n💡 Next steps:\n1. Use search_servers(\"%s\") to find similar servers\n2. Check spelling - server names are case-sensitive\n3. Visit MCPM registry for full list of available servers\n\n%s", name, name, output)), nil
+		}
+		if strings.Contains(output, "already installed") {
+			return mcp.NewToolResultText(fmt.Sprintf("✅ Server '%s' is already installed.\n\n💡 Next step: Use manage_profile() to add it to a profile, or restart_service() if you just updated it.", name)), nil
+		}
+	}
+
+	return mcp.NewToolResultText(fmt.Sprintf("✅ Successfully installed '%s'\n\n%s\n\n💡 Next step: Use manage_profile(\"edit\", \"your-profile\", add_servers=\"%s\") to add it to a profile.", name, output, name)), nil
 }
 
 func handleServerInfo(_ context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
@@ -537,12 +554,18 @@ func handleSearchServers(_ context.Context, request mcp.CallToolRequest) (*mcp.C
 		return mcp.NewToolResultError("invalid arguments"), nil
 	}
 	query, ok := args["query"].(string)
-	if !ok {
-		return mcp.NewToolResultError("query argument is required"), nil
+	if !ok || strings.TrimSpace(query) == "" {
+		return mcp.NewToolResultError("❌ Search query is required and cannot be empty.\n\n💡 Tip: Try broad searches like 'database', 'web', or 'documentation' to discover servers by category."), nil
 	}
 
-	output, _ := runMcpmCommand("search", query)
-	return mcp.NewToolResultText(output), nil
+	output, err := runMcpmCommand("search", query)
+
+	// Add helpful context for no results
+	if err == nil && (strings.Contains(output, "No servers found") || strings.Contains(output, "0 results")) {
+		return mcp.NewToolResultText(fmt.Sprintf("❌ No servers found matching '%s'\n\n💡 Try these tips:\n1. Use broader search terms (e.g., 'web' instead of 'web scraping')\n2. Try common categories: database, file, api, documentation, testing\n3. Use list_servers() to see all installed servers\n4. Check MCPM registry for the full catalog\n\n%s", query, output)), nil
+	}
+
+	return mcp.NewToolResultText(fmt.Sprintf("%s\n\n💡 Next step: Use server_info(name) to see installation details before installing.", output)), nil
 }
 
 func handleUninstallServer(_ context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
@@ -551,12 +574,20 @@ func handleUninstallServer(_ context.Context, request mcp.CallToolRequest) (*mcp
 		return mcp.NewToolResultError("invalid arguments"), nil
 	}
 	name, ok := args["name"].(string)
-	if !ok {
-		return mcp.NewToolResultError("name argument is required"), nil
+	if !ok || strings.TrimSpace(name) == "" {
+		return mcp.NewToolResultError("❌ Server name is required and cannot be empty.\n\n💡 Tip: Use list_servers() to see all installed servers."), nil
 	}
 
-	output, _ := runMcpmCommand("uninstall", name)
-	return mcp.NewToolResultText(output), nil
+	output, err := runMcpmCommand("uninstall", name)
+
+	// Add helpful context on common errors
+	if err != nil {
+		if strings.Contains(output, "not found") || strings.Contains(output, "not installed") {
+			return mcp.NewToolResultError(fmt.Sprintf("❌ Server '%s' is not installed.\n\n💡 Next steps:\n1. Use list_servers() to see all installed servers\n2. Check if the server is in a profile instead of globally installed\n3. Verify the server name is spelled correctly\n\n%s", name, output)), nil
+		}
+	}
+
+	return mcp.NewToolResultText(fmt.Sprintf("✅ Successfully uninstalled '%s'\n\n%s\n\n⚠️  Remember: If this server was in any profiles, you may need to update those profiles using manage_profile().", name, output)), nil
 }
 
 func handleEditServer(_ context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
@@ -654,16 +685,22 @@ func handleManageClient(_ context.Context, request mcp.CallToolRequest) (*mcp.Ca
 		return mcp.NewToolResultError("invalid arguments"), nil
 	}
 	action, ok := args["action"].(string)
-	if !ok {
-		return mcp.NewToolResultError("action argument is required"), nil
+	if !ok || strings.TrimSpace(action) == "" {
+		return mcp.NewToolResultError("❌ Action is required and cannot be empty.\n\n💡 Valid actions: ls, edit, import, config\n\nExamples:\n- manage_client(\"ls\") - List all configured clients\n- manage_client(\"edit\", client_name=\"codex\", add_server=\"brave-search\")"), nil
+	}
+
+	// Validate action is one of the allowed values
+	validActions := map[string]bool{"ls": true, "edit": true, "import": true, "config": true}
+	if !validActions[action] {
+		return mcp.NewToolResultError(fmt.Sprintf("❌ Invalid action '%s'\n\n💡 Valid actions: ls, edit, import, config\n\n- ls: List all configured clients\n- edit: Add/remove servers or profiles from a client\n- import: Import client configuration\n- config: Get or set client config path", action)), nil
 	}
 
 	cmdArgs := []string{"client", action}
 
 	if action == "edit" || action == "import" || action == "config" {
 		clientName, ok := args["client_name"].(string)
-		if !ok || clientName == "" {
-			return mcp.NewToolResultError("client_name argument is required for this action"), nil
+		if !ok || strings.TrimSpace(clientName) == "" {
+			return mcp.NewToolResultError(fmt.Sprintf("❌ client_name is required for action '%s'\n\n💡 Tip: Use manage_client(\"ls\") to see available client names\n\nCommon clients: codex, claude-code, claude-desktop, gemini, kilocode", action)), nil
 		}
 		cmdArgs = append(cmdArgs, clientName)
 	}
@@ -681,7 +718,13 @@ func handleManageClient(_ context.Context, request mcp.CallToolRequest) (*mcp.Ca
 		}
 	}
 
-	output, _ := runMcpmCommand(cmdArgs...)
+	output, err := runMcpmCommand(cmdArgs...)
+
+	// Add helpful context on success
+	if err == nil && action == "edit" {
+		return mcp.NewToolResultText(fmt.Sprintf("✅ Client configuration updated\n\n%s\n\n💡 Next step: Restart the client to apply changes, or use restart_service() if modifying Jarvis itself.", output)), nil
+	}
+
 	return mcp.NewToolResultText(output), nil
 }
 
