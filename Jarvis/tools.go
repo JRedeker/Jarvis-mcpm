@@ -49,10 +49,19 @@ func handleBootstrapSystem(_ context.Context, _ mcp.CallToolRequest) (*mcp.CallT
 	}
 
 	// 3. Start Infrastructure
-	cmdCompose := exec.Command("docker-compose", "up", "-d")
-	cmdCompose.Dir = rootDir
-	if out, err := cmdCompose.CombinedOutput(); err != nil {
-		return mcp.NewToolResultError(fmt.Sprintf("Failed to run docker-compose up in %s: %v\nOutput: %s", rootDir, err, string(out))), nil
+	// Use the manage-mcp.sh script if available, otherwise fallback to docker-compose
+	scriptPath := filepath.Join(rootDir, "scripts", "manage-mcp.sh")
+	if _, err := os.Stat(scriptPath); err == nil {
+		cmd := exec.Command(scriptPath, "start")
+		if out, err := cmd.CombinedOutput(); err != nil {
+			return mcp.NewToolResultError(fmt.Sprintf("Failed to start infrastructure via script: %v\nOutput: %s", err, string(out))), nil
+		}
+	} else {
+		cmdCompose := exec.Command("docker", "compose", "up", "-d")
+		cmdCompose.Dir = rootDir
+		if out, err := cmdCompose.CombinedOutput(); err != nil {
+			return mcp.NewToolResultError(fmt.Sprintf("Failed to run docker compose up in %s: %v\nOutput: %s", rootDir, err, string(out))), nil
+		}
 	}
 
 	return mcp.NewToolResultText("System bootstrapped successfully! MCPM installed and Infrastructure started."), nil
@@ -64,6 +73,37 @@ func handleRestartService(_ context.Context, _ mcp.CallToolRequest) (*mcp.CallTo
 		os.Exit(0)
 	}()
 	return mcp.NewToolResultText("Restarting Jarvis service..."), nil
+}
+
+func handleRestartInfrastructure(_ context.Context, _ mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	// Locate script
+	cwd, err := os.Getwd()
+	if err != nil {
+		return mcp.NewToolResultError(fmt.Sprintf("Failed to get CWD: %v", err)), nil
+	}
+
+	var rootDir string
+	if _, err := os.Stat(filepath.Join(cwd, "MCPM")); err == nil {
+		rootDir = cwd
+	} else if _, err := os.Stat(filepath.Join(cwd, "..", "MCPM")); err == nil {
+		rootDir = filepath.Join(cwd, "..")
+	} else {
+		return mcp.NewToolResultError("Could not locate project root."), nil
+	}
+
+	scriptPath := filepath.Join(rootDir, "scripts", "manage-mcp.sh")
+	if _, err := os.Stat(scriptPath); os.IsNotExist(err) {
+		return mcp.NewToolResultError("Management script not found at " + scriptPath), nil
+	}
+
+	// Run restart
+	cmd := exec.Command(scriptPath, "restart")
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return mcp.NewToolResultError(fmt.Sprintf("Restart failed: %v\nOutput: %s", err, string(out))), nil
+	}
+
+	return mcp.NewToolResultText(fmt.Sprintf("Infrastructure restarted successfully.\nOutput:\n%s", string(out))), nil
 }
 
 func handleSuggestProfile(_ context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
@@ -177,7 +217,7 @@ func handleScaffoldProject(_ context.Context, request mcp.CallToolRequest) (*mcp
 		return mcp.NewToolResultError(fmt.Sprintf("Failed to get CWD: %v", err)), nil
 	}
 
-	log := []string{fmt.Sprintf("🚀 Scaffolding '%s' project in %s...", projectType, cwd)}
+	logs := []string{fmt.Sprintf("🚀 Scaffolding '%s' project in %s...", projectType, cwd)}
 
 	// 1. Initialize Git
 	if _, err := os.Stat(".git"); os.IsNotExist(err) {
@@ -185,9 +225,9 @@ func handleScaffoldProject(_ context.Context, request mcp.CallToolRequest) (*mcp
 		if out, err := cmd.CombinedOutput(); err != nil {
 			return mcp.NewToolResultError(fmt.Sprintf("Git init failed: %s", out)), nil
 		}
-		log = append(log, "✅ Initialized git repository")
+		logs = append(logs, "✅ Initialized git repository")
 	} else {
-		log = append(log, "ℹ️ Git repository already exists")
+		logs = append(logs, "ℹ️ Git repository already exists")
 	}
 
 	// 2. Write .pre-commit-config.yaml
@@ -239,7 +279,7 @@ repos:
 	if err := os.WriteFile(".pre-commit-config.yaml", []byte(preCommitConfig), 0644); err != nil {
 		return mcp.NewToolResultError(fmt.Sprintf("Failed to write pre-commit config: %v", err)), nil
 	}
-	log = append(log, "✅ Created .pre-commit-config.yaml")
+	logs = append(logs, "✅ Created .pre-commit-config.yaml")
 
 	// 3. Install pre-commit
 	// Check if pip is available
@@ -249,12 +289,12 @@ repos:
 		// Install hooks
 		cmd := exec.Command("pre-commit", "install")
 		if out, err := cmd.CombinedOutput(); err != nil {
-			log = append(log, fmt.Sprintf("⚠️ Failed to install git hooks (is pre-commit in PATH?): %s", out))
+			logs = append(logs, fmt.Sprintf("⚠️ Failed to install git hooks (is pre-commit in PATH?): %s", out))
 		} else {
-			log = append(log, "✅ Installed git hooks")
+			logs = append(logs, "✅ Installed git hooks")
 		}
 	} else {
-		log = append(log, "⚠️ 'pip' not found. Please install 'pre-commit' manually.")
+		logs = append(logs, "⚠️ 'pip' not found. Please install 'pre-commit' manually.")
 	}
 
 	// 4. AI Review (GitHub Actions)
@@ -291,9 +331,9 @@ jobs:
           PR_CODE_SUGGESTIONS__NUM_CODE_SUGGESTIONS: 4
 `
 		if err := os.WriteFile(filepath.Join(workflowsDir, "pr_agent.yml"), []byte(prAgentConfig), 0644); err != nil {
-			log = append(log, fmt.Sprintf("⚠️ Failed to write workflow: %v", err))
+			logs = append(logs, fmt.Sprintf("⚠️ Failed to write workflow: %v", err))
 		} else {
-			log = append(log, "✅ Created .github/workflows/pr_agent.yml")
+			logs = append(logs, "✅ Created .github/workflows/pr_agent.yml")
 		}
 	}
 
@@ -301,10 +341,10 @@ jobs:
 	if _, err := os.Stat(".gitignore"); os.IsNotExist(err) {
 		gitignore := ".env\n.venv/\nnode_modules/\ndist/\n*.log\n.DS_Store\n"
 		os.WriteFile(".gitignore", []byte(gitignore), 0644)
-		log = append(log, "✅ Created default .gitignore")
+		logs = append(logs, "✅ Created default .gitignore")
 	}
 
-	return mcp.NewToolResultText(strings.Join(log, "\n")), nil
+	return mcp.NewToolResultText(strings.Join(logs, "\n")), nil
 }
 
 func handleListServers(_ context.Context, _ mcp.CallToolRequest) (*mcp.CallToolResult, error) {
