@@ -61,37 +61,26 @@ Jarvis transforms your LLM from a "text generator" into a **Full-Stack Operator*
 
 ---
 
-## 🛠️ Setup
+## 🛠️ Setup in 30 Seconds
 
-### 1. Build the Server
-Jarvis is a static Go binary that runs on your machine.
+### 1. Install & Build
+Run this one-liner to build Jarvis and generate the config for your Agent:
 
 ```bash
-git clone https://github.com/JRedeker/Jarvis-mcpm.git
-cd Jarvis-mcpm/Jarvis
-go build -o jarvis .
+git clone https://github.com/JRedeker/Jarvis-mcpm.git && ./Jarvis-mcpm/scripts/setup-jarvis.sh
 ```
 
-### 2. Give Your Agent Access
-Configure your AI client (Claude Desktop, Cursor, etc.) to see Jarvis.
+### 2. Connect Your Agent
+The script will output a JSON block.
+*   **Option A (Manual):** Copy the JSON into your client's config file (e.g., `claude_desktop_config.json` or Kilo Code settings).
+*   **Option B (Agentic):** Just paste the output to your Agent and say:
+    > *"Configure yourself to use this MCP server."*
 
-**`claude_desktop_config.json`**:
-```json
-{
-  "mcpServers": {
-    "jarvis": {
-      "command": "/absolute/path/to/Jarvis-mcpm/Jarvis/jarvis",
-      "args": []
-    }
-  }
-}
-```
-
-### 3. Activate
+### 3. Bootstrap
 Open your Agent and say:
 > **"Bootstrap the system."**
 
-The Agent will call `jarvis.bootstrap_system()`, which will automatically install dependencies and spin up the local Docker infrastructure. You are now ready to code.
+The Agent will call `jarvis.bootstrap_system()`, which will automatically install dependencies, spin up the local Docker infrastructure, and verify the environment is ready.
 
 ---
 
