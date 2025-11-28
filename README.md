@@ -22,7 +22,8 @@
 ## 📑 Table of Contents
 
 - [Why Jarvis?](#-why-jarvis)
-- [Jarvis vs. Standard Gateways](#-jarvis-vs-standard-mcp-gateways)
+- [What Makes Jarvis Different](#-what-makes-jarvis-different)
+- [Powered by MCPM](#-powered-by-mcpm)
 - [Universal Compatibility](#-universal-compatibility)
 - [The DevOps Stack](#-the-devops-stack-for-ai-engineering)
 - [How It Works](#-how-it-works)
@@ -93,110 +94,30 @@ Most MCP gateways are simple proxies that forward tool calls to underlying serve
 
 ---
 
-## 🆚 Jarvis vs. Standard MCP Gateways
+## 🆚 What Makes Jarvis Different
 
-Here's what sets Jarvis apart from typical MCP proxy implementations:
+Unlike standard MCP gateways (MCPJungle, MetaMCP, etc.) that focus on proxying and aggregation, Jarvis adds an **intelligent presentation layer**:
 
-<details>
-<summary><b>📤 Output & Interface</b></summary>
+| Differentiator | What It Means |
+|:---------------|:--------------|
+| **Clean Output** | Strips ANSI codes, formats as Markdown with status emojis (✅/❌) |
+| **DevOps Scaffolding** | `apply_devops_stack()` creates CI/CD, pre-commit hooks, Gitleaks—no other gateway does this |
+| **Self-Healing** | `restart_infrastructure()` auto-repairs crashed Docker services |
+| **Smart Validation** | Pre-execution input checks with contextual fix suggestions |
 
-| Capability | Standard Gateway | 🌟 Jarvis |
-|:-----------|:----------------|:----------|
-| **Output Format** | Raw CLI with ANSI codes | ✅ Clean Markdown, zero noise |
-| **Status Indicators** | Plain text or none | ✅ Emoji status (✅/❌/💡/⚠️) |
-| **Error Messages** | Generic stderr dumps | ✅ Actionable messages + fix suggestions |
-| **Response Structure** | Unformatted text | ✅ Structured with headers, lists, code blocks |
-| **Debug Noise** | Warnings/info mixed in | ✅ Stripped, clean output only |
-</details>
+**Bottom Line:** Other gateways forward calls. Jarvis transforms raw CLI into agent-optimized responses.
 
-<details>
-<summary><b>🧠 Intelligence & Validation</b></summary>
+---
 
-| Capability | Standard Gateway | 🌟 Jarvis |
-|:-----------|:----------------|:----------|
-| **Input Validation** | None (errors after exec) | ✅ Pre-execution validation |
-| **Context Awareness** | No project understanding | ✅ Analyzes state, suggests actions |
-| **Next Steps** | None | ✅ Guidance after every operation |
-| **Error Recovery** | Manual intervention | ✅ Auto-suggests fixes |
-| **Learning Loop** | Agents repeat mistakes | ✅ Teach patterns via output |
-</details>
+## 📦 Powered by MCPM
 
-<details>
-<summary><b>🐳 Infrastructure Management</b></summary>
+Jarvis uses [**MCPM**](https://github.com/pathintegral-institute/mcpm.sh) (MCP Manager) as its package management backend. MCPM provides:
 
-| Capability | Standard Gateway | 🌟 Jarvis |
-|:-----------|:----------------|:----------|
-| **Self-Healing** | Manual recovery | ✅ `restart_infrastructure()` auto-repairs |
-| **Health Checks** | None | ✅ `check_status()` with diagnostics |
-| **Service Management** | External scripts | ✅ Built-in Docker orchestration |
-| **Database Access** | No integration | ✅ PostgreSQL + Qdrant ready |
-| **Graceful Restart** | Hard kills | ✅ Health-checked restarts |
-</details>
+- **200+ Server Registry** — Curated MCP servers with metadata and installation recipes
+- **Profile System** — Composable tool sets activated per-project or per-client
+- **Cross-Platform** — Works on Linux, macOS, Windows
 
-<details>
-<summary><b>📦 Tool & Package Management</b></summary>
-
-| Capability | Standard Gateway | 🌟 Jarvis |
-|:-----------|:----------------|:----------|
-| **Tool Installation** | Manual npm/pip | ✅ Dynamic via MCPM registry (200+ tools) |
-| **Discovery** | Search docs manually | ✅ `search_servers()` with metadata |
-| **Hot Loading** | Restart required | ✅ Install + load without restart |
-| **Profiles** | Flat config files | ✅ 3-Layer composable stack |
-| **Registry** | Scattered sources | ✅ Centralized MCPM technologies.toml |
-</details>
-
-<details>
-<summary><b>🛡️ DevOps & Security</b></summary>
-
-| Capability | Standard Gateway | 🌟 Jarvis |
-|:-----------|:----------------|:----------|
-| **Project Scaffolding** | None | ✅ `apply_devops_stack()` with CI/CD |
-| **Pre-commit Hooks** | Manual setup | ✅ Auto-configured (Ruff, Gitleaks) |
-| **Secret Detection** | No protection | ✅ Blocks commits with secrets |
-| **Linting** | External tools | ✅ Language-specific stacks |
-| **GitHub Actions** | Manual creation | ✅ Auto-generated workflows |
-</details>
-
-<details>
-<summary><b>🤖 Agent Experience</b></summary>
-
-| Capability | Standard Gateway | 🌟 Jarvis |
-|:-----------|:----------------|:----------|
-| **Tool Descriptions** | Technical specs | ✅ Benefits-focused, natural language |
-| **Documentation** | CLI --help only | ✅ 23 tools with use-case examples |
-| **Workflow Examples** | None | ✅ Real-world scenarios documented |
-| **Batch Operations** | One command at a time | ✅ Complex workflows in single call |
-| **Profile Suggestions** | Manual selection | ✅ `suggest_profile()` auto-detects |
-</details>
-
-<details>
-<summary><b>⚡ Performance</b></summary>
-
-| Metric | Standard Gateway | 🌟 Jarvis |
-|:-------|:----------------|:----------|
-| **Startup Time** | Varies (Node.js) | ✅ <100ms (Go-powered) |
-| **Memory Footprint** | 50-200MB (Node) | ✅ ~20MB (compiled binary) |
-| **Output Processing** | None | ✅ <500ms formatting overhead |
-| **Concurrency** | Limited | ✅ Go goroutines, multi-process safe |
-</details>
-
-**Bottom Line:** Standard gateways forward calls. **Jarvis transforms agent capabilities.**
-
-<details>
-<summary><b>📝 Note on Built-in vs. MCPM Tools</b></summary>
-
-Many AI clients have built-in web search, file reading, and basic git operations. **MCPM's 200+ registry is fundamentally different:**
-
-| Built-in Client Tools | 🌟 MCPM Registry Tools via Jarvis |
-|:---|:---|
-| Generic web search | **Specialized:** Context7 (structured library docs with code snippets) |
-| Basic URL fetch | **Specialized:** Firecrawl (intelligent scraping with Markdown extraction) |
-| Read local files | **Specialized:** PDF-parse (structured extraction from PDFs) |
-| Manual git commands | **Automated:** Gitleaks pre-commit (blocks secrets before they're committed) |
-| Fixed capabilities | **Dynamic:** Install new tools mid-conversation without restart |
-
-The unique value isn't individual tools—it's **dynamic capability expansion** from a curated registry of 200+ specialized MCP servers that the agent can install and use on-demand.
-</details>
+Jarvis wraps MCPM's CLI with intelligent formatting, validation, and DevOps features. You get the full MCPM registry plus agent-optimized tooling.
 
 ---
 
@@ -1013,15 +934,7 @@ share_server("context7", port="8080", no_auth=false)
 <details>
 <summary><b>What makes Jarvis different from other MCP servers?</b></summary>
 
-Jarvis is a **presentation layer**, not just a server. Standard MCP gateways forward tool calls as-is. Jarvis:
-- Wraps raw CLI output in clean Markdown (no ANSI codes)
-- Validates inputs before execution (prevents errors)
-- Provides context-aware suggestions (teaches agents better workflows)
-- Enables batch operations (complex workflows in single commands)
-- Self-heals infrastructure (auto-repair crashed services)
-- Scaffolds projects (production-ready CI/CD, linting, security)
-
-See [Jarvis vs. Standard Gateways](#-jarvis-vs-standard-mcp-gateways) for detailed comparison.
+Unlike gateways that just forward calls, Jarvis is a **presentation layer** with DevOps scaffolding. See [What Makes Jarvis Different](#-what-makes-jarvis-different) for the full comparison.
 </details>
 
 <details>
