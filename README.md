@@ -367,12 +367,12 @@ check_status()
 ## System Status Report
 
 ### MCPM
-✅ Version: 2.1.0
-✅ Registry: 237 servers available
+✅ Installed and configured
+✅ Registry: 200+ servers available
 
 ### Infrastructure
-✅ PostgreSQL: healthy (port 5432)
-✅ Qdrant: healthy (port 6333)
+✅ PostgreSQL: healthy
+✅ Qdrant: healthy
 
 ### Installed Servers
 ✅ context7 (running)
@@ -623,13 +623,13 @@ Jarvis is built on a strict Go backbone that eliminates drift and guarantees exe
 >
 > **You:** *"This old script needs to be production-ready."*
 > <br>
-> **Agent:** *"I've analyzed the directory. It's a Python 3.10 project lacking linting. I'm applying the standard DevOps stack now."*
+> **Agent:** *"I've analyzed the directory. It's a Python project lacking linting. I'm applying the standard DevOps stack now."*
 > <br>
 > **Agent:** *"Done! I've set up pre-commit hooks with Ruff and Gitleaks, created a GitHub Actions workflow, and initialized git. Try making your first commit."*
 
 **The Jarvis Fix:** Instead of blindly guessing which linters to install, the Agent uses Jarvis to **analyze the codebase state first**.
 1.  **Analyze:** The Agent calls `analyze_project()` to read file signatures (e.g., `pyproject.toml`, `go.mod`).
-2.  **Decide:** It detects that `pre-commit` config is missing or the existing one is incompatible with the detected Python version.
+2.  **Decide:** It detects that `pre-commit` config is missing or incomplete.
 3.  **Execute:** It calls `apply_devops_stack(project_type="python", force=true)`. Jarvis programmatically writes a hardened `.pre-commit-config.yaml` and GitHub Actions workflow, ensuring the project adheres to the "Prime Stack" standard immediately.
 
 **What Jarvis Did:**
