@@ -35,8 +35,8 @@ Jarvis transforms your AI Agent from a passive chat bot into a **Full-Stack DevO
 | **🔌 Tool Management** | [**MCPM**](mcpm_source/README.md) | **Dynamic Expansion:** Installs and hot-loads new tools (e.g., `pdf-parse`, `slack`) on demand. |
 | **🛡️ Guardrails** | [**pre-commit**](https://github.com/pre-commit/pre-commit) + [**gitleaks**](https://github.com/gitleaks/gitleaks) | **Automatic Safety:** Blocks secrets and bad formatting *before* the commit happens. |
 | **🧐 Review** | [**CodiumAI PR-Agent**](https://github.com/Codium-ai/pr-agent) | **Self-Correction:** Auto-reviews PRs with commands like `/review` & `/improve`. |
-| **🧠 Memory** | [**Qdrant**](https://github.com/qdrant/qdrant) (Vector DB) | **Context Retention:** Remembers codebase details and decisions across sessions. |
-| **🏗️ Scaffold** | [**Ruff**](https://github.com/astral-sh/ruff), [**GoFmt**](https://go.dev/blog/gofmt), [**Prettier**](https://github.com/prettier/prettier) | **The Architect:** Enforces language-specific standards. |
+| **🧠 Memory** | [**Qdrant**](https://github.com/qdrant/qdrant), [**Mem0**](https://github.com/mem0ai/mem0) | **Context Retention:** Remembers codebase details and decisions across sessions. |
+| **🏗️ apply_devops_stack** | [**Linters**](https://github.com/astral-sh/ruff), [**Formatters**](https://github.com/prettier/prettier), [**Type Checkers**](https://www.typescriptlang.org/) | **The Architect:** Enforces language-specific standards dynamically. |
 | **🔎 Search** | [**Brave Search**](https://github.com/modelcontextprotocol/servers/tree/main/src/brave-search) | **The Researcher:** Fetches live docs via the web. |
 
 ---
