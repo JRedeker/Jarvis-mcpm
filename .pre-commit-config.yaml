@@ -3,7 +3,7 @@
 repos:
   # Standard file checks
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v6.0.0
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
@@ -13,13 +13,13 @@ repos:
 
   # Security: Secrets Detection
   - repo: https://github.com/gitleaks/gitleaks
-    rev: v8.18.2
+    rev: v8.30.0
     hooks:
       - id: gitleaks
 
   # Python: Linting & Formatting (Ruff replaces Flake8/Black/Isort)
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.3.0
+    rev: v0.14.6
     hooks:
       - id: ruff
         args: [ --fix ]
@@ -35,6 +35,6 @@ repos:
 
   # Docker: Linting
   - repo: https://github.com/hadolint/hadolint
-    rev: v2.12.0
+    rev: v2.14.0
     hooks:
       - id: hadolint-docker
