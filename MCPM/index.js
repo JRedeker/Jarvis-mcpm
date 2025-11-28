@@ -175,17 +175,55 @@ program
     .command('doctor')
     .description('Check system status')
     .action(() => {
-        console.log(chalk.bold('MCPM System Status:'));
-        console.log(`- Node.js: ${process.version} ${chalk.green('OK')}`);
-        console.log(`- Config: ${configPath} ${chalk.green('OK')}`);
-        // Check Docker
-        try {
-            execSync('docker --version', { stdio: 'ignore' });
-            console.log(`- Docker: ${chalk.green('Detected')}`);
-        } catch {
-            console.log(`- Docker: ${chalk.red('Not Found')}`);
+        console.log(chalk.bold.blue('🔍 Checking System Vital Signs...'));
+        console.log(chalk.gray('----------------------------------------'));
+
+        let allGood = true;
+
+        // 1. Check Node.js
+        if (process.version) {
+            console.log(`✅ Node.js Runtime    : ${chalk.green(process.version)}`);
+        } else {
+            console.log(`❌ Node.js Runtime    : ${chalk.red('Error')}`);
+            allGood = false;
         }
-        console.log(chalk.green('\nSystem is healthy.'));
+
+        // 2. Check Config
+        if (fs.existsSync(configPath)) {
+             console.log(`✅ Registry File      : ${chalk.green('Connected')}`);
+        } else {
+             console.log(`❌ Registry File      : ${chalk.red('Missing')}`);
+             allGood = false;
+        }
+
+        // 3. Check Docker
+        try {
+            const dockerVer = execSync('docker --version', { encoding: 'utf8' }).trim();
+            console.log(`✅ Docker Engine      : ${chalk.green(dockerVer)}`);
+        } catch {
+            console.log(`⚠️ Docker Engine      : ${chalk.yellow('Not Found (Remote/Docker-based tools will fail)')}`);
+            // Not fatal for everything, but good to know
+        }
+
+        // 4. Check Jarvis Binary
+        const jarvisPath = path.join(__dirname, '..', 'Jarvis', 'jarvis');
+        if (fs.existsSync(jarvisPath)) {
+             console.log(`✅ Jarvis Core        : ${chalk.green('Online')}`);
+        } else {
+             console.log(`❌ Jarvis Core        : ${chalk.red('Offline (Binary not found)')}`);
+             allGood = false;
+        }
+
+        console.log(chalk.gray('----------------------------------------'));
+
+        if (allGood) {
+            console.log(chalk.bold.green('\n🚀 ALL SYSTEMS GO! 🚀\n'));
+            console.log(chalk.cyan('Jarvis is ready to assist.'));
+        } else {
+            console.log(chalk.bold.red('\n⚠️  SYSTEM CHECK FAILED'));
+            console.log('Please resolve the issues above.');
+            process.exit(1);
+        }
     });
 
 program
