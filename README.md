@@ -88,6 +88,38 @@ flowchart TD
 
 ---
 
+## 🎯 Using Jarvis: The Primary Interface
+
+**Jarvis tools are designed specifically for AI agents** and provide significant advantages over direct CLI usage:
+
+### ✅ Why Jarvis Tools Over Direct CLI?
+
+| Jarvis Advantages | Direct CLI Limitations |
+|:---|:---|
+| **Clean, Structured Output** - No ANSI codes, stripped warnings, formatted responses | Raw terminal output with color codes and noise |
+| **Smart Error Handling** - Actionable error messages with suggestions | Generic error messages requiring interpretation |
+| **Validation & Safety** - Prevents common mistakes before execution | No validation, errors discovered after execution |
+| **Context Awareness** - Understands your project and suggests appropriate actions | No awareness of project state or configuration |
+| **Batch Operations** - Complex workflows in single commands | Multiple manual CLI commands required |
+| **Next Step Guidance** - Tells you what to do after success | Figure out next steps yourself |
+
+### 🔧 Quick Reference
+
+When working with AI agents, **always prefer Jarvis tools**:
+
+| Task | ✅ Use Jarvis Tool | ❌ Not Direct CLI |
+|:---|:---|:---|
+| Install MCP server | `install_server("brave-search")` | ~~`mcpm install brave-search`~~ |
+| Check system health | `check_status()` | ~~`mcpm doctor`~~ |
+| Manage profiles | `manage_profile("edit", "p-pokeedge", add_servers="...")` | ~~`mcpm profile edit`~~ |
+| Search for tools | `search_servers("documentation")` | ~~`mcpm search documentation`~~ |
+| Configure clients | `manage_client("edit", "codex", add_server="...")` | ~~`mcpm client edit`~~ |
+| Bootstrap system | `bootstrap_system()` | ~~Multiple manual steps~~ |
+
+**Note:** Direct MCPM CLI is still available for debugging Jarvis itself or manual operations outside AI agent workflows.
+
+---
+
 ## 🚀 Real-World Workflows
 
 Jarvis is built on a strict Go backbone that eliminates drift and guarantees execution. Here is how it solves complex engineering problems.
