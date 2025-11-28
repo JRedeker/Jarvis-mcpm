@@ -1,0 +1,90 @@
+name: Jarvis CI
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'Jarvis/**'
+      - '.github/workflows/jarvis-ci.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'Jarvis/**'
+      - '.github/workflows/jarvis-ci.yml'
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.24'
+        cache-dependency-path: Jarvis/go.sum
+
+    - name: Download dependencies
+      working-directory: ./Jarvis
+      run: go mod download
+
+    - name: Run tests
+      working-directory: ./Jarvis
+      run: go test -v -race -coverprofile=coverage.out ./...
+
+    - name: Upload coverage
+      uses: codecov/codecov-action@v5
+      with:
+        files: ./Jarvis/coverage.out
+        flags: jarvis
+        name: jarvis-coverage
+      continue-on-error: true
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.24'
+        cache-dependency-path: Jarvis/go.sum
+
+    - name: Run golangci-lint
+      uses: golangci/golangci-lint-action@v9
+      with:
+        version: latest
+        working-directory: ./Jarvis
+        args: --timeout=5m
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.24'
+        cache-dependency-path: Jarvis/go.sum
+
+    - name: Build binary
+      working-directory: ./Jarvis
+      run: go build -v -o jarvis .
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: jarvis-binary
+        path: Jarvis/jarvis
+        retention-days: 7
