@@ -4,6 +4,8 @@
 
 > *"Most agents are blind text generators. Jarvis connects them to your local runtime, empowering them to architect, verify, and deploy code with engineering precision."*
 
+<div align="center">
+
 [![Go Version](https://img.shields.io/badge/go-1.24+-00ADD8?logo=go&logoColor=white)](https://go.dev/)
 [![License](https://img.shields.io/badge/license-MIT-2EA043)](LICENSE)
 [![MCP Compliant](https://img.shields.io/badge/MCP-Compliant-6366f1)](https://modelcontextprotocol.io/)
@@ -76,7 +78,7 @@ Jarvis sits between your Agent and your Machine. It acts as a secure, intelligen
 
 Jarvis is built on a strict Go backbone that eliminates drift and guarantees execution. Here is how it solves complex engineering problems.
 
-### 1. Intelligent Scaffolding & Research
+### 1. 🏗️ Intelligent Scaffolding & Research
 **Problem:** *You have a messy legacy Python repo with no standards, or a blank folder for a new Go microservice.*
 
 **The Jarvis Fix:** Instead of blindly guessing which linters to install, the Agent uses Jarvis to **analyze the codebase state first**.
@@ -84,12 +86,15 @@ Jarvis is built on a strict Go backbone that eliminates drift and guarantees exe
 2.  **Decide:** It detects that `pre-commit` config is missing or the existing one is incompatible with the detected Python version.
 3.  **Execute:** It calls `apply_devops_stack(project_type="python", force=true)`. Jarvis programmatically writes a hardened `.pre-commit-config.yaml` and GitHub Actions workflow, ensuring the project adheres to the "Prime Stack" standard immediately.
 
-**Scenario Example:**
+> **Scenario Example:**
+>
 > **You:** *"This old script needs to be production-ready."*
+> <br>
 > **Agent:** *"I've analyzed the directory. It's a Python 3.10 project lacking linting. I'm applying the standard DevOps stack now."*
+> <br>
 > **Jarvis:** *Writes `.pre-commit-config.yaml` with Ruff and Gitleaks.*
 
-### 2. Self-Healing Infrastructure
+### 2. 🔧 Self-Healing Infrastructure
 **Problem:** *Your RAG application is failing because the local Vector DB crashed.*
 
 **The Jarvis Fix:** Normally, this requires a context switch to the terminal. Jarvis allows the Agent to **diagnose and repair** the underlying infrastructure itself.
@@ -97,11 +102,13 @@ Jarvis is built on a strict Go backbone that eliminates drift and guarantees exe
 2.  **Repair:** It calls `restart_infrastructure()`.
 3.  **Verify:** Jarvis executes the Docker restart sequence via its internal Go logic, waits for health checks to pass, and confirms the service is back online—all without human intervention.
 
-**Scenario Example:**
+> **Scenario Example:**
+>
 > **You:** *"Why is my search failing?"*
+> <br>
 > **Agent:** *"Checking system status... Qdrant is down. Restarting infrastructure... Done. Services are healthy. Retrying search."*
 
-### 3. Autonomous Tool Expansion
+### 3. 🔌 Autonomous Tool Expansion
 **Problem:** *You ask the Agent to "Analyze this PDF contract," but it has no PDF tools loaded.*
 
 **The Jarvis Fix:** Jarvis connects your Agent to the massive MCPM registry, enabling **on-demand capability expansion**.
@@ -109,11 +116,13 @@ Jarvis is built on a strict Go backbone that eliminates drift and guarantees exe
 2.  **Install:** It calls `install_server("pdf-parse")`.
 3.  **Use:** Jarvis hot-loads the new tool into the active session. The Agent effectively "upgrades itself" in real-time to solve your specific problem.
 
-**Scenario Example:**
+> **Scenario Example:**
+>
 > **You:** *"Summarize this PDF."*
+> <br>
 > **Agent:** *"I don't have a PDF reader installed. Installing `pdf-parse` via MCPM... Tool loaded. Reading PDF now..."*
 
-### 4. Security & Safety Loops
+### 4. 🛡️ Security & Safety Loops
 **Problem:** *The Agent writes code that accidentally hardcodes an API key.*
 
 **The Jarvis Fix:** Jarvis acts as an immutable **security gatekeeper**.
@@ -121,9 +130,12 @@ Jarvis is built on a strict Go backbone that eliminates drift and guarantees exe
 2.  **Intervention:** If a secret is detected, the commit is **programmatically blocked**.
 3.  **Correction:** The error output is returned to the Agent, forcing it to remove the hardcoded key and use `.env` variables before retrying. This ensures no secrets ever enter your commit history.
 
-**Scenario Example:**
+> **Scenario Example:**
+>
 > **Agent:** *"Committing fix for API client..."*
+> <br>
 > **Jarvis:** *❌ COMMIT BLOCKED: Secret detected in `client.py`.*
+> <br>
 > **Agent:** *"Apologies. I've moved the API key to `.env` and am retrying the commit."*
 
 ---
