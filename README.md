@@ -84,6 +84,11 @@ Jarvis is built on a strict Go backbone that eliminates drift and guarantees exe
 2.  **Decide:** It detects that `pre-commit` config is missing or the existing one is incompatible with the detected Python version.
 3.  **Execute:** It calls `apply_devops_stack(project_type="python", force=true)`. Jarvis programmatically writes a hardened `.pre-commit-config.yaml` and GitHub Actions workflow, ensuring the project adheres to the "Prime Stack" standard immediately.
 
+**Scenario Example:**
+> **You:** *"This old script needs to be production-ready."*
+> **Agent:** *"I've analyzed the directory. It's a Python 3.10 project lacking linting. I'm applying the standard DevOps stack now."*
+> **Jarvis:** *Writes `.pre-commit-config.yaml` with Ruff and Gitleaks.*
+
 ### 2. Self-Healing Infrastructure
 **Problem:** *Your RAG application is failing because the local Vector DB crashed.*
 
@@ -91,6 +96,10 @@ Jarvis is built on a strict Go backbone that eliminates drift and guarantees exe
 1.  **Diagnose:** The Agent calls `check_status()` and parses the output to see the Qdrant container is unhealthy.
 2.  **Repair:** It calls `restart_infrastructure()`.
 3.  **Verify:** Jarvis executes the Docker restart sequence via its internal Go logic, waits for health checks to pass, and confirms the service is back online—all without human intervention.
+
+**Scenario Example:**
+> **You:** *"Why is my search failing?"*
+> **Agent:** *"Checking system status... Qdrant is down. Restarting infrastructure... Done. Services are healthy. Retrying search."*
 
 ### 3. Autonomous Tool Expansion
 **Problem:** *You ask the Agent to "Analyze this PDF contract," but it has no PDF tools loaded.*
@@ -100,6 +109,10 @@ Jarvis is built on a strict Go backbone that eliminates drift and guarantees exe
 2.  **Install:** It calls `install_server("pdf-parse")`.
 3.  **Use:** Jarvis hot-loads the new tool into the active session. The Agent effectively "upgrades itself" in real-time to solve your specific problem.
 
+**Scenario Example:**
+> **You:** *"Summarize this PDF."*
+> **Agent:** *"I don't have a PDF reader installed. Installing `pdf-parse` via MCPM... Tool loaded. Reading PDF now..."*
+
 ### 4. Security & Safety Loops
 **Problem:** *The Agent writes code that accidentally hardcodes an API key.*
 
@@ -107,6 +120,11 @@ Jarvis is built on a strict Go backbone that eliminates drift and guarantees exe
 1.  **Prevention:** When the Agent attempts to commit code, Jarvis intercepts the action and runs local hooks like `gitleaks`.
 2.  **Intervention:** If a secret is detected, the commit is **programmatically blocked**.
 3.  **Correction:** The error output is returned to the Agent, forcing it to remove the hardcoded key and use `.env` variables before retrying. This ensures no secrets ever enter your commit history.
+
+**Scenario Example:**
+> **Agent:** *"Committing fix for API client..."*
+> **Jarvis:** *❌ COMMIT BLOCKED: Secret detected in `client.py`.*
+> **Agent:** *"Apologies. I've moved the API key to `.env` and am retrying the commit."*
 
 ---
 
