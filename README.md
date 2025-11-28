@@ -11,6 +11,17 @@
 
 ---
 
+## 🌍 Universal Compatibility
+
+Jarvis is built on the **Model Context Protocol (MCP)**, making it instantly compatible with any model and any client that speaks the language.
+
+*   **Supported Models:** Claude 3.5/3.7, Gemini 1.5/2.0, GPT-4o, DeepSeek R1, Llama 3, and more.
+*   **Supported Clients:** Claude Desktop, Cursor, Windsurf, VS Code (via extensions), Zed, Kilo Code, and any other MCP-compliant interface.
+
+If your tool supports MCP, it supports Jarvis.
+
+---
+
 ## ⚡ The "Prime" Stack for AI Engineering
 
 Jarvis is not just a CLI tool. It is a **Model Context Protocol (MCP) Server** that transforms your AI Agent (Claude, Gemini, Codex) into a **Full-Stack DevOps Engineer**. It enforces a strict "Prime" stack on every project it touches:
@@ -91,7 +102,7 @@ git clone https://github.com/JRedeker/Jarvis-mcpm.git && ./Jarvis-mcpm/scripts/s
 
 ### 2. Connect Your Agent
 The script will output a JSON block.
-*   **Option A (Manual):** Copy the JSON into your client's config file (e.g., `claude_desktop_config.json` or Kilo Code settings).
+*   **Option A (Manual):** Copy the JSON into your client's config file (e.g., `claude_desktop_config.json`, `cursor_mcp.json`, or VS Code settings).
 *   **Option B (Agentic):** Just paste the output to your Agent and say:
     > *"Configure yourself to use this MCP server."*
 
