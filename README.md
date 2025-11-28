@@ -1,6 +1,4 @@
-<div align="center">
-
-# 🤖 Jarvis
+# Jarvis
 
 **The Intelligent Infrastructure Layer for AI Agents.**
 
@@ -74,46 +72,41 @@ Jarvis sits between your Agent and your Machine. It acts as a secure, intelligen
 
 ---
 
-## 🚀 Core Workflows
+## 🚀 Real-World Workflows
 
-Jarvis empowers your agent to handle complex, multi-step engineering tasks that usually require a human operator.
+Jarvis is built on a strict Go backbone that eliminates drift and guarantees execution. Here is how it solves complex engineering problems.
 
-### 1. 🏗️ The Architect: Intelligent Scaffolding
-**Scenario:** *You have a messy legacy Python repo with no standards, or a blank folder for a new Go microservice.*
+### 1. Intelligent Scaffolding & Research
+**Problem:** *You have a messy legacy Python repo with no standards, or a blank folder for a new Go microservice.*
 
-Instead of blindly following a "install linters" prompt, Jarvis enables your Agent to **research and identify the best fit tools for your project**. It scans the directory (`analyze_project`), detects the tech stack (e.g., `pyproject.toml` vs `go.mod`), and then intelligently applies the correct DevOps stack. It won't overwrite your existing work—it adapts to it.
+**The Jarvis Fix:** Instead of blindly guessing which linters to install, the Agent uses Jarvis to **analyze the codebase state first**.
+1.  **Analyze:** The Agent calls `analyze_project()` to read file signatures (e.g., `pyproject.toml`, `go.mod`).
+2.  **Decide:** It detects that `pre-commit` config is missing or the existing one is incompatible with the detected Python version.
+3.  **Execute:** It calls `apply_devops_stack(project_type="python", force=true)`. Jarvis programmatically writes a hardened `.pre-commit-config.yaml` and GitHub Actions workflow, ensuring the project adheres to the "Prime Stack" standard immediately.
 
-<details>
-<summary><strong>Click to see the Agent's Workflow</strong></summary>
+### 2. Self-Healing Infrastructure
+**Problem:** *Your RAG application is failing because the local Vector DB crashed.*
 
-1.  **Analysis:** The Agent calls `jarvis.analyze_project()` to detect languages.
-    ```json
-    { "languages": ["python"], "has_gitleaks": false }
-    ```
-2.  **Decision:** "Security risk detected. Missing secret scanning."
-3.  **Action:** The Agent calls `jarvis.apply_devops_stack(project_type="python", force=true)`.
-4.  **Result:** Jarvis writes a strict `.pre-commit-config.yaml` with `ruff` and `gitleaks`.
-</details>
+**The Jarvis Fix:** Normally, this requires a context switch to the terminal. Jarvis allows the Agent to **diagnose and repair** the underlying infrastructure itself.
+1.  **Diagnose:** The Agent calls `check_status()` and parses the output to see the Qdrant container is unhealthy.
+2.  **Repair:** It calls `restart_infrastructure()`.
+3.  **Verify:** Jarvis executes the Docker restart sequence via its internal Go logic, waits for health checks to pass, and confirms the service is back online—all without human intervention.
 
-### 2. 🔧 The Mechanic: Self-Healing Infrastructure
-**Scenario:** *Your RAG application is failing because the local Vector DB crashed.*
+### 3. Autonomous Tool Expansion
+**Problem:** *You ask the Agent to "Analyze this PDF contract," but it has no PDF tools loaded.*
 
-Normally, you would context-switch to your terminal to debug Docker. Jarvis lets the Agent **diagnose and repair** the underlying infrastructure itself. It can check container health (`check_status`), read logs, and gracefully reboot the entire stack (`restart_infrastructure`) without you leaving your flow state.
+**The Jarvis Fix:** Jarvis connects your Agent to the massive MCPM registry, enabling **on-demand capability expansion**.
+1.  **Search:** The Agent calls `search_servers("pdf")` and identifies a relevant tool.
+2.  **Install:** It calls `install_server("pdf-parse")`.
+3.  **Use:** Jarvis hot-loads the new tool into the active session. The Agent effectively "upgrades itself" in real-time to solve your specific problem.
 
-### 3. 🔌 The Specialist: Autonomous Tool Expansion
-**Scenario:** *You ask the Agent to "Analyze this PDF contract," but it has no PDF tools.*
+### 4. Security & Safety Loops
+**Problem:** *The Agent writes code that accidentally hardcodes an API key.*
 
-Jarvis connects your Agent to the massive MCPM registry. The Agent can **search for missing capabilities** (e.g., "pdf tools"), install them instantly (`install_server`), and begin using them immediately. It turns "I can't do that" into "I just installed the tool to do that."
-
-### 4. 🛡️ The Guardian: Security & Safety Loops
-**Scenario:** *The Agent writes code that accidentally hardcodes an API key.*
-
-Jarvis acts as the final gatekeeper. When the Agent attempts to commit code, Jarvis runs local hooks like `gitleaks`. If a secret is detected, the commit is **blocked**, the error is returned to the Agent, and the Agent is forced to fix the security flaw before trying again.
-
-### 5. 🧩 The Strategist: Dynamic Context Switching
-**Scenario:** *You move from working on the Backend API to the React Frontend.*
-
-Jarvis watches your working directory and **adapts the toolset in real-time**. In a Go backend folder, it loads Postgres clients and Go documentation. When you switch to the React frontend, it drops those tools and loads Prettier, Browser tools, and React docs. Your Agent always has the exact right context.
+**The Jarvis Fix:** Jarvis acts as an immutable **security gatekeeper**.
+1.  **Prevention:** When the Agent attempts to commit code, Jarvis intercepts the action and runs local hooks like `gitleaks`.
+2.  **Intervention:** If a secret is detected, the commit is **programmatically blocked**.
+3.  **Correction:** The error output is returned to the Agent, forcing it to remove the hardcoded key and use `.env` variables before retrying. This ensures no secrets ever enter your commit history.
 
 ---
 
