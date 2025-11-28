@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"os"
@@ -207,17 +208,106 @@ func handleFetchDiffContext(_ context.Context, request mcp.CallToolRequest) (*mc
 	return mcp.NewToolResultText(report), nil
 }
 
+func handleAnalyzeProject(_ context.Context, _ mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	cwd, err := os.Getwd()
+	if err != nil {
+		return mcp.NewToolResultError(fmt.Sprintf("Failed to get CWD: %v", err)), nil
+	}
+
+	analysis := map[string]interface{}{
+		"path":       cwd,
+		"languages":  []string{},
+		"frameworks": []string{},
+		"configs": map[string]bool{
+			"has_git":              false,
+			"has_pre_commit":       false,
+			"has_github_workflows": false,
+			"has_pr_agent":         false,
+			"has_dependabot":       false,
+		},
+		"key_files": []string{},
+	}
+
+	// Check for Git
+	if _, err := os.Stat(filepath.Join(cwd, ".git")); err == nil {
+		analysis["configs"].(map[string]bool)["has_git"] = true
+	}
+
+	// Check configs
+	if _, err := os.Stat(filepath.Join(cwd, ".pre-commit-config.yaml")); err == nil {
+		analysis["configs"].(map[string]bool)["has_pre_commit"] = true
+	}
+	if _, err := os.Stat(filepath.Join(cwd, ".github", "workflows")); err == nil {
+		analysis["configs"].(map[string]bool)["has_github_workflows"] = true
+		if _, err := os.Stat(filepath.Join(cwd, ".github", "workflows", "pr_agent.yml")); err == nil {
+			analysis["configs"].(map[string]bool)["has_pr_agent"] = true
+		}
+	}
+	if _, err := os.Stat(filepath.Join(cwd, ".github", "dependabot.yml")); err == nil {
+		analysis["configs"].(map[string]bool)["has_dependabot"] = true
+	}
+
+	// Detect Languages & Frameworks
+	files, _ := os.ReadDir(cwd)
+	for _, f := range files {
+		name := f.Name()
+		switch name {
+		case "go.mod":
+			analysis["languages"] = append(analysis["languages"].([]string), "go")
+			analysis["key_files"] = append(analysis["key_files"].([]string), name)
+		case "package.json":
+			analysis["languages"] = append(analysis["languages"].([]string), "javascript/typescript")
+			analysis["key_files"] = append(analysis["key_files"].([]string), name)
+		case "pyproject.toml", "requirements.txt", "setup.py":
+			found := false
+			for _, l := range analysis["languages"].([]string) {
+				if l == "python" {
+					found = true
+					break
+				}
+			}
+			if !found {
+				analysis["languages"] = append(analysis["languages"].([]string), "python")
+			}
+			analysis["key_files"] = append(analysis["key_files"].([]string), name)
+		case "pom.xml", "build.gradle":
+			analysis["languages"] = append(analysis["languages"].([]string), "java")
+			analysis["key_files"] = append(analysis["key_files"].([]string), name)
+		case "Gemfile":
+			analysis["languages"] = append(analysis["languages"].([]string), "ruby")
+			analysis["key_files"] = append(analysis["key_files"].([]string), name)
+		case "composer.json":
+			analysis["languages"] = append(analysis["languages"].([]string), "php")
+			analysis["key_files"] = append(analysis["key_files"].([]string), name)
+		case "Cargo.toml":
+			analysis["languages"] = append(analysis["languages"].([]string), "rust")
+			analysis["key_files"] = append(analysis["key_files"].([]string), name)
+		}
+	}
+
+	jsonData, err := json.MarshalIndent(analysis, "", "  ")
+	if err != nil {
+		return mcp.NewToolResultError(fmt.Sprintf("Failed to marshal analysis: %v", err)), nil
+	}
+
+	return mcp.NewToolResultText(string(jsonData)), nil
+}
+
 func handleScaffoldProject(_ context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	args, _ := request.Params.Arguments.(map[string]interface{})
 	projectType, _ := args["project_type"].(string)
 	enableAiReview, _ := args["enable_ai_review"].(bool)
+	force, _ := args["force"].(bool)
 
 	cwd, err := os.Getwd()
 	if err != nil {
 		return mcp.NewToolResultError(fmt.Sprintf("Failed to get CWD: %v", err)), nil
 	}
 
-	logs := []string{fmt.Sprintf("🚀 Scaffolding '%s' project in %s...", projectType, cwd)}
+	logs := []string{fmt.Sprintf("🚀 Scaffolding project in %s...", cwd)}
+	if projectType != "" {
+		logs = append(logs, fmt.Sprintf("Project Type: %s", projectType))
+	}
 
 	// 1. Initialize Git
 	if _, err := os.Stat(".git"); os.IsNotExist(err) {
@@ -231,8 +321,12 @@ func handleScaffoldProject(_ context.Context, request mcp.CallToolRequest) (*mcp
 	}
 
 	// 2. Write .pre-commit-config.yaml
-	// Default config content
-	preCommitConfig := `# See https://pre-commit.com for more information
+	preCommitFile := ".pre-commit-config.yaml"
+	if _, err := os.Stat(preCommitFile); err == nil && !force {
+		logs = append(logs, fmt.Sprintf("⚠️ %s exists. Skipping. Use 'force=true' to overwrite.", preCommitFile))
+	} else {
+		// Default config content
+		preCommitConfig := `# See https://pre-commit.com for more information
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.5.0
@@ -248,10 +342,10 @@ repos:
     hooks:
       - id: gitleaks
 `
-	// Language specific hooks
-	switch projectType {
-	case "python":
-		preCommitConfig += `
+		// Language specific hooks
+		switch projectType {
+		case "python":
+			preCommitConfig += `
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.3.0
     hooks:
@@ -259,30 +353,36 @@ repos:
         args: [ --fix ]
       - id: ruff-format
 `
-	case "go":
-		preCommitConfig += `
+		case "go":
+			preCommitConfig += `
   - repo: https://github.com/dnephin/pre-commit-golang
     rev: v0.5.1
     hooks:
       - id: go-fmt
       # - id: go-imports # Uncomment if installed locally
 `
-	case "node", "typescript", "javascript":
-		preCommitConfig += `
+		case "node", "typescript", "javascript":
+			preCommitConfig += `
   - repo: https://github.com/pre-commit/mirrors-prettier
     rev: v4.0.0
     hooks:
       - id: prettier
 `
+		}
+
+		if err := os.WriteFile(preCommitFile, []byte(preCommitConfig), 0644); err != nil {
+			return mcp.NewToolResultError(fmt.Sprintf("Failed to write pre-commit config: %v", err)), nil
+		}
+		if force && err == nil { // File existed and we forced
+			logs = append(logs, fmt.Sprintf("♻️ Overwrote %s", preCommitFile))
+		} else {
+			logs = append(logs, fmt.Sprintf("✅ Created %s", preCommitFile))
+		}
 	}
 
-	if err := os.WriteFile(".pre-commit-config.yaml", []byte(preCommitConfig), 0644); err != nil {
-		return mcp.NewToolResultError(fmt.Sprintf("Failed to write pre-commit config: %v", err)), nil
-	}
-	logs = append(logs, "✅ Created .pre-commit-config.yaml")
-
-	// 3. Install pre-commit
-	// Check if pip is available
+	// 3. Install pre-commit (Command execution)
+	// Only run if we actually have a config or forced
+	// We check for pip availability
 	if _, err := exec.LookPath("pip"); err == nil {
 		// Install package
 		exec.Command("pip", "install", "pre-commit").Run()
@@ -299,10 +399,14 @@ repos:
 
 	// 4. AI Review (GitHub Actions)
 	if enableAiReview {
-		workflowsDir := ".github/workflows"
+		workflowsDir := filepath.Join(".github", "workflows")
 		os.MkdirAll(workflowsDir, 0755)
+		workflowFile := filepath.Join(workflowsDir, "pr_agent.yml")
 
-		prAgentConfig := `name: AI Code Review
+		if _, err := os.Stat(workflowFile); err == nil && !force {
+			logs = append(logs, fmt.Sprintf("⚠️ %s exists. Skipping. Use 'force=true' to overwrite.", workflowFile))
+		} else {
+			prAgentConfig := `name: AI Code Review
 
 on:
   pull_request:
@@ -338,23 +442,31 @@ jobs:
           PR_COMMANDS__ALLOW_DESCRIBE: "true"
           PR_COMMANDS__ALLOW_IMPROVE: "true"
 `
-		if err := os.WriteFile(filepath.Join(workflowsDir, "pr_agent.yml"), []byte(prAgentConfig), 0644); err != nil {
-			logs = append(logs, fmt.Sprintf("⚠️ Failed to write workflow: %v", err))
-		} else {
-			logs = append(logs, "✅ Created .github/workflows/pr_agent.yml")
+			if err := os.WriteFile(workflowFile, []byte(prAgentConfig), 0644); err != nil {
+				logs = append(logs, fmt.Sprintf("⚠️ Failed to write workflow: %v", err))
+			} else {
+				if force && err == nil {
+					logs = append(logs, fmt.Sprintf("♻️ Overwrote %s", workflowFile))
+				} else {
+					logs = append(logs, fmt.Sprintf("✅ Created %s", workflowFile))
+				}
+			}
 		}
 	}
 
 	// 5. Gitignore (Basic)
-	if _, err := os.Stat(".gitignore"); os.IsNotExist(err) {
+	gitignoreFile := ".gitignore"
+	if _, err := os.Stat(gitignoreFile); os.IsNotExist(err) {
 		gitignore := ".env\n.venv/\nnode_modules/\ndist/\n*.log\n.DS_Store\n"
-		os.WriteFile(".gitignore", []byte(gitignore), 0644)
-		logs = append(logs, "✅ Created default .gitignore")
+		os.WriteFile(gitignoreFile, []byte(gitignore), 0644)
+		logs = append(logs, fmt.Sprintf("✅ Created default %s", gitignoreFile))
+	} else {
+		// We rarely overwrite gitignore completely, usually append logic is needed but let's just skip for now to be safe
+		logs = append(logs, fmt.Sprintf("ℹ️ %s exists (skipping)", gitignoreFile))
 	}
 
 	return mcp.NewToolResultText(strings.Join(logs, "\n")), nil
 }
-
 func handleListServers(_ context.Context, _ mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	output, err := runMcpmCommand("ls")
 	if err != nil {

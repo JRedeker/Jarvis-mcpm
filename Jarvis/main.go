@@ -112,16 +112,24 @@ func main() {
 
 	// Tool: scaffold_project
 	s.AddTool(mcp.NewTool("scaffold_project",
-		mcp.WithDescription("Scaffolds a new project with standard dev tooling (git, pre-commit, AI review)"),
+		mcp.WithDescription("Applies standard dev tooling (git, pre-commit, AI review) to the project"),
 		mcp.WithString("project_type",
-			mcp.Description("Type of project (python, go, node, general)"),
-			mcp.Required(),
+			mcp.Description("Type of project (python, go, node, general). Optional if you just want to set up generic tools."),
 		),
 		mcp.WithBoolean("enable_ai_review",
 			mcp.Description("Setup GitHub Actions for AI PR review"),
 			mcp.DefaultString("true"),
 		),
+		mcp.WithBoolean("force",
+			mcp.Description("Overwrite existing configuration files if found (dangerous)"),
+			mcp.DefaultString("false"),
+		),
 	), handleScaffoldProject)
+
+	// Tool: analyze_project
+	s.AddTool(mcp.NewTool("analyze_project",
+		mcp.WithDescription("Analyzes the current project structure to detect languages and existing configurations"),
+	), handleAnalyzeProject)
 
 	// Tool: list_servers
 	s.AddTool(mcp.NewTool("list_servers",
