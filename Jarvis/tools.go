@@ -326,9 +326,17 @@ jobs:
         env:
           OPENAI_KEY: ${{ secrets.OPENAI_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_REVIEW__EXTRA_INSTRUCTIONS: "Focus on architectural consistency and security."
+
+          # --- Configuration ---
+          # General
+          PR_REVIEW__EXTRA_INSTRUCTIONS: "Focus on architectural consistency, 3-Layer Profile compliance, and security."
           PR_REVIEW__REQUIRE_TESTS_REVIEW: "true"
           PR_CODE_SUGGESTIONS__NUM_CODE_SUGGESTIONS: 4
+
+          # Commands enabled
+          PR_COMMANDS__ALLOW_REVIEW: "true"
+          PR_COMMANDS__ALLOW_DESCRIBE: "true"
+          PR_COMMANDS__ALLOW_IMPROVE: "true"
 `
 		if err := os.WriteFile(filepath.Join(workflowsDir, "pr_agent.yml"), []byte(prAgentConfig), 0644); err != nil {
 			logs = append(logs, fmt.Sprintf("⚠️ Failed to write workflow: %v", err))
