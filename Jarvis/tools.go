@@ -522,6 +522,13 @@ func handleServerInfo(_ context.Context, request mcp.CallToolRequest) (*mcp.Call
 
 func handleCheckStatus(_ context.Context, _ mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	output, _ := runMcpmCommand("doctor")
+
+	// Check if the output indicates success (Jarvis's runMcpmCommand already stripped ANSI and formatted it)
+	// We look for the standard success message from mcpm doctor
+	if strings.Contains(output, "All systems healthy") {
+		output += "\n\n🚀 **ALL SYSTEMS GO!** 🚀\n**Jarvis is ready to assist.**"
+	}
+
 	return mcp.NewToolResultText(output), nil
 }
 
