@@ -1,8 +1,8 @@
 # Jarvis
 
-**The Local Infrastructure Layer for AI Agents.**
+**The DevOps Hand of the AI Agent.**
 
-> *"Agents are great at logic, but bad at logistics. Jarvis gives them hands."*
+*The local infrastructure layer that turns text generators into full-stack engineers.*
 
 ![Go Version](https://img.shields.io/badge/go-1.24+-00ADD8?logo=go&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-green)
@@ -24,7 +24,7 @@ If your tool supports MCP, it supports Jarvis.
 
 ## ⚡ The "Prime" Stack for AI Engineering
 
-Jarvis is not just a CLI tool. It is a **Model Context Protocol (MCP) Server** that transforms your AI Agent (Claude, Gemini, Codex) into a **Full-Stack DevOps Engineer**. It enforces a strict "Prime" stack on every project it touches:
+Jarvis is not just a CLI tool. It is a **Model Context Protocol (MCP) Server** that transforms your AI Agent into a **Full-Stack DevOps Engineer**. It enforces a strict "Prime" stack on every project it touches:
 
 | Component | Technology | Agent's Role |
 | :--- | :--- | :--- |
@@ -57,37 +57,52 @@ graph LR
 
 ---
 
-## 🚀 Core Capabilities
+## 🚀 Capabilities & Workflows
 
-### 🏗️ The Architect (`apply_devops_stack`)
-**Goal:** Eliminate "blank page" paralysis and ensure security from line 1.
+Jarvis empowers your agent to handle complex, multi-step engineering tasks that usually require a human operator.
 
-<details>
-<summary><strong>Click to see the Agent's Workflow</strong></summary>
+### 1. 🏗️ The Architect: Intelligent Scaffolding
+**Scenario:** *You have a messy legacy Python repo with no standards, or a blank folder for a new Go microservice.*
 
-1.  **Analysis:** The Agent calls `jarvis.analyze_project()` to detect languages.
-    ```json
-    { "languages": ["python"], "has_gitleaks": false }
-    ```
-2.  **Decision:** "Security risk detected. Missing secret scanning."
-3.  **Action:** The Agent calls `jarvis.apply_devops_stack(project_type="python", force=true)`.
-4.  **Result:** Jarvis writes a strict `.pre-commit-config.yaml` with `ruff` and `gitleaks`.
-</details>
+Instead of asking you to manually set up linters, Jarvis allows the Agent to:
+1.  **Analyze:** Call `analyze_project()` to detect the tech stack (e.g., "I see `requirements.txt` and `package.json`").
+2.  **Decide:** Recognize that `pre-commit` config is missing or outdated.
+3.  **Execute:** Call `apply_devops_stack(project_type="python", force=true)` to generate:
+    *   A hardened `.pre-commit-config.yaml` (Ruff, Black, Gitleaks).
+    *   A GitHub Actions workflow for automated AI code reviews.
+    *   A standard `.gitignore` to prevent repository bloat.
 
-### 🛡️ The Guardian (Automatic Safety)
-**Goal:** Stop the Agent from hallucinating broken code into your repo.
+### 2. 🔧 The Mechanic: Self-Healing Infrastructure
+**Scenario:** *Your RAG application is failing because the local Vector DB crashed.*
 
-*   **Secret Scanning:** Jarvis refuses to let the Agent commit API keys (via `gitleaks`).
-*   **Diff Review:** The Agent calls `fetch_diff_context()` to review its own work against `git status` before finalizing tasks.
-*   **Self-Healing:** If the Agent breaks the DB, it calls `restart_infrastructure()` to reboot the Docker containers.
+Normally, you would context-switch to your terminal to debug Docker. With Jarvis, the Agent can:
+1.  **Diagnose:** Call `check_status()` to see that the Qdrant container is unhealthy.
+2.  **Repair:** Call `restart_infrastructure()` to gracefully reboot the entire Docker stack (Postgres + Qdrant).
+3.  **Verify:** Confirm the service is back online before continuing with the coding task.
 
-### 🧩 Intelligent Context Switching
-**Goal:** One Agent, many projects.
+### 3. 🔌 The Specialist: Autonomous Tool Expansion
+**Scenario:** *You ask the Agent to "Analyze this PDF contract," but it has no PDF tools.*
 
-| Context | Jarvis Action |
-| :--- | :--- |
-| **User enters `~/backend-go`** | Jarvis loads `go-tools`, `postgres`, and `context7` docs. |
-| **User switches to `~/frontend`** | Jarvis drops Go tools, loads `react-tools`, `brave-search`, and `prettier`. |
+Jarvis connects your Agent to the massive MCPM ecosystem.
+1.  **Search:** The Agent calls `search_servers("pdf")` and finds a matching tool in the registry.
+2.  **Install:** It calls `install_server("pdf-parse")`.
+3.  **Use:** Jarvis hot-loads the new tool, and the Agent immediately uses it to read the file—without you ever leaving the chat.
+
+### 4. 🛡️ The Guardian: Security & Safety Loops
+**Scenario:** *The Agent writes code that accidentally hardcodes an API key.*
+
+Jarvis acts as the final gatekeeper.
+1.  **Prevention:** When the Agent attempts to commit, Jarvis runs the installed `gitleaks` hook.
+2.  **Intervention:** The commit fails. Jarvis returns the error output to the Agent.
+3.  **Correction:** The Agent reads the error, moves the key to an `.env` file, and successfully commits the fixed code.
+
+### 5. 🧩 The Strategist: Dynamic Context Switching
+**Scenario:** *You move from working on the Backend API to the React Frontend.*
+
+Jarvis watches your working directory and adapts.
+*   **In `/backend-go`:** Jarvis loads `go-tools`, `postgres-client`, and `context7` (for docs).
+*   **In `/frontend-react`:** Jarvis automatically unloads the Go tools and spins up `brave-search`, `prettier`, and `chrome-devtools`.
+*   **Result:** Your Agent always has the *exact* right tools for the job, reducing noise and token costs.
 
 ---
 
