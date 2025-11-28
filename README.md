@@ -206,13 +206,13 @@ Jarvis is built on the **Model Context Protocol (MCP)**, making it instantly com
 
 ### Supported Model Families
 
-*   **🧠 Anthropic Claude:** Claude 3.5 Sonnet, Claude 3 Opus, Claude 3 Haiku
-*   **🤖 OpenAI GPT:** GPT-4, GPT-4 Turbo, GPT-3.5 Turbo
-*   **🔮 Google Gemini:** Gemini 1.5 Pro, Gemini 1.5 Flash
-*   **🌊 DeepSeek:** DeepSeek-V2, DeepSeek-Coder
-*   **🦙 Meta Llama:** Llama 3.1, Llama 3, Code Llama
-*   **🚀 Mistral AI:** Mistral Large, Mixtral 8x7B
-*   **And any other model with MCP support**
+*   🧠 **Anthropic Claude**
+*   🤖 **OpenAI GPT**
+*   🔮 **Google Gemini**
+*   🌊 **DeepSeek**
+*   🦙 **Meta Llama**
+*   🚀 **Mistral AI**
+*   ✨ **Any model with MCP support**
 
 ### Supported Clients & IDEs
 
@@ -677,7 +677,7 @@ Jarvis is built on a strict Go backbone that eliminates drift and guarantees exe
 > <br>
 > **Agent:** *"I don't have a PDF reader installed. Installing `pdf-parse` via MCPM..."*
 > <br>
-> **Agent:** *"Tool loaded. Reading contract.pdf... This is a service agreement with payment terms of Net 30 days, effective January 1, 2025..."*
+> **Agent:** *"Tool loaded. Reading contract.pdf... This is a service agreement with payment terms of Net 30 days, auto-renewal clause on page 5..."*
 
 **The Jarvis Fix:** Jarvis connects your Agent to the massive MCPM registry, enabling **on-demand capability expansion**.
 1.  **Search:** The Agent calls `search_servers("pdf")` and identifies a relevant tool.
@@ -755,17 +755,17 @@ Jarvis is built on a strict Go backbone that eliminates drift and guarantees exe
 <details>
 <summary><b>6. 🔍 Research-Driven Development (Specialized Docs Access)</b></summary>
 
-**Problem:** *You ask the Agent to "implement Next.js 15 server actions," but it was trained on Next.js 13 syntax that's now deprecated.*
+**Problem:** *You ask the Agent to implement a feature using a library, but it was trained on outdated syntax that's now deprecated.*
 
 > **Example Conversation:**
 >
 > **You:** *"Add server actions for the checkout flow."*
 > <br>
-> **Agent:** *"The Next.js 15 server action syntax has changed significantly. Installing Context7 to fetch current docs..."*
+> **Agent:** *"The server action syntax has changed since my training. Installing Context7 to fetch current docs..."*
 > <br>
-> **Agent:** *"Context7 returned 47 code snippets for server actions. The new `'use server'` directive now supports streaming. Implementing..."*
+> **Agent:** *"Context7 returned 47 code snippets for server actions. Implementing with current patterns..."*
 > <br>
-> **Agent:** *"Done. I've used the 2025 API pattern with proper error boundaries. Ready for review."*
+> **Agent:** *"Done. I've used the latest API pattern with proper error boundaries. Ready for review."*
 
 **The Jarvis Fix:** Context7 provides **structured library documentation with code examples** - not just web search results. This is fundamentally different from built-in web fetch:
 
@@ -773,21 +773,20 @@ Jarvis is built on a strict Go backbone that eliminates drift and guarantees exe
 |:---|:---|:---|
 | **Data Source** | Generic web pages | npm, PyPI, GitHub official docs |
 | **Format** | Raw HTML/text | Structured JSON with code snippets |
-| **Versioning** | Whatever Google returns | Specific version docs (e.g., Next.js 15.2) |
+| **Versioning** | Whatever Google returns | Specific version docs on demand |
 | **Code Examples** | May be outdated | Live, tested snippets |
 
 1.  **Install Specialized Tool:** Agent calls `install_server("context7")` to get structured docs access.
-2.  **Resolve Library:** Uses `resolve_library_id("nextjs")` → Returns `/vercel/next.js/v15.2.0`.
-3.  **Fetch Docs:** Calls `get_library_docs("/vercel/next.js/v15.2.0", topic="server-actions", mode="code")`.
-4.  **Returns:** 47 structured code snippets with imports, type signatures, and working examples.
+2.  **Resolve Library:** Uses `resolve_library_id("library-name")` → Returns versioned library ID.
+3.  **Fetch Docs:** Calls `get_library_docs("/org/library", topic="feature", mode="code")`.
+4.  **Returns:** Structured code snippets with imports, type signatures, and working examples.
 5.  **Implement:** Agent uses **current syntax**, not outdated training data.
 
 **What Jarvis Did:**
 - Installed `context7` MCP server from MCPM registry (not available in typical clients)
-- Retrieved **structured** Next.js 15.2 documentation (not web scraping)
-- Returned 47 code snippets with proper TypeScript types
-- Agent used current `'use server'` directive syntax with streaming support
-- Avoided deprecated Next.js 13 patterns from training data
+- Retrieved **structured** documentation for the latest library version (not web scraping)
+- Returned code snippets with proper types and imports
+- Agent used current syntax patterns, avoiding deprecated APIs
 - **Key difference:** Structured library docs, not generic web search
 </details>
 
@@ -1079,7 +1078,7 @@ The unique value is **dynamic capability expansion**—your agent can install sp
 
 **Any model or client that supports MCP:**
 
-**Models:** Claude (all versions), GPT-4, Gemini, DeepSeek, Llama, Mistral
+**Models:** Claude, GPT, Gemini, DeepSeek, Llama, Mistral, and more
 
 **Clients:** Claude Desktop, Cursor, Windsurf, VS Code, Zed, Kilo Code
 
