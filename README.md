@@ -32,8 +32,6 @@ Jarvis transforms your AI Agent from a passive chat bot into a **Full-Stack DevO
 
 | Capability | Technology | What It Does |
 | :--- | :--- | :--- |
-| Capability | Technology | What It Does |
-| :--- | :--- | :--- |
 | **🔌 Tool Management** | [**MCPM**](https://github.com/pathintegral-institute/mcpm.sh) | **Dynamic Expansion:** Installs and hot-loads new tools via [**MCPM**](mcpm_source/README.md) on demand. |
 | **🛡️ Guardrails** | **Git Hooks & Secret Detection** | **Automatic Safety:** Blocks secrets and bad formatting *before* the commit happens (e.g., `pre-commit`, `gitleaks`). |
 | **🧐 Review** | **AI Code Reviewer** | **Self-Correction:** Auto-reviews PRs with commands like `/review` & `/improve` (e.g., `CodiumAI PR-Agent`). |
