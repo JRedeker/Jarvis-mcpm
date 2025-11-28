@@ -19,29 +19,6 @@
 
 ---
 
-## 📑 Table of Contents
-
-- [Why Jarvis?](#-why-jarvis)
-- [What Makes Jarvis Different](#-what-makes-jarvis-different)
-- [Powered by MCPM](#-powered-by-mcpm)
-- [Universal Compatibility](#-universal-compatibility)
-- [The DevOps Stack](#-the-devops-stack-for-ai-engineering)
-- [How It Works](#-how-it-works)
-- [Tool Reference](#-tool-reference)
-- [Using Jarvis: Primary Interface](#-using-jarvis-the-primary-interface)
-- [Real-World Workflows](#-real-world-workflows)
-- [Presentation Layer Deep Dive](#-presentation-layer-deep-dive)
-- [Advanced Features](#-advanced-features)
-- [Performance & Benchmarks](#-performance--benchmarks)
-- [Setup](#-setup-in-30-seconds)
-- [Documentation Hub](#-documentation-hub)
-- [FAQ](#-frequently-asked-questions)
-- [Troubleshooting](#-troubleshooting)
-- [Contributing](#-contributing)
-- [Community & Support](#-community--support)
-
----
-
 ## 🤔 Why Jarvis?
 
 Most MCP gateways are simple proxies that forward tool calls to underlying servers. **Jarvis is fundamentally different—it's an intelligent presentation layer designed specifically for AI agents.**
