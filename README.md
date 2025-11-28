@@ -45,31 +45,40 @@ Jarvis transforms your AI Agent from a passive chat bot into a **Full-Stack DevO
 
 Jarvis sits between your Agent and your Machine. It acts as a secure, intelligent layer that translates "intent" into "infrastructure."
 
-```text
-┌───────────────────────┐
-│ 👤 YOU (The Architect)│
-└───────────┬───────────┘
-            │ "Fix this broken build"
-            ▼
-┌──────────────────────────┐
-│ 🤖 AI AGENT (The Engineer)│
-└───────────┬──────────────┘
-            │ Tool Call: jarvis.restart_infrastructure()
-            ▼
-┌───────────────────────────────────────┐
-│ ⚡ JARVIS (The Infrastructure Layer)   │
-│ ┌───────────────────────────────────┐ │
-│ │ 🔍 ANALYZE   (analyze_project)    │ │
-│ │ 🏗️ INTEGRATE (apply_devops_stack) │ │
-│ │ 🔧 REPAIR    (restart_infrastructure)│ │
-│ └──────────────────┬────────────────┘ │
-└────────────────────┼──────────────────┘
-                     ▼
-┌────────────────────┴──────────────────┐
-│ 📂 LOCAL SYSTEM                       │
-│    ├── 🐳 Docker Containers           │
-│    └── 📄 Local Files (.git, configs) │
-└───────────────────────────────────────┘
+```mermaid
+flowchart TD
+    subgraph "User Layer"
+        User[("👤 You (The Architect)")]
+    end
+
+    subgraph "Agent Layer"
+        Agent[("🤖 AI Agent (The Engineer)")]
+    end
+
+    subgraph "Jarvis Infrastructure Layer"
+        Jarvis["⚡ Jarvis (MCP Server)"]
+
+        subgraph "Tooling"
+            Analyzer["🔍 Inspector (analyze_project)"]
+            Scaffolder["🏗️ Builder (apply_devops_stack)"]
+            Mechanic["🔧 Docker Ops (restart_infrastructure)"]
+        end
+    end
+
+    subgraph "Local System Layer"
+        Files[("📂 Local Files (.git, configs)")]
+        Docker[("🐳 Containers (Postgres/Qdrant)")]
+    end
+
+    User -->|Prompt: 'Fix this broken build'| Agent
+    Agent -->|Tool Call| Jarvis
+    Jarvis -->|Executes| Analyzer
+    Jarvis -->|Executes| Scaffolder
+    Jarvis -->|Executes| Mechanic
+
+    Scaffolder -->|Writes| Files
+    Mechanic -->|Manages| Docker
+    Analyzer -->|Reads| Files
 ```
 
 ---
