@@ -28,34 +28,36 @@ graph LR
 
 ---
 
-## 🤖 How Your Agent Uses Jarvis
+## 🤖 What Jarvis Enables Your Agent To Do
 
-You don't run Jarvis commands. You just talk to your Agent. Jarvis works silently in the background, empowering the Agent to perform complex DevOps tasks.
+Jarvis transforms your LLM from a "text generator" into a **Full-Stack Operator**. It works silently in the background, giving the agent the hands it needs to touch the world.
 
-### 1. As an Architect
-**You say:** *"Analyze this codebase and set up the DevOps stack."*
-**The Agent calls:** `jarvis.analyze_project()` then `jarvis.apply_devops_stack()`
-**Jarvis executes:**
-*   Scans your files to detect languages (Python, Go, Node).
-*   Initializes Git and strictly configured `.gitignore`.
-*   Installs `pre-commit` hooks (Ruff, Gitleaks) to prevent bad code from being saved.
-*   Sets up GitHub Actions for automated AI code review.
+### 1. 🧠 Intelligent Context Switching
+**The Challenge:** You work on multiple projects (`frontend-app`, `backend-api`, `data-pipeline`). Each needs different tools.
+**The Jarvis Fix:**
+*   **Dynamic Profiling:** When you switch directories, Jarvis auto-detects the context (e.g., "I see `go.mod`, loading Go tools").
+*   **Client Adaptation:** It knows if you are using Claude or Gemini and loads specific adapter tools (like `morph-fast-apply` for code application) optimized for that model's capabilities.
+*   **Zero-Config Transitions:** Your agent seamlessly drops specialized tools from the previous project and picks up the new ones without you restarting the session.
 
-### 2. As a Mechanic
-**You say:** *"The vector database is acting up. Restart it."*
-**The Agent calls:** `jarvis.restart_infrastructure()`
-**Jarvis executes:**
-*   Gracefully stops the local Docker containers (Postgres, Qdrant).
-*   Reboots the services and verifies health checks.
-*   Returns the logs to the Agent so it can confirm the fix.
+### 2. 🏭 Agentic Infrastructure Management
+**The Challenge:** "I need a vector database for this RAG app."
+**The Jarvis Fix:**
+*   **Self-Healing Infrastructure:** Your agent can spin up, stop, and *restart* Docker containers (Postgres, Qdrant) on demand.
+*   **Health Diagnostics:** If a service fails, the agent can run diagnostics, read the logs, and fix the config—without waking you up.
+*   **Secure Tunnels:** Need to show a demo? Your agent can securely expose a local server to the internet via `mcpm share` so you can send a link to your team.
 
-### 3. As a Critic
-**You say:** *"Review my changes before I commit."*
-**The Agent calls:** `jarvis.fetch_diff_context()`
-**Jarvis executes:**
-*   Retrieves the real-time `git diff` and `git status`.
-*   Formats it for the Agent to analyze.
-*   The Agent then gives you a critique based on the actual state of your disk.
+### 3. 🛡️ The "Prime" DevOps Pipeline
+**The Challenge:** "Agents write buggy code and ignore security."
+**The Jarvis Fix:**
+*   **One-Shot Scaffolding:** `jarvis.apply_devops_stack()` analyzes your legacy repo and instantly retrofits it with a modern CI/CD pipeline.
+*   **Enforced Quality:** It installs **Pre-commit hooks** that block the agent (and you) from committing secrets, trailing whitespace, or unformatted code.
+*   **AI Code Review:** It sets up **GitHub Actions** that auto-review every Pull Request, allowing the AI to critique its own work before merging.
+
+### 4. 🔌 Autonomous Tool Installation
+**The Challenge:** "I need to search the web, but I don't have a browser tool."
+**The Jarvis Fix:**
+*   **Self-Expansion:** The agent can say, *"I need web search capability."* Jarvis will find the `brave-search` MCP package, install it, configure the API keys, and hot-load it into the session.
+*   **Registry Access:** Immediate access to the entire MCPM registry of 800+ tools (Filesystem, GitHub, Slack, Google Drive).
 
 ---
 
