@@ -86,6 +86,7 @@ The Agent will call `jarvis.bootstrap_system()`, which will automatically instal
 
 ## 📚 Documentation
 
+*   [**Examples & Workflows**](docs/EXAMPLES.md) - See Jarvis in action.
 *   [**Technical Architecture**](docs/TECHNICAL_ARCHITECTURE.md) - How Jarvis, MCPM, and the Agent interact.
 *   [**Configuration Strategy**](docs/CONFIGURATION_STRATEGY.md) - How the Agent decides which tools to load.
 *   [**Jarvis Development**](Jarvis/README.md) - Source code documentation.
