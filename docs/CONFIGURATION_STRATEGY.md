@@ -69,3 +69,38 @@ return profiles // e.g., ["project-new", "client-codex", "memory"]
 | `client-gemini` | 2 (Client) | `morph-fast-apply` |
 | `memory` | 3 (Global) | `basic-memory`, `mem0`, `qdrant` |
 | `testing-all-tools` | 3 (Global) | **ALL** tools (for CI/CD) |
+
+## Operational Updates (Nov 2025)
+
+### 1. Client Configuration Locations
+We have standardized the configuration locations for wiring Jarvis into clients on Linux:
+*   **Claude CLI:** `~/.claude.json`
+*   **Claude VSCode / Desktop:** `~/.config/Claude/claude_desktop_config.json`
+
+**Wiring Pattern:**
+Instead of defining individual tools in these files, we wire **Jarvis** (direct binary) and the relevant **MCPM Profiles**.
+
+```json
+{
+  "mcpServers": {
+    "mcpm_jarvis": {
+      "command": "/path/to/Jarvis/jarvis",
+      "args": []
+    },
+    "mcpm_profile_project-pokeedge": {
+      "command": "mcpm",
+      "args": ["profile", "run", "project-pokeedge"]
+    }
+  }
+}
+```
+
+### 2. Jarvis as Presentation Layer
+Jarvis has been upgraded to act as an intelligent presentation layer for the `mcpm` CLI.
+*   **Problem:** Raw CLI output often contains ANSI color codes and unstructured text that is hard for LLMs to parse or renders poorly in chat interfaces.
+*   **Solution:** Jarvis captures `mcpm` output, strips ANSI codes, and wraps the result in Markdown (e.g., ` ```text ` blocks) with status emojis (✅/❌).
+*   **Benefit:** Agents receive clean, structured data even when tools return "text" responses.
+
+### 3. Profile Strategy Refinement: "Morph" Move
+*   **Change:** `morph-fast-apply` was moved from **Layer 2 (Client)** to **Layer 1 (Environment)** for `project-pokeedge`.
+*   **Reasoning:** While originally considered a "client" tool, intelligent refactoring is often project-specific (requiring access to the specific codebase context). Making it available in the project profile ensures consistent availability across all clients working on that project, reducing configuration drift.

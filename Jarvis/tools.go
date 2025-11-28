@@ -487,10 +487,8 @@ jobs:
 }
 
 func handleListServers(_ context.Context, _ mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	output, err := runMcpmCommand("ls")
-	if err != nil {
-		return mcp.NewToolResultError(fmt.Sprintf("Failed to list servers: %v", err)), nil
-	}
+	output, _ := runMcpmCommand("ls")
+	// Return formatted output for both success and error
 	return mcp.NewToolResultText(output), nil
 }
 
@@ -504,10 +502,7 @@ func handleInstallServer(_ context.Context, request mcp.CallToolRequest) (*mcp.C
 		return mcp.NewToolResultError("name argument is required"), nil
 	}
 
-	output, err := runMcpmCommand("install", name)
-	if err != nil {
-		return mcp.NewToolResultError(fmt.Sprintf("Failed to install server %s: %v", name, err)), nil
-	}
+	output, _ := runMcpmCommand("install", name)
 	return mcp.NewToolResultText(output), nil
 }
 
@@ -521,18 +516,12 @@ func handleServerInfo(_ context.Context, request mcp.CallToolRequest) (*mcp.Call
 		return mcp.NewToolResultError("name argument is required"), nil
 	}
 
-	output, err := runMcpmCommand("info", name)
-	if err != nil {
-		return mcp.NewToolResultError(fmt.Sprintf("Failed to get info for server %s: %v", name, err)), nil
-	}
+	output, _ := runMcpmCommand("info", name)
 	return mcp.NewToolResultText(output), nil
 }
 
 func handleCheckStatus(_ context.Context, _ mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	output, err := runMcpmCommand("doctor")
-	if err != nil {
-		return mcp.NewToolResultError(fmt.Sprintf("Failed to check status: %v", err)), nil
-	}
+	output, _ := runMcpmCommand("doctor")
 	return mcp.NewToolResultText(output), nil
 }
 
@@ -546,10 +535,7 @@ func handleSearchServers(_ context.Context, request mcp.CallToolRequest) (*mcp.C
 		return mcp.NewToolResultError("query argument is required"), nil
 	}
 
-	output, err := runMcpmCommand("search", query)
-	if err != nil {
-		return mcp.NewToolResultError(fmt.Sprintf("Failed to search servers: %v", err)), nil
-	}
+	output, _ := runMcpmCommand("search", query)
 	return mcp.NewToolResultText(output), nil
 }
 
@@ -563,10 +549,7 @@ func handleUninstallServer(_ context.Context, request mcp.CallToolRequest) (*mcp
 		return mcp.NewToolResultError("name argument is required"), nil
 	}
 
-	output, err := runMcpmCommand("uninstall", name)
-	if err != nil {
-		return mcp.NewToolResultError(fmt.Sprintf("Failed to uninstall server %s: %v", name, err)), nil
-	}
+	output, _ := runMcpmCommand("uninstall", name)
 	return mcp.NewToolResultText(output), nil
 }
 
@@ -597,10 +580,7 @@ func handleEditServer(_ context.Context, request mcp.CallToolRequest) (*mcp.Call
 		cmdArgs = append(cmdArgs, "--headers", val)
 	}
 
-	output, err := runMcpmCommand(cmdArgs...)
-	if err != nil {
-		return mcp.NewToolResultError(fmt.Sprintf("Failed to edit server %s: %v", name, err)), nil
-	}
+	output, _ := runMcpmCommand(cmdArgs...)
 	return mcp.NewToolResultText(output), nil
 }
 
@@ -636,18 +616,12 @@ func handleCreateServer(_ context.Context, request mcp.CallToolRequest) (*mcp.Ca
 		cmdArgs = append(cmdArgs, "--headers", headersStr)
 	}
 
-	output, err := runMcpmCommand(cmdArgs...)
-	if err != nil {
-		return mcp.NewToolResultError(fmt.Sprintf("Failed to create server %s: %v", name, err)), nil
-	}
+	output, _ := runMcpmCommand(cmdArgs...)
 	return mcp.NewToolResultText(output), nil
 }
 
 func handleUsageStats(_ context.Context, _ mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	output, err := runMcpmCommand("usage")
-	if err != nil {
-		return mcp.NewToolResultError(fmt.Sprintf("Failed to get usage stats: %v", err)), nil
-	}
+	output, _ := runMcpmCommand("usage")
 	return mcp.NewToolResultText(output), nil
 }
 
@@ -701,10 +675,7 @@ func handleManageClient(_ context.Context, request mcp.CallToolRequest) (*mcp.Ca
 		}
 	}
 
-	output, err := runMcpmCommand(cmdArgs...)
-	if err != nil {
-		return mcp.NewToolResultError(fmt.Sprintf("Failed to manage client: %v", err)), nil
-	}
+	output, _ := runMcpmCommand(cmdArgs...)
 	return mcp.NewToolResultText(output), nil
 }
 
@@ -748,10 +719,7 @@ func handleManageProfile(_ context.Context, request mcp.CallToolRequest) (*mcp.C
 		cmdArgs = append(cmdArgs, "--force")
 	}
 
-	output, err := runMcpmCommand(cmdArgs...)
-	if err != nil {
-		return mcp.NewToolResultError(fmt.Sprintf("Failed to manage profile: %v", err)), nil
-	}
+	output, _ := runMcpmCommand(cmdArgs...)
 	return mcp.NewToolResultText(output), nil
 }
 
@@ -773,18 +741,12 @@ func handleManageConfig(_ context.Context, request mcp.CallToolRequest) (*mcp.Ca
 		cmdArgs = append(cmdArgs, value)
 	}
 
-	output, err := runMcpmCommand(cmdArgs...)
-	if err != nil {
-		return mcp.NewToolResultError(fmt.Sprintf("Failed to manage config: %v", err)), nil
-	}
+	output, _ := runMcpmCommand(cmdArgs...)
 	return mcp.NewToolResultText(output), nil
 }
 
 func handleMigrateConfig(_ context.Context, _ mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	output, err := runMcpmCommand("migrate")
-	if err != nil {
-		return mcp.NewToolResultError(fmt.Sprintf("Failed to migrate config: %v", err)), nil
-	}
+	output, _ := runMcpmCommand("migrate")
 	return mcp.NewToolResultText(output), nil
 }
 

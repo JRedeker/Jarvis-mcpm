@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"sync"
 
 	"github.com/mark3labs/mcp-go/mcp"
@@ -319,13 +320,32 @@ func runMcpmCommand(args ...string) (string, error) {
 	log.Printf("Executing MCPM command: %v", args)
 	// mcpm is now available in PATH
 	cmd := exec.Command("mcpm", args...)
-	cmd.Env = append(os.Environ(), "MCPM_NON_INTERACTIVE=true", "MCPM_FORCE=true")
+	cmd.Env = append(os.Environ(), "MCPM_NON_INTERACTIVE=true", "MCPM_FORCE=true", "NO_COLOR=true")
 
 	output, err := cmd.CombinedOutput()
+	outputStr := string(output)
+
+	// Basic ANSI strip (in case NO_COLOR doesn't catch everything)
+	// precise regex is complex, but we can try to rely on NO_COLOR first.
+
 	if err != nil {
-		log.Printf("Command failed: %v. Output: %s", err, string(output))
-		return "", fmt.Errorf("🚫 command failed: %s, output: %s", err, string(output))
+		log.Printf("Command failed: %v. Output: %s", err, outputStr)
+		// Format error for the agent
+		return fmt.Sprintf("❌ **Command Failed**\n\nError: `%v`\n\n**Output:**\n```text\n%s\n```", err, outputStr), fmt.Errorf("command failed: %v", err)
 	}
 	log.Printf("Command success. Output length: %d", len(output))
-	return string(output), nil
+
+	// Format success output
+	// If the output looks like a table (contains box drawing characters), wrap it in a text block
+	if strings.Contains(outputStr, "┏") || strings.Contains(outputStr, "┌") || strings.Contains(outputStr, "+-") {
+		return fmt.Sprintf("✅ **Success**\n\n```text\n%s\n```", outputStr), nil
+	}
+
+	// If it's a simple success message (short), just return it with checkmark
+	if len(strings.Split(outputStr, "\n")) <= 5 {
+		return fmt.Sprintf("✅ %s", strings.TrimSpace(outputStr)), nil
+	}
+
+	// Default multiline
+	return fmt.Sprintf("✅ **Success**\n\n```text\n%s\n```", outputStr), nil
 }

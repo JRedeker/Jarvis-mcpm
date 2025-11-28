@@ -1,7 +1,7 @@
 # Jarvis & MCPM Agent Instructions
 
-**Current Date:** November 2025
-**Version:** 2.1
+**Current Date:** November 28, 2025
+**Version:** 2.2 (The "Smart Stack" Edition)
 
 ## 🚨 Core Mandate: Use Jarvis Tools, Not Shell
 
@@ -13,84 +13,65 @@ You are an advanced AI agent. You must **NOT** use `run_shell_command` to execut
 *   `install_server(...)` -> NOT `mcpm install ...`
 *   `search_servers(...)` -> NOT `mcpm search ...`
 
-These tools ensure proper state management, logging, and error handling within the Jarvis ecosystem.
+## 🧠 The 3-Layer Stack Philosophy
 
-## 📁 Configuration Locations
+We do not manage monolithic configurations. We manage **Composable Profiles**.
+See `docs/CONFIGURATION_STRATEGY.md` for the full architectural standard.
 
-We use a 3-Layer Architecture. Jarvis needs to know where to write configurations.
+### 1. Layer 1: Environment (`project-<name>`)
+*   **What:** The workspace context.
+*   **Tools:** Domain-specific (Database, API, Search, Fetch).
+*   **Example:** `project-pokeedge` contains `context7`, `fetch`, `morph-fast-apply`.
 
-### Standard Clients
-Most clients (Claude Desktop, Cursor, Windsurf) use standard locations which Jarvis detects automatically.
+### 2. Layer 2: Client Adapter (`client-<name>`)
+*   **What:** Capabilities specific to the AI Client (VS Code vs. Terminal).
+*   **Tools:** Rendering aids, specific diff applicators (if not in Layer 1).
 
-### Custom/Specialized Clients (Kilo Code, Roo, Cline)
-These are VS Code extensions and have unique storage paths. You must often **register** these paths with Jarvis.
+### 3. Layer 3: Global (`memory`, `testing`)
+*   **What:** Always-on capabilities.
+*   **Tools:** `basic-memory`, `mem0`, `qdrant`.
 
-**Kilo Code / Cline / Roo Paths (Linux/WSL):**
-*   **Kilo Code:** `~/.vscode-server/data/User/globalStorage/kilocode.kilo-code/settings/mcp_settings.json`
-*   **Cline:** `~/.vscode-server/data/User/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json`
-*   **Roo Code:** `~/.vscode-server/data/User/globalStorage/rooveterinaryinc.roo-cline/settings/mcp_settings.json`
+## 🛠️ Key Operational Workflows
 
-*(Note: On macOS, these are usually in `~/Library/Application Support/Code/User/globalStorage/...`)*
-
-## 🛠️ Workflows
-
-### 1. Setting Up a Client (The Right Way)
-
-If a client (like Kilo Code) isn't detected or uses a custom path, register it first:
+### A. Setting Up a New Client
+If a client (like Kilo Code/Cline) isn't detected, register it:
 
 ```javascript
-// Tell Jarvis where Kilo Code lives
+// 1. Tell Jarvis where the config file lives
 use_tool("manage_client", {
   "action": "config",
-  "client_name": "cline", // Kilo Code is often compatible with Cline manager
+  "client_name": "cline",
   "config_path": "/home/user/.vscode-server/.../mcp_settings.json"
 })
-```
 
-### 2. Applying Profiles (The 3-Layer Stack)
-
-Don't add individual servers manually. Use profiles.
-
-```javascript
-// 1. Create/Update Environment Profile
-use_tool("manage_profile", {
-  "action": "create",
-  "name": "project-pokeedge",
-  "add_servers": "context7,fetch-mcp,time,brave-search"
-})
-
-// 2. Apply to Client
+// 2. Apply the Profile Stack
 use_tool("manage_client", {
   "action": "edit",
   "client_name": "cline",
-  "add_profile": "project-pokeedge,memory"
+  "add_profile": "project-pokeedge,memory" // Stack Layer 1 + Layer 3
 })
 ```
 
-### 3. Debugging
+### B. Intelligent Refactoring (`morph-fast-apply`)
+The `morph-fast-apply` server is now a standard part of the `project-pokeedge` profile (Layer 1).
+This tool allows you to make semantic edits without worrying about exact line numbers.
 
-If a tool fails or a client cannot connect, start with `check_status`:
+**Usage Pattern:**
+1.  Check if available: `list_servers()`
+2.  Use it: When the user asks for a complex refactor, prefer `morph-fast-apply` tools over raw file overwrites if safe to do so.
 
-```javascript
-// Run comprehensive system diagnostics
-use_tool("check_status", {})
-```
+### C. Handling Output (The Presentation Layer)
+Jarvis now returns formatted Markdown with emojis (✅/❌) and code blocks.
+*   **Do not parse raw JSON manually** if the tool returns text.
+*   **Present the output** to the user clearly.
 
-If you must use the shell to debug, remember:
-*   `export MCPM_NON_INTERACTIVE=true`
-*   `export MCPM_FORCE=true`
+## 📂 Reference Paths (Linux)
 
-## 🏗️ Architecture Reference
+*   **Claude CLI:** `~/.claude.json`
+*   **Claude Desktop/VSCode:** `~/.config/Claude/claude_desktop_config.json`
 
-**Layer 1: Environment** (`project-xyz`)
-*   Domain-specific tools (APIs, DBs, Search).
-*   Exclusivity: One environment active at a time.
+## 🚑 Debugging
 
-**Layer 2: Client Adapter** (`client-xyz`)
-*   Client-specific tools (e.g., `morph-fast-apply` for Codex).
-
-**Layer 3: Global** (`memory`)
-*   Always-on capabilities (Memory, core utilities).
-
----
-*Refer to `docs/CONFIGURATION_STRATEGY.md` for deep architectural details.*
+If tools fail:
+1.  Run `check_status()` for diagnostics.
+2.  If you must use shell: `export MCPM_NON_INTERACTIVE=true` and `export MCPM_FORCE=true`.

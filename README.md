@@ -75,12 +75,12 @@ flowchart TD
     Jarvis -->|"Let's Install Context7"| Mechanic
     Jarvis -->|"Let's Fetch Tool X Info with Context7"| Analyzer
     Jarvis -->|"Let's Setup Proper Pre-Commit Checks for Tool X"| Scaffolder
-    
+
 
     Mechanic -->|Sets Up New MCP Server| Docker
     Scaffolder -->|Writes| Configuration Files
     Analyzer -->|Researches and Downloads| Files
-    
+
 ```
 
 ---

@@ -2,43 +2,28 @@
 
 Jarvis is your autonomous "hands" for managing the Model Context Protocol (MCP) ecosystem.
 
-**Core Concept:** Jarvis is the pilot; MCPM (Package Manager) is the engine. Jarvis does not store state itself—it queries and controls the underlying MCPM system to install, configure, and run tools for you.
+## 📚 Documentation & Strategy
+For the complete operational guide, standard, and architecture, read:
+**`AGENTS.md`** (Located in the project root)
 
-## 🛠️ Command Reference for Agents
+## 🛠️ Core Tool Reference
 
-Use these tools to manage the user's environment.
+### 🚀 Initialization & Health
+*   **`bootstrap_system()`**: Init package manager and infrastructure.
+*   **`check_status()`**: Run system diagnostics (Doctor).
 
-### 🚀 Initialization
-*   **`bootstrap_system()`**
-    *   *When to use:* If the user says "Start the system", "Initialize", or if other commands fail with "command not found".
-    *   *What it does:* Installs the package manager (MCPM), links the CLI, and starts the Docker infrastructure (Postgres/Qdrant).
+### 🧠 Profile & Client Management (The 3-Layer Stack)
+*   **`manage_profile(action, name, ...)`**: Create/Edit server collections.
+*   **`manage_client(action, client_name, ...)`**: Wire profiles to clients (Claude, Cursor, etc.).
+*   **`suggest_profile(client_name)`**: Ask Jarvis which profiles should be active for the current directory.
 
 ### 📦 Server Management
-*   **`install_server(name="server_name")`**
-    *   *When to use:* When the user needs a new tool (e.g., "I need to search the web" -> `install_server("brave")`).
-    *   *Important:* After installing, **read the output**. It provides the JSON config snippet the user needs to add to their client configuration.
-*   **`uninstall_server(name="server_name")`**
-    *   *When to use:* To remove a tool or clean up.
-*   **`list_servers()`**
-    *   *When to use:* To see what is currently installed and available.
-*   **`search_servers(query="search term")`**
-    *   *When to use:* To discover new tools in the registry (e.g., "Find me a tool for GitHub").
-
-### ⚙️ Configuration
-*   **`check_status()`**
-    *   *When to use:* To debug issues. Checks Node.js, Docker, and Config health.
-*   **`server_info(name="server_name")`**
-    *   *When to use:* To get details about a specific tool (repo URL, description).
+*   **`install_server(name)`**: Install new capabilities.
+*   **`search_servers(query)`**: Discover new tools.
+*   **`list_servers()`**: inventory check.
 
 ### 🌐 Sharing
-*   **`share_server(name="server_name")`**
-    *   *When to use:* To expose a local tool to the public internet via a secure tunnel. Returns a public URL.
-*   **`stop_sharing_server(name="server_name")`**
-    *   *When to use:* To close the tunnel.
+*   **`share_server(name)`**: Expose local tools via secure tunnel.
 
-## 🧠 Agent Strategy
-
-1.  **Always Check Status First:** If unsure, run `check_status()` or `list_servers()`.
-2.  **Bootstrap if Needed:** If `list_servers()` fails or returns nothing on a fresh install, suggest running `bootstrap_system()`.
-3.  **Docker Preference:** Jarvis automatically prefers Docker for installation if available. You don't need to specify "docker" manually; just `install_server("name")`.
-4.  **Config Snippets:** When you install a server, the output contains the exact JSON config. **Show this to the user** so they can update their `claude_desktop_config.json`.
+## 💡 Pro-Tip
+Always prefer `manage_profile` and `manage_client` over manual configuration. Jarvis handles the wiring logic for you.
