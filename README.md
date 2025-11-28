@@ -97,7 +97,8 @@ Most MCP gateways are simple proxies that forward tool calls to underlying serve
 
 Here's what sets Jarvis apart from typical MCP proxy implementations:
 
-### Output & Interface
+<details>
+<summary><b>📤 Output & Interface</b></summary>
 
 | Capability | Standard Gateway | 🌟 Jarvis |
 |:-----------|:----------------|:----------|
@@ -106,8 +107,10 @@ Here's what sets Jarvis apart from typical MCP proxy implementations:
 | **Error Messages** | Generic stderr dumps | ✅ Actionable messages + fix suggestions |
 | **Response Structure** | Unformatted text | ✅ Structured with headers, lists, code blocks |
 | **Debug Noise** | Warnings/info mixed in | ✅ Stripped, clean output only |
+</details>
 
-### Intelligence & Validation
+<details>
+<summary><b>🧠 Intelligence & Validation</b></summary>
 
 | Capability | Standard Gateway | 🌟 Jarvis |
 |:-----------|:----------------|:----------|
@@ -116,8 +119,10 @@ Here's what sets Jarvis apart from typical MCP proxy implementations:
 | **Next Steps** | None | ✅ Guidance after every operation |
 | **Error Recovery** | Manual intervention | ✅ Auto-suggests fixes |
 | **Learning Loop** | Agents repeat mistakes | ✅ Teach patterns via output |
+</details>
 
-### Infrastructure Management
+<details>
+<summary><b>🐳 Infrastructure Management</b></summary>
 
 | Capability | Standard Gateway | 🌟 Jarvis |
 |:-----------|:----------------|:----------|
@@ -126,8 +131,10 @@ Here's what sets Jarvis apart from typical MCP proxy implementations:
 | **Service Management** | External scripts | ✅ Built-in Docker orchestration |
 | **Database Access** | No integration | ✅ PostgreSQL + Qdrant ready |
 | **Graceful Restart** | Hard kills | ✅ Health-checked restarts |
+</details>
 
-### Tool & Package Management
+<details>
+<summary><b>📦 Tool & Package Management</b></summary>
 
 | Capability | Standard Gateway | 🌟 Jarvis |
 |:-----------|:----------------|:----------|
@@ -136,8 +143,10 @@ Here's what sets Jarvis apart from typical MCP proxy implementations:
 | **Hot Loading** | Restart required | ✅ Install + load without restart |
 | **Profiles** | Flat config files | ✅ 3-Layer composable stack |
 | **Registry** | Scattered sources | ✅ Centralized MCPM technologies.toml |
+</details>
 
-### DevOps & Security
+<details>
+<summary><b>🛡️ DevOps & Security</b></summary>
 
 | Capability | Standard Gateway | 🌟 Jarvis |
 |:-----------|:----------------|:----------|
@@ -146,8 +155,10 @@ Here's what sets Jarvis apart from typical MCP proxy implementations:
 | **Secret Detection** | No protection | ✅ Blocks commits with secrets |
 | **Linting** | External tools | ✅ Language-specific stacks |
 | **GitHub Actions** | Manual creation | ✅ Auto-generated workflows |
+</details>
 
-### Agent Experience
+<details>
+<summary><b>🤖 Agent Experience</b></summary>
 
 | Capability | Standard Gateway | 🌟 Jarvis |
 |:-----------|:----------------|:----------|
@@ -156,8 +167,10 @@ Here's what sets Jarvis apart from typical MCP proxy implementations:
 | **Workflow Examples** | None | ✅ Real-world scenarios documented |
 | **Batch Operations** | One command at a time | ✅ Complex workflows in single call |
 | **Profile Suggestions** | Manual selection | ✅ `suggest_profile()` auto-detects |
+</details>
 
-### Performance
+<details>
+<summary><b>⚡ Performance</b></summary>
 
 | Metric | Standard Gateway | 🌟 Jarvis |
 |:-------|:----------------|:----------|
@@ -165,10 +178,12 @@ Here's what sets Jarvis apart from typical MCP proxy implementations:
 | **Memory Footprint** | 50-200MB (Node) | ✅ ~20MB (compiled binary) |
 | **Output Processing** | None | ✅ <500ms formatting overhead |
 | **Concurrency** | Limited | ✅ Go goroutines, multi-process safe |
+</details>
 
 **Bottom Line:** Standard gateways forward calls. **Jarvis transforms agent capabilities.**
 
-### Note on Built-in vs. MCPM Tools
+<details>
+<summary><b>📝 Note on Built-in vs. MCPM Tools</b></summary>
 
 Many AI clients have built-in web search, file reading, and basic git operations. **MCPM's 200+ registry is fundamentally different:**
 
@@ -181,6 +196,7 @@ Many AI clients have built-in web search, file reading, and basic git operations
 | Fixed capabilities | **Dynamic:** Install new tools mid-conversation without restart |
 
 The unique value isn't individual tools—it's **dynamic capability expansion** from a curated registry of 200+ specialized MCP servers that the agent can install and use on-demand.
+</details>
 
 ---
 
@@ -205,7 +221,8 @@ Jarvis is built on the **Model Context Protocol (MCP)**, making it instantly com
 *   **🌐 Web Platforms:** Any MCP-compatible web interface
 *   **🔧 Custom Integrations:** Build your own with MCP SDK
 
-### Example Client Configurations
+<details>
+<summary><b>📋 Example Client Configurations</b></summary>
 
 **Claude Desktop** (`~/.config/Claude/claude_desktop_config.json`):
 ```json
@@ -246,6 +263,7 @@ Jarvis is built on the **Model Context Protocol (MCP)**, making it instantly com
   }
 }
 ```
+</details>
 
 > **Note:** If your tool supports MCP, it supports Jarvis. See [Configuration Strategy](docs/CONFIGURATION_STRATEGY.md) for the 3-Layer Profile Stack setup.
 
@@ -315,9 +333,10 @@ flowchart TD
 
 ## 🔧 Tool Reference
 
-Jarvis exposes 23 MCP tools across 6 categories. Here are the most commonly used with real examples:
+Jarvis exposes **23 MCP tools** across 6 categories. Click to expand examples:
 
-### System Management
+<details>
+<summary><b>⚙️ System Management</b> — bootstrap, health checks, self-healing</summary>
 
 #### `bootstrap_system()`
 **One-command system initialization**
@@ -379,10 +398,10 @@ restart_infrastructure()
 ✅ Qdrant started (health check passed)
 💡 All services restored. Retry your operation.
 ```
+</details>
 
----
-
-### Server Management
+<details>
+<summary><b>📦 Server Management</b> — install, search, discover tools</summary>
 
 #### `install_server(name)`
 **Dynamic tool installation from MCPM registry**
@@ -419,10 +438,10 @@ search_servers("pdf extraction")
 ```
 
 > **Note:** Unlike built-in client tools, MCPM servers are **specialized**—PDF extraction, database connectors, code analysis, infrastructure management—not generic utilities.
+</details>
 
----
-
-### Profile Management
+<details>
+<summary><b>📂 Profile Management</b> — composable configuration, auto-detection</summary>
 
 #### `manage_profile(action, name, add_servers)`
 **Composable configuration management**
@@ -465,10 +484,10 @@ suggest_profile(client_name="cursor")
 
 💡 Activate all layers in your client config for full capabilities
 ```
+</details>
 
----
-
-### DevOps Tools
+<details>
+<summary><b>🏗️ DevOps Tools</b> — scaffolding, CI/CD, pre-commit hooks</summary>
 
 #### `apply_devops_stack(project_type)`
 **Production-ready scaffolding**
@@ -514,12 +533,10 @@ Changes to be committed:
 
 💡 Review complete. No secrets detected in staged changes.
 ```
+</details>
 
----
-
-### Complete Tool List
-
-All 23 Jarvis tools organized by category:
+<details>
+<summary><b>📋 Complete Tool List</b> — all 23 tools by category</summary>
 
 **System (4 tools):**
 - `bootstrap_system()` - One-command initialization
@@ -557,6 +574,7 @@ All 23 Jarvis tools organized by category:
 - `list_shared_servers()` - Show active tunnels
 - `stop_sharing_server(...)` - Revoke tunnel access
 - `usage_stats()` - Analytics and metrics
+</details>
 
 ---
 
@@ -594,9 +612,11 @@ When working with AI agents, **always prefer Jarvis tools**:
 
 ## 🚀 Real-World Workflows
 
-Jarvis is built on a strict Go backbone that eliminates drift and guarantees execution. Here is how it solves complex engineering problems.
+Jarvis is built on a strict Go backbone that eliminates drift and guarantees execution. Click any scenario to see how it works:
 
-### 1. 🏗️ Intelligent Scaffolding & Research
+<details>
+<summary><b>1. 🏗️ Intelligent Scaffolding & Research</b></summary>
+
 **Problem:** *You have a messy legacy Python repo with no standards, or a blank folder for a new Go microservice.*
 
 > **Example Conversation:**
@@ -618,8 +638,11 @@ Jarvis is built on a strict Go backbone that eliminates drift and guarantees exe
 - Created Makefile with common targets
 - Initialized git repository
 - Installed pre-commit hooks
+</details>
 
-### 2. 🔧 Self-Healing Infrastructure
+<details>
+<summary><b>2. 🔧 Self-Healing Infrastructure</b></summary>
+
 **Problem:** *Your RAG application is failing because the local Vector DB crashed.*
 
 > **Example Conversation:**
@@ -641,8 +664,11 @@ Jarvis is built on a strict Go backbone that eliminates drift and guarantees exe
 - Restarted containers with proper sequencing
 - Waited for health checks to pass (PostgreSQL port 5432, Qdrant port 6333)
 - Confirmed all services operational before continuing
+</details>
 
-### 3. 🔌 Autonomous Tool Expansion
+<details>
+<summary><b>3. 🔌 Autonomous Tool Expansion</b></summary>
+
 **Problem:** *You ask the Agent to "Analyze this PDF contract," but it has no PDF tools loaded.*
 
 > **Example Conversation:**
@@ -665,8 +691,11 @@ Jarvis is built on a strict Go backbone that eliminates drift and guarantees exe
 - Hot-loaded the tool without restarting the agent
 - Made `pdf_extract` tool immediately available
 - Tool persists for future sessions
+</details>
 
-### 4. 🛡️ Security & Safety Loops
+<details>
+<summary><b>4. 🛡️ Security & Safety Loops</b></summary>
+
 **Problem:** *The Agent writes code that accidentally hardcodes an API key.*
 
 > **Example Conversation:**
@@ -691,8 +720,11 @@ Jarvis is built on a strict Go backbone that eliminates drift and guarantees exe
 - Agent self-corrected by moving secret to `.env`
 - Second commit passed all security checks
 - Zero secrets entered git history
+</details>
 
-### 5. 🔄 Context Switching Between Projects
+<details>
+<summary><b>5. 🔄 Context Switching Between Projects</b></summary>
+
 **Problem:** *You're switching from a backend Go service to a frontend React app. Each needs different tools.*
 
 > **Example Conversation:**
@@ -718,8 +750,11 @@ Jarvis is built on a strict Go backbone that eliminates drift and guarantees exe
   - Layer 2: `client-cursor` (Cursor IDE optimizations)
   - Layer 3: `memory` (persistent context across sessions)
 - Agent seamlessly switches tooling based on project context
+</details>
 
-### 6. 🔍 Research-Driven Development (Specialized Docs Access)
+<details>
+<summary><b>6. 🔍 Research-Driven Development (Specialized Docs Access)</b></summary>
+
 **Problem:** *You ask the Agent to "implement Next.js 15 server actions," but it was trained on Next.js 13 syntax that's now deprecated.*
 
 > **Example Conversation:**
@@ -754,8 +789,11 @@ Jarvis is built on a strict Go backbone that eliminates drift and guarantees exe
 - Agent used current `'use server'` directive syntax with streaming support
 - Avoided deprecated Next.js 13 patterns from training data
 - **Key difference:** Structured library docs, not generic web search
+</details>
 
-### 7. 📦 Dynamic Capability Expansion
+<details>
+<summary><b>7. 📦 Dynamic Capability Expansion</b></summary>
+
 **Problem:** *Mid-conversation, you ask "Can you analyze this PDF contract?" but the Agent has no PDF tools.*
 
 > **Example Conversation:**
@@ -787,6 +825,7 @@ Jarvis is built on a strict Go backbone that eliminates drift and guarantees exe
 - Processed PDF and extracted structured text
 - Tool persists in MCPM registry for future use
 - Agent "upgraded itself" mid-conversation
+</details>
 
 ---
 
@@ -828,9 +867,10 @@ The Agent will call `jarvis.bootstrap_system()`, which will:
 
 ## 🎨 Presentation Layer Deep Dive
 
-Jarvis isn't just a gateway—it's an **intelligent presentation layer** specifically engineered for AI agents. Here's what happens behind the scenes:
+Jarvis isn't just a gateway—it's an **intelligent presentation layer** specifically engineered for AI agents.
 
-### Output Transformation Pipeline
+<details>
+<summary><b>🔄 Output Transformation Pipeline</b></summary>
 
 **Step 1: Raw CLI Execution**
 ```bash
@@ -854,8 +894,10 @@ Successfully installed
 
 💡 Next step: Add to profile with manage_profile("edit", "your-project", add_servers="brave-search")
 ```
+</details>
 
-### Input Validation Examples
+<details>
+<summary><b>✅ Input Validation Examples</b></summary>
 
 ```javascript
 // Invalid server name
@@ -868,18 +910,22 @@ install_server("nonexistent-tool")
 // ❌ Error: Server "nonexistent-tool" not found in registry
 // 💡 Suggestion: Try search_servers("nonexistent-tool") for similar tools
 ```
+</details>
 
-### Why This Matters
-
-**For AI Agents:**
-- Faster learning: Clean output = faster pattern recognition
-- Fewer mistakes: Validation prevents repeated errors
-- Better UX: Users see polished responses, not terminal dumps
-- Self-improvement: Suggestions teach agents better workflows
+**Why This Matters for AI Agents:**
+- ⚡ Faster learning: Clean output = faster pattern recognition
+- 🛡️ Fewer mistakes: Validation prevents repeated errors
+- 👤 Better UX: Users see polished responses, not terminal dumps
+- 📈 Self-improvement: Suggestions teach agents better workflows
 
 ---
 
 ## ⚡ Performance & Benchmarks
+
+Go-powered performance: **6x faster startup**, **4-6x smaller memory footprint**.
+
+<details>
+<summary><b>📊 Detailed Benchmarks</b></summary>
 
 ### Startup Performance
 
@@ -908,12 +954,14 @@ install_server("nonexistent-tool")
 | Startup | 400-600ms | <100ms | **6x faster** |
 | Memory (idle) | 80-120 MB | ~20 MB | **4-6x smaller** |
 | Response formatting | N/A (raw output) | +50ms | Worth the intelligence |
+</details>
 
 ---
 
 ## ⚙️ Advanced Features
 
-### 3-Layer Profile Stack
+<details>
+<summary><b>📚 3-Layer Profile Stack</b></summary>
 
 Jarvis uses a composable configuration architecture that eliminates duplication:
 
@@ -936,8 +984,10 @@ Jarvis uses a composable configuration architecture that eliminates duplication:
 - ✅ **Composability:** Mix and match layers as needed
 
 See [Configuration Strategy](docs/CONFIGURATION_STRATEGY.md) for full details.
+</details>
 
-### Server Sharing & Remote Access
+<details>
+<summary><b>🌐 Server Sharing & Remote Access</b></summary>
 
 Expose local MCP servers to remote agents via secure tunnels:
 
@@ -955,6 +1005,7 @@ share_server("context7", port="8080", no_auth=false)
 - Remote team collaboration
 - Multi-agent workflows
 - Development/staging/production separation
+</details>
 
 ---
 
@@ -1090,7 +1141,8 @@ We welcome contributions! See [Contributing](#-contributing) section below.
 
 ## 🔧 Troubleshooting
 
-### Docker Issues
+<details>
+<summary><b>🐳 Docker Issues</b></summary>
 
 **Problem:** `restart_infrastructure()` fails with "Docker daemon not responding"
 
@@ -1115,8 +1167,10 @@ sudo lsof -i :5432
 
 # Stop it or change port in docker-compose.yml
 ```
+</details>
 
-### MCPM Issues
+<details>
+<summary><b>📦 MCPM Issues</b></summary>
 
 **Problem:** `mcpm: command not found`
 
@@ -1128,8 +1182,10 @@ bootstrap_system()
 # Or manually
 cd MCPM && npm install && npm link
 ```
+</details>
 
-### Jarvis Binary Issues
+<details>
+<summary><b>⚙️ Jarvis Binary Issues</b></summary>
 
 **Problem:** Jarvis tools not appearing in client
 
@@ -1142,12 +1198,12 @@ cd MCPM && npm install && npm link
 2. **Check client config** has correct path to Jarvis binary
 
 3. **Restart client** (Jarvis won't hot-reload)
+</details>
 
-### Still Stuck?
-
-1. **Run full diagnostic:** `check_status()`
-2. **Check logs:** `cat logs/jarvis.log`
-3. **GitHub Issues:** [Report bugs](https://github.com/JRedeker/Jarvis-mcpm/issues)
+**Still Stuck?**
+1. Run full diagnostic: `check_status()`
+2. Check logs: `cat logs/jarvis.log`
+3. [Report bugs on GitHub](https://github.com/JRedeker/Jarvis-mcpm/issues)
 
 ---
 
@@ -1155,7 +1211,8 @@ cd MCPM && npm install && npm link
 
 We welcome contributions from the community!
 
-### Development Setup
+<details>
+<summary><b>🛠️ Development Setup</b></summary>
 
 ```bash
 # 1. Fork and clone
@@ -1173,8 +1230,10 @@ cd ../MCPM && npm install && npm link
 # 5. Run tests
 ./scripts/manage-mcp.sh test
 ```
+</details>
 
-### Code Style
+<details>
+<summary><b>📝 Code Style & Commits</b></summary>
 
 **Go (Jarvis):**
 - Format with `gofmt -w .`
@@ -1183,10 +1242,7 @@ cd ../MCPM && npm install && npm link
 **JavaScript (MCPM):**
 - Format with Prettier (auto via pre-commit)
 
-### Commit Convention
-
-We use **semantic commits**:
-
+**Semantic Commits:**
 ```bash
 feat: Add new feature
 fix: Bug fix
@@ -1195,8 +1251,10 @@ test: Tests
 refactor: Code refactoring
 chore: Maintenance
 ```
+</details>
 
-### Pull Request Process
+<details>
+<summary><b>🔄 Pull Request Process</b></summary>
 
 1. Create feature branch: `git checkout -b feat/my-feature`
 2. Make changes + commit
@@ -1204,10 +1262,9 @@ chore: Maintenance
 4. Push and create PR
 5. CI checks run automatically
 6. Maintainers review within 48 hours
+</details>
 
-### Areas for Contribution
-
-**High-Priority:**
+**High-Priority Contributions:**
 - 🐛 **Bug Fixes:** Check [Issues](https://github.com/JRedeker/Jarvis-mcpm/issues)
 - 📝 **Documentation:** More examples, tutorials
 - 🧪 **Test Coverage:** Expand test suite
