@@ -32,12 +32,12 @@ Jarvis transforms your AI Agent from a passive chat bot into a **Full-Stack DevO
 
 | Capability | Technology | What It Does |
 | :--- | :--- | :--- |
-| **🔌 Tool Management** | [**MCPM**](mcpm_source/README.md) | **Dynamic Expansion:** Installs and hot-loads new tools (e.g., `pdf-parse`, `slack`) on demand. |
-| **🛡️ Guardrails** | [**pre-commit**](https://github.com/pre-commit/pre-commit) + [**gitleaks**](https://github.com/gitleaks/gitleaks) | **Automatic Safety:** Blocks secrets and bad formatting *before* the commit happens. |
-| **🧐 Review** | [**CodiumAI PR-Agent**](https://github.com/Codium-ai/pr-agent) | **Self-Correction:** Auto-reviews PRs with commands like `/review` & `/improve`. |
-| **🧠 Memory** | [**Qdrant**](https://github.com/qdrant/qdrant), [**Mem0**](https://github.com/mem0ai/mem0) | **Context Retention:** Remembers codebase details and decisions across sessions. |
-| **🏗️ apply_devops_stack** | [**Linters**](https://github.com/astral-sh/ruff), [**Formatters**](https://github.com/prettier/prettier), [**Type Checkers**](https://www.typescriptlang.org/) | **The Architect:** Enforces language-specific standards dynamically. |
-| **🔎 Search** | [**Brave Search**](https://github.com/modelcontextprotocol/servers/tree/main/src/brave-search) | **The Researcher:** Fetches live docs via the web. |
+| **🔌 Tool Management** | **MCP Package Manager** | **Dynamic Expansion:** Installs and hot-loads new tools via [**MCPM**](mcpm_source/README.md) on demand. |
+| **🛡️ Guardrails** | **Git Hooks & Secret Detection** | **Automatic Safety:** Blocks secrets and bad formatting *before* the commit happens (e.g., `pre-commit`, `gitleaks`). |
+| **🧐 Review** | **AI Code Reviewer** | **Self-Correction:** Auto-reviews PRs with commands like `/review` & `/improve` (e.g., `CodiumAI PR-Agent`). |
+| **🧠 Memory** | **Vector Database** | **Context Retention:** Remembers codebase details and decisions across sessions (e.g., `Qdrant`, `Mem0`). |
+| **🏗️ Tool Integration** | **Linters, Formatters & Type Checkers** | **DevOps Stacks:** Precisely chosen tools for your project (e.g., `Ruff`, `Prettier`, `GoFmt`). |
+| **🔎 Research** | **Web Search Index** | **Research:** Fetches live docs via the web to prevent hallucinations (e.g., `Brave Search`). |
 
 ---
 
