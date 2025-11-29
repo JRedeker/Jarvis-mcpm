@@ -19,25 +19,11 @@
 
 ---
 
-## 🤔 Why Jarvis?
+## 😄 The MCP Gateway with DevOps for Local Dev Environments.
 
-Most MCP gateways are simple proxies that forward tool calls to underlying servers. **Jarvis is fundamentally different—it's an intelligent presentation layer designed specifically for AI agents.**
-
-### The Problem with Standard MCP Gateways
-
-**Raw Output Noise:**
-- AI agents receive terminal output with ANSI color codes
-- Warning messages and debug info pollute responses
-- LLMs struggle to parse unstructured CLI output
-- Errors are cryptic with no guidance on fixes
-
-**No Intelligence:**
+### Problems with Standard MCP Gateways
+- AI agents trying to use tools not designed for them
 - No validation before execution (errors discovered after)
-- No understanding of project context
-- No suggestions for next steps
-- Agents repeat mistakes because gateways can't teach
-
-**Manual Everything:**
 - Infrastructure failures require human intervention
 - Tool installation interrupts agent workflows
 - No auto-recovery when services crash
@@ -45,35 +31,29 @@ Most MCP gateways are simple proxies that forward tool calls to underlying serve
 
 ### The Jarvis Solution
 
-**🎯 AI-Optimized Interface:**
-- Clean Markdown output, zero ANSI codes
-- Structured responses with status emojis (✅/❌)
-- Stripped warnings and debug noise
-- LLM-friendly formatting
+####**🎯 AI-Optimized Interface:**
+- LLM-friendly formatting, clean Markdown output, zero ANSI codes
 
-**🧠 Intelligent Layer:**
+####**🧠 Intelligent Layer:**
 - Pre-execution validation catches mistakes
 - Context-aware suggestions based on project state
 - Next-step guidance after every operation
-- Learning loop: agents improve over time
 
-**⚡ Autonomous Operations:**
+####**⚡ Autonomous Operations:**
 - Self-healing: Agent detects and repairs crashed services automatically
 - Dynamic expansion: Agent installs new tools on-demand from 200+ registry
 - Batch workflows: Complex operations in single commands
-- Zero-config profiles: Automatic tool stack selection
 
-**🛡️ Production-Grade:**
+####**🛡️ Production-Grade:**
 - DevOps scaffolding: CI/CD, linting, pre-commit hooks
 - Security guardrails: Gitleaks blocks secrets before commit
 - Type-safe Go core: No runtime drift
-- Battle-tested: Powers real agent workflows
 
 ---
 
 ## 🆚 What Makes Jarvis Different
 
-Unlike standard MCP gateways (MCPJungle, MetaMCP, etc.) that focus on proxying and aggregation, Jarvis adds an **intelligent presentation layer**:
+Unlike standard MCP gateways that focus on proxying and aggregation, Jarvis adds an **intelligent presentation layer**:
 
 | Differentiator | What It Means |
 |:---------------|:--------------|
@@ -102,22 +82,10 @@ Jarvis wraps MCPM's CLI with intelligent formatting, validation, and DevOps feat
 
 Jarvis is built on the **Model Context Protocol (MCP)**, making it instantly compatible with any model family and client that speaks the language.
 
-### Supported Model Families
+### Supports All LLM Model Families: Anthropic Claude, OpenAI GPT, Google Gemini, DeepSeek, Meta Llama
+- ✨ **Any model with MCP support from any provider!
 
-*   🧠 **Anthropic Claude**
-*   🤖 **OpenAI GPT**
-*   🔮 **Google Gemini**
-*   🌊 **DeepSeek**
-*   🦙 **Meta Llama**
-*   🚀 **Mistral AI**
-*   ✨ **Any model with MCP support**
-
-### Supported Clients & IDEs
-
-*   **🖥️ Desktop Apps:** Claude Desktop, Claude CLI
-*   **✏️ Code Editors:** Cursor, Windsurf, VS Code (via extensions), Zed, Kilo Code
-*   **🌐 Web Platforms:** Any MCP-compatible web interface
-*   **🔧 Custom Integrations:** Build your own with MCP SDK
+### Supported Clients & IDEs: Desktop Apps, Claude Desktop, Claude CLI, Cursor, Windsurf, VS Code, Zed, Kilo Code, ANY!
 
 <details>
 <summary><b>📋 Example Client Configurations</b></summary>
