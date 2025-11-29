@@ -58,8 +58,8 @@ Most MCP gateways are simple proxies that forward tool calls to underlying serve
 - Learning loop: agents improve over time
 
 **⚡ Autonomous Operations:**
-- Self-healing: `restart_infrastructure()` repairs crashed services
-- Dynamic expansion: Install tools on-demand from MCPM registry
+- Self-healing: Agent detects and repairs crashed services automatically
+- Dynamic expansion: Agent installs new tools on-demand from 200+ registry
 - Batch workflows: Complex operations in single commands
 - Zero-config profiles: Automatic tool stack selection
 
@@ -78,8 +78,8 @@ Unlike standard MCP gateways (MCPJungle, MetaMCP, etc.) that focus on proxying a
 | Differentiator | What It Means |
 |:---------------|:--------------|
 | **Clean Output** | Strips ANSI codes, formats as Markdown with status emojis (✅/❌) |
-| **DevOps Scaffolding** | `apply_devops_stack()` creates CI/CD, pre-commit hooks, Gitleaks—no other gateway does this |
-| **Self-Healing** | `restart_infrastructure()` auto-repairs crashed Docker services |
+| **DevOps Scaffolding** | Creates CI/CD pipelines, pre-commit hooks, and secret detection—no other gateway does this |
+| **Self-Healing** | Auto-repairs crashed Docker services when your agent detects failures |
 | **Smart Validation** | Pre-execution input checks with contextual fix suggestions |
 
 **Bottom Line:** Other gateways forward calls. Jarvis transforms raw CLI into agent-optimized responses.
@@ -476,35 +476,57 @@ Changes to be committed:
 
 ---
 
-## 🎯 Using Jarvis: The Primary Interface
+## 🎯 How It Works: You Talk, Jarvis Acts
 
-**Jarvis tools are designed specifically for AI agents** and provide significant advantages over direct CLI usage:
+**You never see tool names or method calls.** You just talk naturally to your AI agent, and Jarvis works behind the scenes.
 
-### ✅ Why Jarvis Tools Over Direct CLI?
+---
 
-| Jarvis Advantages | Direct CLI Limitations |
-|:---|:---|
-| **Clean, Structured Output** - No ANSI codes, stripped warnings, formatted responses | Raw terminal output with color codes and noise |
-| **Smart Error Handling** - Actionable error messages with suggestions | Generic error messages requiring interpretation |
-| **Validation & Safety** - Prevents common mistakes before execution | No validation, errors discovered after execution |
-| **Context Awareness** - Understands your project and suggests appropriate actions | No awareness of project state or configuration |
-| **Batch Operations** - Complex workflows in single commands | Multiple manual CLI commands required |
-| **Next Step Guidance** - Tells you what to do after success | Figure out next steps yourself |
+### Example: Installing a Testing Framework
 
-### 🔧 Quick Reference
+<details open>
+<summary><b>1️⃣ What You Say</b></summary>
 
-When working with AI agents, **always prefer Jarvis tools**:
+> *"I need to add Playwright for end-to-end testing on this React project."*
 
-| Task | ✅ Use Jarvis Tool | ❌ Not Direct CLI |
-|:---|:---|:---|
-| Install MCP server | `install_server("brave-search")` | ~~`mcpm install brave-search`~~ |
-| Check system health | `check_status()` | ~~`mcpm doctor`~~ |
-| Manage profiles | `manage_profile("edit", "p-pokeedge", add_servers="...")` | ~~`mcpm profile edit`~~ |
-| Search for tools | `search_servers("documentation")` | ~~`mcpm search documentation`~~ |
-| Configure clients | `manage_client("edit", "codex", add_server="...")` | ~~`mcpm client edit`~~ |
-| Bootstrap system | `bootstrap_system()` | ~~Multiple manual steps~~ |
+</details>
 
-**Note:** Direct MCPM CLI is still available for debugging Jarvis itself or manual operations outside AI agent workflows.
+<details>
+<summary><b>2️⃣ What Your Agent Gets Stuck On (Without Jarvis)</b></summary>
+
+- **No tool discovery:** Agent doesn't know what testing tools exist or how to install them
+- **Raw CLI noise:** If it tries `npm install`, it gets ANSI-colored output with warnings mixed in
+- **No project context:** Agent doesn't know this is a React project needing specific config
+- **Manual config:** Agent would need you to explain how to set up `playwright.config.ts`
+- **No verification:** No way to confirm the tool is working after installation
+
+</details>
+
+<details>
+<summary><b>3️⃣ What Jarvis Provides</b></summary>
+
+- **Registry access:** 200+ curated MCP servers searchable by capability
+- **Clean responses:** Stripped ANSI codes, structured Markdown output
+- **Project analysis:** Detects React, suggests appropriate testing patterns
+- **Automated setup:** Creates config files, updates `package.json`, installs dependencies
+- **Verification:** Confirms installation and suggests first test command
+
+</details>
+
+<details>
+<summary><b>4️⃣ The Result</b></summary>
+
+> **Agent:** *"I've set up Playwright for your React project. Created `playwright.config.ts` with Chrome and Firefox targets, added test scripts to `package.json`, and installed dependencies. Run `npm test` to verify the setup works."*
+
+**You got:** A fully configured testing framework in one natural language request.
+
+**Your agent did:** Searched the registry, analyzed your project, installed tools, created configs, and verified the setup—all through Jarvis.
+
+</details>
+
+---
+
+**For Developers:** See the [Tool Reference](#-tool-reference) section for the full list of 24 tools Jarvis exposes to agents.
 
 ---
 
@@ -525,10 +547,10 @@ Jarvis is built on a strict Go backbone that eliminates drift and guarantees exe
 > <br>
 > **Agent:** *"Done! I've set up pre-commit hooks with Ruff and Gitleaks, created a GitHub Actions workflow, and initialized git. Try making your first commit."*
 
-**The Jarvis Fix:** Instead of blindly guessing which linters to install, the Agent uses Jarvis to **analyze the codebase state first**.
-1.  **Analyze:** The Agent calls `analyze_project()` to read file signatures (e.g., `pyproject.toml`, `go.mod`).
-2.  **Decide:** It detects that `pre-commit` config is missing or incomplete.
-3.  **Execute:** It calls `apply_devops_stack(project_type="python", force=true)`. Jarvis programmatically writes a hardened `.pre-commit-config.yaml` and GitHub Actions workflow, ensuring the project adheres to the "Prime Stack" standard immediately.
+**How Jarvis Enables This:** Instead of blindly guessing which linters to install, your agent uses Jarvis to **analyze the codebase state first**.
+1.  **Analyze:** Jarvis reads file signatures (e.g., `pyproject.toml`, `go.mod`) to detect the project type.
+2.  **Decide:** It identifies that pre-commit config is missing or incomplete.
+3.  **Execute:** Jarvis programmatically writes a hardened `.pre-commit-config.yaml` and GitHub Actions workflow, ensuring the project adheres to production standards immediately.
 
 **What Jarvis Did:**
 - Created `.pre-commit-config.yaml` with Ruff (linting + formatting) and Gitleaks (secret detection)
@@ -551,10 +573,10 @@ Jarvis is built on a strict Go backbone that eliminates drift and guarantees exe
 > <br>
 > **Agent:** *"Done. Services are healthy. Retrying search... Here are your results."*
 
-**The Jarvis Fix:** Normally, this requires a context switch to the terminal. Jarvis allows the Agent to **diagnose and repair** the underlying infrastructure itself.
-1.  **Diagnose:** The Agent calls `check_status()` and parses the output to see the Qdrant container is unhealthy.
-2.  **Repair:** It calls `restart_infrastructure()`.
-3.  **Verify:** Jarvis executes the Docker restart sequence via its internal Go logic, waits for health checks to pass, and confirms the service is back online—all without human intervention.
+**How Jarvis Enables This:** Normally, this requires you to switch to the terminal. Jarvis allows your agent to **diagnose and repair** infrastructure without human intervention.
+1.  **Diagnose:** Jarvis runs health checks and identifies the Qdrant container is unhealthy.
+2.  **Repair:** It executes the Docker restart sequence automatically.
+3.  **Verify:** Jarvis waits for health checks to pass and confirms services are back online—all while your agent continues working.
 
 **What Jarvis Did:**
 - Detected Qdrant container failure via health checks
@@ -577,10 +599,10 @@ Jarvis is built on a strict Go backbone that eliminates drift and guarantees exe
 > <br>
 > **Agent:** *"Tool loaded. Reading contract.pdf... This is a service agreement with payment terms of Net 30 days, auto-renewal clause on page 5..."*
 
-**The Jarvis Fix:** Jarvis connects your Agent to the massive MCPM registry, enabling **on-demand capability expansion**.
-1.  **Search:** The Agent calls `search_servers("pdf")` and identifies a relevant tool.
-2.  **Install:** It calls `install_server("pdf-parse")`.
-3.  **Use:** Jarvis hot-loads the new tool into the active session. The Agent effectively "upgrades itself" in real-time to solve your specific problem.
+**How Jarvis Enables This:** Jarvis connects your agent to the MCPM registry with 200+ tools, enabling **on-demand capability expansion**.
+1.  **Search:** Your agent searches the registry and identifies a relevant PDF tool.
+2.  **Install:** Jarvis installs the tool automatically.
+3.  **Use:** The new tool is hot-loaded into the session. Your agent effectively "upgrades itself" in real-time to solve your specific problem.
 
 **What Jarvis Did:**
 - Searched MCPM registry for PDF-related tools (200+ available servers)
@@ -633,12 +655,11 @@ Jarvis is built on a strict Go backbone that eliminates drift and guarantees exe
 > <br>
 > **Agent:** *"Ready! I've activated Prettier for formatting, ESLint for linting, and research tools. What would you like to build?"*
 
-**The Jarvis Fix:** Jarvis's profile system auto-detects context and loads the right tool stack.
+**How Jarvis Enables This:** Jarvis's profile system auto-detects context and loads the right tool stack.
 1.  **Navigate:** You move from `~/api-service` (Go) to `~/dashboard` (React).
-2.  **Suggest:** The Agent calls `suggest_profile(client_name="cursor")` in the new directory.
-3.  **Analyze:** Jarvis detects `package.json` with React dependencies.
-4.  **Load:** Returns profile stack: `["project-frontend", "client-cursor", "memory"]`.
-5.  **Activate:** Agent knows to use frontend tools (Prettier, ESLint) instead of Go tools (GoFmt, golangci-lint).
+2.  **Detect:** Jarvis analyzes the new directory and detects `package.json` with React dependencies.
+3.  **Suggest:** It recommends the appropriate profile stack for frontend development.
+4.  **Activate:** Your agent seamlessly switches to frontend tools (Prettier, ESLint) instead of Go tools.
 
 **What Jarvis Did:**
 - Analyzed working directory: `/home/user/dashboard`
@@ -674,11 +695,11 @@ Jarvis is built on a strict Go backbone that eliminates drift and guarantees exe
 | **Versioning** | Whatever Google returns | Specific version docs on demand |
 | **Code Examples** | May be outdated | Live, tested snippets |
 
-1.  **Install Specialized Tool:** Agent calls `install_server("context7")` to get structured docs access.
-2.  **Resolve Library:** Uses `resolve_library_id("library-name")` → Returns versioned library ID.
-3.  **Fetch Docs:** Calls `get_library_docs("/org/library", topic="feature", mode="code")`.
-4.  **Returns:** Structured code snippets with imports, type signatures, and working examples.
-5.  **Implement:** Agent uses **current syntax**, not outdated training data.
+1.  **Install Specialized Tool:** Your agent installs a structured docs tool from the MCPM registry.
+2.  **Resolve Library:** It identifies the exact library and version you need.
+3.  **Fetch Docs:** Jarvis retrieves structured documentation for the specific feature.
+4.  **Returns:** Code snippets with imports, type signatures, and working examples.
+5.  **Implement:** Your agent uses **current syntax**, not outdated training data.
 
 **What Jarvis Did:**
 - Installed `context7` MCP server from MCPM registry (not available in typical clients)
@@ -705,12 +726,12 @@ Jarvis is built on a strict Go backbone that eliminates drift and guarantees exe
 > <br>
 > **Agent:** *"Payment terms found on page 3: Net 30 days, 2% discount if paid within 10 days. Late fees: 1.5% per month after 30 days."*
 
-**The Jarvis Fix:** The Agent expands its own capabilities in real-time.
-1.  **Detect Gap:** Agent recognizes it lacks PDF processing capability.
-2.  **Search:** Calls `search_servers("pdf")` and finds `pdf-parse`.
-3.  **Install:** Calls `install_server("pdf-parse")`.
-4.  **Hot-Load:** MCPM installs the tool without restarting the Agent.
-5.  **Use:** Agent immediately uses the new `pdf_extract` tool to process your file.
+**How Jarvis Enables This:** Your agent expands its own capabilities in real-time.
+1.  **Detect Gap:** Your agent recognizes it lacks PDF processing capability.
+2.  **Search:** It searches the MCPM registry and finds a suitable PDF tool.
+3.  **Install:** Jarvis installs the tool automatically.
+4.  **Hot-Load:** The tool is loaded without restarting your agent.
+5.  **Use:** Your agent immediately processes your file with the new capability.
 6.  **Remember:** The tool remains available for future sessions.
 
 **What Jarvis Did:**
