@@ -118,6 +118,47 @@ func handleRestartInfrastructure(_ context.Context, _ mcp.CallToolRequest) (*mcp
 	return mcp.NewToolResultText(fmt.Sprintf("Infrastructure restarted successfully.\nOutput:\n%s", string(out))), nil
 }
 
+func handleRestartProfiles(_ context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	args, _ := request.Params.Arguments.(map[string]interface{})
+	profile, _ := args["profile"].(string)
+
+	// Locate project root
+	cwd, err := os.Getwd()
+	if err != nil {
+		return mcp.NewToolResultError(fmt.Sprintf("Failed to get CWD: %v", err)), nil
+	}
+
+	var rootDir string
+	if _, err := os.Stat(filepath.Join(cwd, "docker-compose.yml")); err == nil {
+		rootDir = cwd
+	} else if _, err := os.Stat(filepath.Join(cwd, "..", "docker-compose.yml")); err == nil {
+		rootDir = filepath.Join(cwd, "..")
+	} else {
+		return mcp.NewToolResultError("Could not locate docker-compose.yml. Make sure you're in the MCP project directory."), nil
+	}
+
+	var cmd *exec.Cmd
+	var actionDesc string
+
+	if profile != "" {
+		// Restart specific profile via supervisorctl inside the container
+		cmd = exec.Command("docker", "exec", "mcp-daemon", "supervisorctl", "restart", "mcpm-"+profile)
+		actionDesc = fmt.Sprintf("profile '%s'", profile)
+	} else {
+		// Restart the entire mcpm-daemon container
+		cmd = exec.Command("docker", "compose", "restart", "mcpm-daemon")
+		cmd.Dir = rootDir
+		actionDesc = "all profiles (mcpm-daemon container)"
+	}
+
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return mcp.NewToolResultError(fmt.Sprintf("Failed to restart %s: %v\nOutput: %s", actionDesc, err, string(out))), nil
+	}
+
+	return mcp.NewToolResultText(fmt.Sprintf("✅ Successfully restarted %s\n\nOutput:\n%s", actionDesc, string(out))), nil
+}
+
 func handleSuggestProfile(_ context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	args, _ := request.Params.Arguments.(map[string]interface{})
 	testingMode, _ := args["testing"].(bool)

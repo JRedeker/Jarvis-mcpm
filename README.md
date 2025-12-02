@@ -66,15 +66,16 @@ Unlike standard MCP gateways that focus on proxying and aggregation, Jarvis adds
 
 ---
 
-## 📦 Powered by MCPM
+## 📦 Powered by MCPM & Docker Daemon
 
-Jarvis uses [**MCPM**](https://github.com/pathintegral-institute/mcpm.sh) (MCP Manager) as its package management backend. MCPM provides:
+Jarvis uses [**MCPM**](https://github.com/pathintegral-institute/mcpm.sh) (MCP Manager) backed by a **single Docker Daemon**. This architecture provides:
 
-- **200+ Server Registry** — Curated MCP servers with metadata and installation recipes
-- **Profile System** — Composable tool sets activated per-project or per-client
-- **Cross-Platform** — Works on Linux, macOS, Windows
+- **Single Instance Efficiency:** Servers run once in a central daemon, not duplicated for every client.
+- **SSE Transport:** Clients connect via HTTP/SSE (`http://localhost:XXXX/sse`), enabling hot-reloads and shared state.
+- **200+ Server Registry:** Curated MCP servers with metadata and installation recipes.
+- **Profile System:** Composable tool sets mapped to specific ports.
 
-Jarvis wraps MCPM's CLI with intelligent formatting, validation, and DevOps features. You get the full MCPM registry plus agent-optimized tooling.
+Jarvis wraps this infrastructure with intelligent formatting, validation, and DevOps features.
 
 ---
 
@@ -98,9 +99,13 @@ Jarvis is built on the **Model Context Protocol (MCP)**, making it instantly com
       "command": "/home/user/Jarvis-mcpm/Jarvis/jarvis",
       "args": []
     },
-    "mcpm_profile_memory": {
-      "command": "mcpm",
-      "args": ["profile", "run", "memory"]
+    "memory": {
+      "url": "http://localhost:6277/sse",
+      "transport": "sse"
+    },
+    "p-pokeedge": {
+      "url": "http://localhost:6276/sse",
+      "transport": "sse"
     }
   }
 }
@@ -114,6 +119,10 @@ Jarvis is built on the **Model Context Protocol (MCP)**, making it instantly com
       "command": "/home/user/Jarvis-mcpm/Jarvis/jarvis",
       "args": [],
       "env": {}
+    },
+    "p-pokeedge": {
+      "url": "http://localhost:6276/sse",
+      "transport": "sse"
     }
   }
 }
@@ -123,8 +132,9 @@ Jarvis is built on the **Model Context Protocol (MCP)**, making it instantly com
 ```json
 {
   "mcp.servers": {
-    "jarvis": {
-      "command": "/home/user/Jarvis-mcpm/Jarvis/jarvis"
+    "p-pokeedge": {
+      "url": "http://localhost:6276/sse",
+      "transport": "sse"
     }
   }
 }
@@ -152,7 +162,7 @@ Jarvis transforms your AI Agent from a passive chatbot into a **Full-Stack DevOp
 
 ## 🧠 How It Works
 
-Jarvis sits between your Agent and your Machine. It acts as a secure, intelligent layer that translates "intent" into "infrastructure."
+Jarvis sits between your Agent and your Machine. It orchestrates a central **MCPM Daemon** that hosts all your tools, ensuring they are efficient, shared, and always available.
 
 ```mermaid
 flowchart TD
@@ -165,34 +175,33 @@ flowchart TD
     end
 
     subgraph "Jarvis Infrastructure Layer"
-        Jarvis["⚡ Jarvis (MCP Server)"]
+        Jarvis["⚡ Jarvis (Gateway)"]
 
-        subgraph "Tooling"
-            Analyzer["🔍 Analyzer (Project Analysis)"]
-            Scaffolder["🏗️ Scaffolder (DevOps Stack)"]
-            Mechanic["🔧 Mechanic (MCP Tooling)"]
+        subgraph "Central Daemon (Docker)"
+            Daemon["🐳 mcpm-daemon"]
+            Profile1["🔌 p-pokeedge (:6276)"]
+            Profile2["🧠 memory (:6277)"]
+            Profile3["🚀 morph (:6278)"]
         end
     end
 
     subgraph "Local System Layer"
-        Codebase[("📂 Local Files (.git)")]
-        ConfigFiles["📄 Configuration Files"]
-        Docker[("🐳 Containers (Databases, MCP-Servers)")]
-        ExternalFiles["🌐 External Docs/Files"]
+        Codebase[("📂 Local Files")]
+        DB[("🗄️ PostgreSQL")]
+        Vector[("🔍 Qdrant")]
     end
 
-    User -->|Prompt: 'How should we integrate Tool X?'| Agent
-    Agent -->|"Gather Info on Tool X"| Jarvis
+    User -->|Prompt| Agent
+    Agent -->|"Tool Call (Stdio)"| Jarvis
+    Agent -.->|"SSE Connection"| Profile1
+    Agent -.->|"SSE Connection"| Profile2
 
-    Jarvis -->|"Let's Install Context7"| Mechanic
-    Jarvis -->|"Let's Fetch Tool X Info with Context7"| Analyzer
-    Jarvis -->|"Let's Setup Proper Pre-Commit Checks for Tool X"| Scaffolder
+    Jarvis -->|"Manage (Docker CLI)"| Daemon
+    Daemon -->|Hosts| Profile1
+    Daemon -->|Hosts| Profile2
 
-
-    Mechanic -->|Sets Up New MCP Server| Docker
-    Scaffolder -->|Writes| ConfigFiles
-    Analyzer -->|Researches and Downloads| ExternalFiles
-
+    Profile2 -->|Store/Retrieve| DB
+    Profile2 -->|Store/Retrieve| Vector
 ```
 
 ---
@@ -213,14 +222,27 @@ bootstrap_system()
 
 // Jarvis executes:
 // 1. Installs MCPM CLI (npm install + link)
-// 2. Starts Docker infrastructure (PostgreSQL, Qdrant)
-// 3. Installs default servers (context7, brave-search, github)
+// 2. Starts Docker infrastructure (Postgres, Qdrant, MCPM Daemon)
+// 3. Installs default servers
 
 // Returns:
 ✅ MCPM installed successfully
-✅ Infrastructure started (PostgreSQL: healthy, Qdrant: healthy)
-✅ Default servers installed: context7, brave-search, github
-💡 Next step: Try search_servers("documentation") to explore more tools
+✅ Infrastructure started (PostgreSQL: healthy, Qdrant: healthy, Daemon: healthy)
+```
+
+#### `restart_profiles(profile)`
+**Hot-reload MCP servers without restarting clients**
+
+```javascript
+// Reload all profiles after config change
+restart_profiles()
+
+// Reload specific profile
+restart_profiles(profile="p-pokeedge")
+
+// Returns:
+✅ Successfully restarted profile 'p-pokeedge'
+💡 Changes applied. Clients using SSE will see updates immediately.
 ```
 
 #### `check_status()`
@@ -231,38 +253,11 @@ check_status()
 
 // Returns:
 ## System Status Report
-
-### MCPM
-✅ Installed and configured
-✅ Registry: 200+ servers available
-
+...
 ### Infrastructure
 ✅ PostgreSQL: healthy
 ✅ Qdrant: healthy
-
-### Installed Servers
-✅ context7 (running)
-✅ brave-search (running)
-❌ firecrawl (not configured)
-
-💡 Suggestion: All systems healthy. Ready for operations.
-```
-
-#### `restart_infrastructure()`
-**Self-healing infrastructure repair**
-
-```javascript
-// When Qdrant crashes
-restart_infrastructure()
-
-// Returns:
-⚙️ Stopping containers...
-✅ PostgreSQL stopped gracefully
-✅ Qdrant stopped
-⚙️ Starting infrastructure...
-✅ PostgreSQL started (health check passed)
-✅ Qdrant started (health check passed)
-💡 All services restored. Retry your operation.
+✅ MCPM Daemon: healthy (3 profiles active)
 ```
 </details>
 

@@ -9,24 +9,25 @@ The repository implements a layered architecture separating infrastructure, pack
 
 ```mermaid
 graph TD
-    subgraph "Layer 1: Infrastructure"
-        Docker[Docker Compose] -->|Hosts| DB[(PostgreSQL :5432)]
-        Docker -->|Hosts| Vector[(Qdrant :6333)]
+    subgraph "Layer 1: Infrastructure (Docker)"
+        Daemon[MCPM Daemon :6276-6280] -->|Hosts| Profiles[Profile Runners]
+        Profiles -->|Store| DB[(PostgreSQL :5432)]
+        Profiles -->|Index| Vector[(Qdrant :6333)]
     end
 
     subgraph "Layer 2: Package Management (MCPM)"
         MCPM_CLI[MCPM CLI] -->|Reads| Registry[Technology Registry]
-        MCPM_CLI -->|Generates| IDE_Config[IDE Configurations]
-        MCPM_CLI -->|Manages| Server_Bin[Server Binaries]
+        MCPM_CLI -->|Builds| Daemon_Image[Daemon Image]
     end
 
     subgraph "Layer 3: Execution Gateway (Jarvis)"
-        Agent[AI Agent] -->|MCP Protocol| Jarvis[Jarvis Server]
-        Jarvis -->|Subprocess| MCPM_CLI
-        Jarvis -->|Exposes| Tools[Management Tools]
+        Agent[AI Agent] -->|Stdio| Jarvis[Jarvis Server]
+        Agent -.->|SSE| Daemon
+        Jarvis -->|Manage| Daemon
+        Jarvis -->|Install| MCPM_CLI
     end
 
-    MCPM_CLI -.->|Depends On| Docker
+    MCPM_CLI -.->|Configures| Daemon
 ```
 
 ## 2. Component Specifications
@@ -56,6 +57,7 @@ graph TD
 *   **Management:** `scripts/manage-mcp.sh` (Unified start/stop/logs/test controller).
 *   **Container Runtime:** Docker Compose (`docker-compose.yml`).
 *   **Services:**
+    *   **MCPM Daemon:** `mcp-mcpm-daemon` (Hosts SSE Profiles on ports 6276+).
     *   **PostgreSQL:** `postgres:15` on port `5432`.
     *   **Qdrant:** `qdrant/qdrant:latest` on port `6333` (Vector Store).
 

@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   postgres:
     image: postgres:15
@@ -18,6 +16,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - mcp-network
 
   qdrant:
     image: qdrant/qdrant:latest
@@ -35,7 +35,60 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - mcp-network
+
+  mcpm-daemon:
+    build:
+      context: ./mcpm-daemon
+      dockerfile: Dockerfile
+    container_name: mcp-daemon
+    ports:
+      - "6276:6276"  # p-pokeedge
+      - "6277:6277"  # memory
+      - "6278:6278"  # morph
+      - "6279:6279"  # qdrant
+      - "6280:6280"  # p-new
+    volumes:
+      # Mount MCPM config (read-only for safety)
+      - ${HOME}/.config/mcpm:/root/.config/mcpm:ro
+      # Mount basic-memory data directory
+      - ${HOME}/.basic-memory:/root/.basic-memory
+      # Logs
+      - mcpm_logs:/var/log/mcpm
+    environment:
+      # Profiles to run (comma-separated)
+      MCPM_PROFILES: "p-pokeedge,memory,morph"
+      # API Keys (passed through from .env file)
+      FIRECRAWL_API_KEY: ${FIRECRAWL_API_KEY:-}
+      KAGI_API_KEY: ${KAGI_API_KEY:-}
+      BRAVE_API_KEY: ${BRAVE_API_KEY:-}
+      QDRANT_API_KEY: ${QDRANT_API_KEY:-}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+      MORPH_API_KEY: ${MORPH_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      # Qdrant connection (for mem0)
+      QDRANT_URL: "http://qdrant:6333"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:6276/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      start_period: 30s
+      retries: 3
+    networks:
+      - mcp-network
+
+networks:
+  mcp-network:
+    driver: bridge
 
 volumes:
   postgres_data:
   qdrant_data:
+  mcpm_logs:

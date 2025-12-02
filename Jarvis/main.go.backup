@@ -69,11 +69,6 @@ func main() {
 	setupLogging()
 	printBanner()
 
-	// Run smoke tests on boot if enabled
-	if shouldRunSmokeTests() {
-		runBootSmokeTests()
-	}
-
 	// Create a new MCP server
 	s := server.NewMCPServer(
 		"jarvis",
@@ -96,13 +91,6 @@ func main() {
 	s.AddTool(mcp.NewTool("restart_infrastructure",
 		mcp.WithDescription("Safely reboots Docker infrastructure (PostgreSQL, Qdrant) with health checks and automatic reconnection. Resolves database connection issues, clears stale locks, and ensures all services are healthy. Zero data loss."),
 	), handleRestartInfrastructure)
-
-	// Tool: restart_profiles
-	s.AddTool(mcp.NewTool("restart_profiles",
-		mcp.WithDescription("Restarts the MCPM daemon container to reload all MCP profiles with updated configurations. Use this after editing server configs (API keys, commands, etc.) to apply changes without restarting clients. Profiles run as SSE services inside Docker."),
-		mcp.WithString("profile",
-			mcp.Description("Optional: restart only a specific profile (e.g., 'p-pokeedge', 'memory'). If not specified, restarts all profiles.")),
-	), handleRestartProfiles)
 
 	// Tool: suggest_profile
 	s.AddTool(mcp.NewTool("suggest_profile",

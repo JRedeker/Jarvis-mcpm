@@ -76,22 +76,26 @@ Enables the "Local Review Loop" for agents.
     *   `git diff` content (staged or HEAD).
 *   **Use Case:** Allows the Agent to "see" its own changes before committing, enabling self-correction.
 
+### The `restart_profiles` Tool (Daemon Orchestration)
+Manages the `mcpm-daemon` container, allowing hot-reloads of MCP servers.
+*   **Input:** `profile` (optional string).
+*   **Action:**
+    *   If `profile` provided: Runs `docker exec mcp-daemon supervisorctl restart mcpm-<profile>`.
+    *   If empty: Runs `docker compose restart mcpm-daemon`.
+*   **Benefit:** Updates API keys or server configs without disconnecting the AI client.
+
 ### The `suggest_profile` Tool (Smart Stacking)
 Jarvis implements a "3-Layer Stacking" logic to determine the active toolset dynamically.
 *   **Input:** `client_name` (string), `testing` (bool).
 *   **Logic:**
-    1.  **Base:** Detects project context (e.g., `project-pokeedge`) from CWD. Defaults to `project-new`.
-    2.  **Adapter:** Appends client-specific profile (e.g., `client-codex`) if `client_name` is provided.
-    3.  **Global:** Appends `memory`. Appends `testing-all-tools` if `testing=true`.
-*   **Output:** JSON array of profile names.
+    1.  **Base:** Detects project context (e.g., `p-pokeedge`) from CWD. Defaults to `p-new`.
+    2.  **Global:** Appends `memory`. Appends `testing-all-tools` if `testing=true`.
+*   **Output:** JSON array of profile names (which correspond to SSE ports).
 
 ### Client Configuration Management (`manage_client`)
-Jarvis exposes advanced configuration for MCP clients, including path persistence for custom installations (like Kilo Code or Cline).
+Jarvis exposes advanced configuration for MCP clients.
 *   **Actions:** `edit`, `import`, `ls`, `config`.
-*   **Path Persistence:**
-    *   Use `action="config"` with `config_path="/path/to/settings.json"` to register a custom config location.
-    *   Jarvis (via MCPM) remembers this path, so subsequent `edit` calls don't require the path argument.
-    *   Essential for managing VS Code extensions that have unique storage paths.
+*   **SSE Support:** Can configure clients to point to local SSE endpoints (`http://localhost:XXXX/sse`) instead of spawning stdio processes.
 
 ### Shared Servers (Tunneling)
 Jarvis manages a map of running background processes for the `share_server` tool.

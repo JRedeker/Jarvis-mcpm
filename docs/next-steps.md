@@ -2022,7 +2022,449 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-**Document Version:** 1.0
+## Phase 4: Market Analysis & Competitive Positioning (Parallel Track)
+
+**Goal:** Create comprehensive market analysis comparing Jarvis to competing MCP management solutions
+**Output:** `docs/market-analysis.md`
+**Effort:** ~6-8 hours research + documentation
+
+### 4.1: Competitor Identification & Research
+
+**Primary Competitors to Analyze:**
+
+| Competitor | Type | Key Differentiator |
+|------------|------|-------------------|
+| **MCPJungle** | Self-hosted gateway & registry | Centralized enterprise tool registry |
+| **MetaMCP** | Proxy/aggregator middleware | Dynamic server aggregation with workspaces |
+| **MCPM (Path Integral)** | CLI package manager | Profile-based organization, client integration |
+| **MCPM (MCP-Club)** | CLI + MCP server hybrid | Dual CLI/server management mode |
+| **Smithery** | Cloud-hosted registry | One-click deployment, hosted infrastructure |
+| **MCP Registry (Official)** | Community registry | Anthropic-backed, standardized format |
+| **mcp.so / PulseMCP / Glama** | Discovery platforms | Curated directories with ratings/reviews |
+
+**Research Tasks:**
+- [ ] Clone/review GitHub repositories for each competitor
+- [ ] Document installation process and complexity
+- [ ] Test core workflows (install, configure, manage servers)
+- [ ] Analyze documentation quality and agent-friendliness
+- [ ] Review issue trackers for common pain points
+- [ ] Check community adoption (stars, forks, contributors)
+
+**Data Collection Template:**
+```markdown
+## [Competitor Name]
+
+### Overview
+- **Repository:** [URL]
+- **Stars/Forks:** X / Y
+- **Last Updated:** [Date]
+- **License:** [Type]
+- **Primary Language:** [Language]
+
+### Architecture
+- [ ] Self-hosted / Cloud / Hybrid
+- [ ] CLI / GUI / API
+- [ ] Agent-first design?
+
+### Key Features
+1. [Feature 1]
+2. [Feature 2]
+...
+
+### Limitations
+1. [Limitation 1]
+2. [Limitation 2]
+...
+
+### Unique Selling Points
+- [USP 1]
+- [USP 2]
+```
+
+---
+
+### 4.2: Feature Matrix Definition
+
+**Categories to Evaluate (Developer-Centric):**
+
+#### A. Installation & Setup
+| Feature | Weight | Description |
+|---------|--------|-------------|
+| One-command bootstrap | High | Can start from zero with single command |
+| Dependency auto-resolution | High | Handles npm/pip/docker deps automatically |
+| Cross-platform support | Medium | Works on Linux/macOS/Windows |
+| Docker-native option | Medium | First-class container support |
+| No external dependencies | Low | Works without node/python/docker |
+
+#### B. Server Management
+| Feature | Weight | Description |
+|---------|--------|-------------|
+| Server discovery/search | High | Find servers by capability |
+| Server installation | High | Install from registry |
+| Server configuration | High | Manage env vars, args, settings |
+| Version management | Medium | Install specific versions, upgrade |
+| Health monitoring | Medium | Check server status/health |
+| Uninstall cleanup | Low | Clean removal without orphans |
+
+#### C. Configuration & Organization
+| Feature | Weight | Description |
+|---------|--------|-------------|
+| Profile/workspace support | High | Group servers logically |
+| Multi-client support | High | Configure Claude/Cursor/VSCode/etc. |
+| Context-aware activation | Medium | Auto-select based on project/directory |
+| Configuration sync | Low | Sync settings across machines |
+| Import/export configs | Low | Portable configuration |
+
+#### D. Agent Experience (Critical for Jarvis)
+| Feature | Weight | Description |
+|---------|--------|-------------|
+| MCP-native interface | Critical | Agents can call tools directly |
+| Structured output | Critical | JSON responses for programmatic use |
+| Self-healing capabilities | High | Agents can diagnose/fix issues |
+| Inline documentation | High | Examples in tool descriptions |
+| Workflow guidance | Medium | Suggests optimal tool sequences |
+| Error actionability | Medium | Errors include resolution steps |
+
+#### E. Enterprise & Security
+| Feature | Weight | Description |
+|---------|--------|-------------|
+| Self-hosted option | High | No cloud dependency |
+| Access control | Medium | Per-user/per-tool permissions |
+| Audit logging | Medium | Track tool invocations |
+| Secret management | Medium | Secure env var handling |
+| SSO integration | Low | Enterprise auth |
+
+#### F. Developer Experience
+| Feature | Weight | Description |
+|---------|--------|-------------|
+| CLI quality | High | Intuitive commands, good help |
+| Documentation quality | High | Clear, complete, examples |
+| Community/support | Medium | Discord, GitHub issues, etc. |
+| Extensibility | Medium | Custom server creation |
+| DevOps integration | Low | CI/CD, pre-commit hooks |
+
+---
+
+### 4.3: Competitive Feature Matrix
+
+**Document Structure for `market-analysis.md`:**
+
+```markdown
+# Jarvis Market Analysis & Competitive Positioning
+
+## Executive Summary
+[2-3 paragraph overview of market landscape and Jarvis positioning]
+
+## Market Landscape
+
+### The MCP Ecosystem in 2025
+- Growth trajectory
+- Key players and consolidation
+- Developer adoption patterns
+
+### Target Personas
+1. **Individual Developer** - Personal productivity
+2. **Team Lead** - Team standardization
+3. **Enterprise Architect** - Organization-wide deployment
+4. **AI Agent Developer** - Building agent-first applications
+
+## Competitor Deep Dives
+
+### 1. MCPJungle
+[Detailed analysis using research template]
+
+### 2. MetaMCP
+[Detailed analysis]
+
+### 3. MCPM (Path Integral)
+[Detailed analysis]
+
+### 4. MCPM (MCP-Club)
+[Detailed analysis]
+
+### 5. Smithery
+[Detailed analysis]
+
+### 6. Discovery Platforms (mcp.so, PulseMCP, Glama)
+[Consolidated analysis of registry/directory services]
+
+## Feature Comparison Matrix
+
+### Legend
+- ✅ Full support
+- ⚠️ Partial/limited support
+- ❌ Not supported
+- 🚧 Planned/in development
+
+### Installation & Setup
+| Feature | Jarvis | MCPJungle | MetaMCP | MCPM-PI | MCPM-Club | Smithery |
+|---------|--------|-----------|---------|---------|-----------|----------|
+| One-command bootstrap | ✅ | ⚠️ | ⚠️ | ❌ | ❌ | ✅ |
+| ... | | | | | | |
+
+### Server Management
+[Table]
+
+### Configuration & Organization
+[Table]
+
+### Agent Experience
+[Table - Jarvis expected to dominate]
+
+### Enterprise & Security
+[Table]
+
+### Developer Experience
+[Table]
+
+## Jarvis Differentiators
+
+### 1. Agent-First Architecture
+[Explanation of why this matters]
+
+### 2. 3-Layer Profile Stack
+[Unique composability approach]
+
+### 3. Self-Healing Infrastructure
+[Agents can diagnose and fix]
+
+### 4. Integrated DevOps Tooling
+[Pre-commit, linting, CI/CD scaffolding]
+
+## Competitive Positioning
+
+### SWOT Analysis
+
+#### Strengths
+- [List]
+
+#### Weaknesses
+- [List]
+
+#### Opportunities
+- [List]
+
+#### Threats
+- [List]
+
+### Positioning Statement
+[Clear statement of Jarvis's unique value proposition]
+
+### Target Market Segments
+[Primary, secondary, tertiary targets]
+
+## Recommendations
+
+### Short-term (Next 30 days)
+1. [Action item]
+2. [Action item]
+
+### Medium-term (60-90 days)
+1. [Action item]
+2. [Action item]
+
+### Long-term (6+ months)
+1. [Action item]
+2. [Action item]
+
+## Appendix
+
+### A. Raw Research Data
+[Links to competitor repos, documentation, etc.]
+
+### B. Methodology
+[How data was collected and evaluated]
+
+### C. Glossary
+[MCP terminology for non-technical readers]
+```
+
+---
+
+### 4.4: Research Execution Plan
+
+**Phase 4.4.1: Deep Dive Research (4-5 hours)**
+
+```bash
+# Clone and analyze each competitor
+mkdir -p /tmp/mcp-competitors
+cd /tmp/mcp-competitors
+
+# MCPJungle
+git clone https://github.com/mcpjungle/MCPJungle
+# Analyze: README, architecture, tool count, documentation
+
+# MetaMCP
+git clone https://github.com/metatool-ai/metamcp
+# Analyze: Middleware approach, workspace model, aggregation
+
+# MCPM (Path Integral)
+git clone https://github.com/pathintegral-institute/mcpm.sh
+# Analyze: Profile system, client integration, registry
+
+# MCPM (MCP-Club)
+git clone https://github.com/MCP-Club/mcpm
+# Analyze: Dual-mode architecture, Claude App focus
+```
+
+**Phase 4.4.2: Hands-on Testing (2-3 hours)**
+- [ ] Install each competitor in isolated environment
+- [ ] Run through "new user" workflow
+- [ ] Test server installation and configuration
+- [ ] Evaluate error handling and documentation
+- [ ] Note friction points and delight moments
+
+**Phase 4.4.3: Documentation & Synthesis (2 hours)**
+- [ ] Fill out feature matrix with verified data
+- [ ] Write competitor deep dives
+- [ ] Draft positioning and recommendations
+- [ ] Review with stakeholders
+
+---
+
+### 4.5: Key Questions to Answer
+
+**Market Understanding:**
+1. What are developers' biggest pain points with current MCP tooling?
+2. Which competitor has the strongest community momentum?
+3. Are there underserved market segments?
+4. What's the trajectory of the official MCP Registry?
+
+**Competitive Intelligence:**
+1. What features do competitors have that Jarvis lacks?
+2. Where is Jarvis objectively better?
+3. Which competitor poses the biggest threat?
+4. Are there partnership opportunities?
+
+**Strategic Positioning:**
+1. Should Jarvis position as "agent-first" or "developer-first"?
+2. Is enterprise or individual developer the better initial target?
+3. How important is cloud/SaaS vs self-hosted?
+4. Should Jarvis integrate with or replace MCPM?
+
+---
+
+### 4.6: Success Criteria
+
+**Document Quality:**
+- [ ] All 6+ competitors thoroughly analyzed
+- [ ] Feature matrix has 30+ features evaluated
+- [ ] Each cell in matrix is verified (not assumed)
+- [ ] Positioning is clear and actionable
+- [ ] Recommendations are specific and prioritized
+
+**Strategic Value:**
+- [ ] Identifies 3+ gaps Jarvis should fill
+- [ ] Identifies 3+ Jarvis strengths to amplify
+- [ ] Provides clear differentiation messaging
+- [ ] Informs roadmap prioritization
+
+---
+
+### 4.7: Timeline
+
+```
+Day 1 (4-5 hours):
+├─ Clone all competitor repos
+├─ Read documentation and READMEs
+├─ Document architecture and features
+└─ Initial feature matrix draft
+
+Day 2 (3-4 hours):
+├─ Hands-on testing of each competitor
+├─ Verify feature matrix claims
+├─ Note UX observations
+└─ Draft competitor deep dives
+
+Day 3 (2-3 hours):
+├─ Complete feature matrix
+├─ Write SWOT analysis
+├─ Draft positioning statement
+├─ Write recommendations
+└─ Final review and polish
+```
+
+---
+
+**Document Version:** 1.1
 **Last Updated:** 2025-11-28
 **Author:** Claude Code (with human oversight)
 **Status:** Draft - Awaiting Review
+
+---
+
+## APPENDIX: Smoke Testing Implementation Status (2025-11-28)
+
+### ✅ Completed (Session 2025-11-28)
+
+**Files Created:**
+- `/Jarvis/smoketests/types.go` - Core types (TestResult, SmokeTestReport, Config)
+- `/Jarvis/smoketests/config.go` - Config test suite (env vars, files, permissions)
+- `/Jarvis/smoketests/connectivity.go` - HTTP connectivity tests
+- `/Jarvis/smoke_integration.go` - Boot-time integration functions
+- `/Jarvis/main.go` - Modified to call `runBootSmokeTests()` on startup
+
+**Design Complete:**
+- See `docs/SMOKE_TESTING_DESIGN.md` for full architecture
+
+### 🚧 Remaining Work (30-60 minutes)
+
+**1. Create Missing Files:**
+
+```bash
+# Create registry.go (test spec loader)
+cat > Jarvis/smoketests/registry.go << 'EOFILE'
+# [Copy content from SMOKE_TESTING_DESIGN.md lines ~450-550]
+EOFILE
+
+# Create orchestrator.go (test coordinator)
+cat > Jarvis/smoketests/orchestrator.go << 'EOFILE'
+# [Copy content from SMOKE_TESTING_DESIGN.md lines ~300-450]
+EOFILE
+```
+
+**2. Build & Test:**
+
+```bash
+cd Jarvis
+go build -o jarvis
+./jarvis  # Should show smoke tests running at boot
+```
+
+**3. Fix Firecrawl API Key Issue:**
+
+```bash
+# Restart Claude Code to pick up the new API key
+# Firecrawl should now work with: fc-3eca39548d644c088789d5ea82c83a39
+```
+
+**4. Add run_smoke_tests Tool (Optional):**
+
+Add to `tools.go`:
+```go
+s.AddTool(mcp.NewTool("run_smoke_tests",
+    mcp.WithDescription("Execute smoke tests..."),
+    mcp.WithString("test_level", ...),
+), handleRunSmokeTests)
+```
+
+### Expected Outcome
+
+After completion, boot sequence will show:
+```
+>> JARVIS MCP Gateway v1.0.0 initialized <<
+
+🔍 Running smoke tests...
+  ✅ firecrawl (config, connectivity) - 2/2 passed
+  ✅ context7 (connectivity) - 1/1 passed
+  ❌ brave-search (config) - FAILED: Missing BRAVE_API_KEY
+     💡 Get API key from https://brave.com/search/api/
+
+⚠️  SMOKE TEST FAILURES DETECTED - Use check_status() for details
+```
+
+### Reference Files
+
+All implementation code is in:
+- `docs/SMOKE_TESTING_DESIGN.md` (lines 300-600 have the missing orchestrator.go & registry.go)
+- Current working files in `/Jarvis/smoketests/`

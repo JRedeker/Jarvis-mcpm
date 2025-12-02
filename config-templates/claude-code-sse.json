@@ -1,0 +1,42 @@
+{
+  "mcpServers": {
+    "jarvis": {
+      "command": "/home/jrede/dev/MCP/Jarvis/jarvis",
+      "args": []
+    },
+    "p-pokeedge": {
+      "url": "http://localhost:6276/sse",
+      "transport": "sse",
+      "alwaysAllow": [
+        "brave-search_brave_web_search",
+        "brave-search_brave_local_search",
+        "brave-search_brave_news_search",
+        "brave-search_brave_summarizer",
+        "context7_resolve-library-id",
+        "context7_get-library-docs",
+        "firecrawl_firecrawl_scrape",
+        "firecrawl_firecrawl_map",
+        "firecrawl_firecrawl_search",
+        "firecrawl_firecrawl_crawl",
+        "firecrawl_firecrawl_check_crawl_status",
+        "firecrawl_firecrawl_extract",
+        "fetch-mcp_fetch_html",
+        "fetch-mcp_fetch_json",
+        "fetch-mcp_fetch_markdown",
+        "fetch-mcp_fetch_txt",
+        "kagimcp_kagi_search_fetch",
+        "kagimcp_kagi_summarizer",
+        "time_get_current_time",
+        "time_convert_time"
+      ]
+    },
+    "memory": {
+      "url": "http://localhost:6277/sse",
+      "transport": "sse"
+    },
+    "morph": {
+      "url": "http://localhost:6278/sse",
+      "transport": "sse"
+    }
+  }
+}
