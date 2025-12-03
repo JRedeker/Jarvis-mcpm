@@ -1,17 +1,27 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"io"
 	"log"
 	"os"
 	"os/exec"
+	"os/signal"
 	"path/filepath"
 	"strings"
 	"sync"
+	"syscall"
 
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"
+)
+
+// Command-line flags for transport mode
+var (
+	httpMode = flag.Bool("http", false, "Run as Streamable HTTP server instead of stdio")
+	httpPort = flag.String("port", "6275", "Port for HTTP server (default: 6275)")
+	httpHost = flag.String("host", "127.0.0.1", "Host for HTTP server (default: 127.0.0.1)")
 )
 
 var (
@@ -66,6 +76,7 @@ func printBanner() {
 }
 
 func main() {
+	flag.Parse()
 	setupLogging()
 	printBanner()
 
@@ -321,9 +332,34 @@ func main() {
 		mcp.WithDescription("Shows all active server shares with tunnel URLs, authentication status, connected clients, and uptime. Useful for monitoring remote access and identifying security risks."),
 	), handleListSharedServers)
 
-	// Start the server using Stdio transport
-	if err := server.ServeStdio(s); err != nil {
-		fmt.Printf("Server error: %v\n", err)
+	// Start the server based on transport mode
+	if *httpMode {
+		// Streamable HTTP mode (MCP 2025-03-26 spec)
+		addr := fmt.Sprintf("%s:%s", *httpHost, *httpPort)
+		log.Printf("Starting Jarvis in HTTP mode on %s", addr)
+		fmt.Fprintf(os.Stderr, "\033[1;33m>> HTTP Mode: http://%s/mcp <<\033[0m\n", addr)
+
+		httpServer := server.NewStreamableHTTPServer(s)
+
+		// Handle graceful shutdown
+		sigChan := make(chan os.Signal, 1)
+		signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+
+		go func() {
+			<-sigChan
+			log.Println("Shutting down HTTP server...")
+			httpServer.Shutdown(nil)
+		}()
+
+		if err := httpServer.Start(addr); err != nil {
+			log.Printf("HTTP server error: %v", err)
+			fmt.Printf("Server error: %v\n", err)
+		}
+	} else {
+		// Stdio mode (default for direct client connections)
+		if err := server.ServeStdio(s); err != nil {
+			fmt.Printf("Server error: %v\n", err)
+		}
 	}
 }
 

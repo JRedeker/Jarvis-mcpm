@@ -2,7 +2,8 @@
 set -e
 
 # MCPM Daemon Entrypoint
-# Starts all configured profiles as SSE services using supervisor
+# Starts all configured profiles as Streamable HTTP services using supervisor
+# Updated from SSE to HTTP transport (MCP 2025-03-26 spec)
 
 echo "=== MCPM Daemon Starting ==="
 
@@ -63,7 +64,7 @@ SUPERVISOR_HEADER
             cat >> /etc/supervisor/conf.d/mcpm-profiles.conf << EOF
 
 [program:mcpm-$profile]
-command=mcpm profile run --sse --host 0.0.0.0 --port $port $profile
+command=mcpm profile run --http --host 0.0.0.0 --port $port $profile
 autostart=true
 autorestart=true
 stderr_logfile=/var/log/mcpm/$profile.err.log

@@ -43,6 +43,8 @@ services:
       context: ./mcpm-daemon
       dockerfile: Dockerfile
     container_name: mcp-daemon
+    # Streamable HTTP endpoints (MCP 2025-03-26 spec)
+    # Connect via: http://localhost:<port>/mcp
     ports:
       - "6276:6276"  # p-pokeedge
       - "6277:6277"  # memory
