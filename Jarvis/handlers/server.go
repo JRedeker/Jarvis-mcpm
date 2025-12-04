@@ -263,6 +263,60 @@ func GetToolDefinitions(h *Handler) []ToolDefinition {
 			),
 			Handler: h.ApplyDevOpsStack,
 		},
+
+		// System Bootstrap & Infrastructure
+		{
+			Tool: mcp.NewTool("bootstrap_system",
+				mcp.WithDescription("Complete system initialization: installs MCPM, sets up default servers (context7, brave-search, github), and starts Docker infrastructure (PostgreSQL, Qdrant). One command to get fully operational."),
+			),
+			Handler: h.BootstrapSystem,
+		},
+		{
+			Tool: mcp.NewTool("restart_service",
+				mcp.WithDescription("Gracefully restarts Jarvis to apply configuration changes or resolve stuck states. Automatically saves state and reconnects active sessions."),
+			),
+			Handler: h.RestartService,
+		},
+		{
+			Tool: mcp.NewTool("restart_infrastructure",
+				mcp.WithDescription("Safely reboots Docker infrastructure (PostgreSQL, Qdrant) with health checks and automatic reconnection. Resolves database connection issues, clears stale locks, and ensures all services are healthy."),
+			),
+			Handler: h.RestartInfrastructure,
+		},
+
+		// Server Sharing
+		{
+			Tool: mcp.NewTool("share_server",
+				mcp.WithDescription("Exposes local MCP servers via secure tunnels with optional authentication. Enables remote teams to access your tools without VPN or port forwarding."),
+				mcp.WithString("name",
+					mcp.Description("Name of the server to share"),
+					mcp.Required(),
+				),
+				mcp.WithString("port",
+					mcp.Description("Port to run the shared server on"),
+				),
+				mcp.WithBoolean("no_auth",
+					mcp.Description("Disable authentication for the shared server"),
+				),
+			),
+			Handler: h.ShareServer,
+		},
+		{
+			Tool: mcp.NewTool("stop_sharing_server",
+				mcp.WithDescription("Revokes tunnel access and terminates shared server sessions. Immediately disconnects all remote clients."),
+				mcp.WithString("name",
+					mcp.Description("Name of the server to stop sharing"),
+					mcp.Required(),
+				),
+			),
+			Handler: h.StopSharingServer,
+		},
+		{
+			Tool: mcp.NewTool("list_shared_servers",
+				mcp.WithDescription("Shows all active server shares with tunnel URLs, authentication status, and connected clients."),
+			),
+			Handler: h.ListSharedServers,
+		},
 	}
 }
 

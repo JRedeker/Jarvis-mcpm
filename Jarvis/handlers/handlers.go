@@ -2,13 +2,17 @@
 package handlers
 
 import (
+	"bufio"
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/mark3labs/mcp-go/mcp"
 )
@@ -53,22 +57,162 @@ type FileSystem interface {
 	Getwd() (string, error)
 }
 
+// CommandRunner is the interface for running shell commands
+type CommandRunner interface {
+	Run(ctx context.Context, name string, args ...string) (string, error)
+	RunInDir(ctx context.Context, dir, name string, args ...string) (string, error)
+	StartBackground(ctx context.Context, name string, args ...string) (Process, error)
+}
+
+// Process represents a running process
+type Process interface {
+	Kill() error
+	Wait() error
+	Stdout() io.Reader
+}
+
+// ProcessManager manages shared server processes
+type ProcessManager interface {
+	Register(name string, proc Process)
+	Get(name string) (Process, bool)
+	Remove(name string) bool
+	List() []string
+}
+
+// ExitFunc is a function that exits the process (for testing)
+type ExitFunc func(code int)
+
 // Handler contains dependencies for all tool handlers
 type Handler struct {
-	Mcpm   McpmRunner
-	Docker DockerRunner
-	Git    GitRunner
-	FS     FileSystem
+	Mcpm        McpmRunner
+	Docker      DockerRunner
+	Git         GitRunner
+	FS          FileSystem
+	Cmd         CommandRunner
+	Processes   ProcessManager
+	ExitProcess ExitFunc
 }
 
 // NewHandler creates a new Handler with the given dependencies
 func NewHandler(mcpm McpmRunner, docker DockerRunner, git GitRunner, fs FileSystem) *Handler {
 	return &Handler{
-		Mcpm:   mcpm,
-		Docker: docker,
-		Git:    git,
-		FS:     fs,
+		Mcpm:        mcpm,
+		Docker:      docker,
+		Git:         git,
+		FS:          fs,
+		Cmd:         &RealCommandRunner{},
+		Processes:   NewInMemoryProcessManager(),
+		ExitProcess: os.Exit,
 	}
+}
+
+// NewHandlerWithAll creates a Handler with all dependencies explicitly provided
+func NewHandlerWithAll(mcpm McpmRunner, docker DockerRunner, git GitRunner, fs FileSystem, cmd CommandRunner, procs ProcessManager, exit ExitFunc) *Handler {
+	return &Handler{
+		Mcpm:        mcpm,
+		Docker:      docker,
+		Git:         git,
+		FS:          fs,
+		Cmd:         cmd,
+		Processes:   procs,
+		ExitProcess: exit,
+	}
+}
+
+// RealCommandRunner implements CommandRunner using os/exec
+type RealCommandRunner struct{}
+
+func (r *RealCommandRunner) Run(ctx context.Context, name string, args ...string) (string, error) {
+	cmd := exec.CommandContext(ctx, name, args...)
+	output, err := cmd.CombinedOutput()
+	return string(output), err
+}
+
+func (r *RealCommandRunner) RunInDir(ctx context.Context, dir, name string, args ...string) (string, error) {
+	cmd := exec.CommandContext(ctx, name, args...)
+	cmd.Dir = dir
+	output, err := cmd.CombinedOutput()
+	return string(output), err
+}
+
+func (r *RealCommandRunner) StartBackground(ctx context.Context, name string, args ...string) (Process, error) {
+	cmd := exec.CommandContext(ctx, name, args...)
+	cmd.Env = append(os.Environ(), "MCPM_NON_INTERACTIVE=true", "MCPM_FORCE=true")
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return nil, err
+	}
+	if err := cmd.Start(); err != nil {
+		return nil, err
+	}
+	return &RealProcess{cmd: cmd, stdout: stdout}, nil
+}
+
+// RealProcess wraps an exec.Cmd as a Process
+type RealProcess struct {
+	cmd    *exec.Cmd
+	stdout io.Reader
+}
+
+func (p *RealProcess) Kill() error {
+	if p.cmd.Process != nil {
+		return p.cmd.Process.Kill()
+	}
+	return nil
+}
+
+func (p *RealProcess) Wait() error {
+	return p.cmd.Wait()
+}
+
+func (p *RealProcess) Stdout() io.Reader {
+	return p.stdout
+}
+
+// InMemoryProcessManager manages processes in memory
+type InMemoryProcessManager struct {
+	mu        sync.RWMutex
+	processes map[string]Process
+}
+
+// NewInMemoryProcessManager creates a new process manager
+func NewInMemoryProcessManager() *InMemoryProcessManager {
+	return &InMemoryProcessManager{
+		processes: make(map[string]Process),
+	}
+}
+
+func (m *InMemoryProcessManager) Register(name string, proc Process) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.processes[name] = proc
+}
+
+func (m *InMemoryProcessManager) Get(name string) (Process, bool) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	p, ok := m.processes[name]
+	return p, ok
+}
+
+func (m *InMemoryProcessManager) Remove(name string) bool {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	if _, ok := m.processes[name]; ok {
+		delete(m.processes, name)
+		return true
+	}
+	return false
+}
+
+func (m *InMemoryProcessManager) List() []string {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	names := make([]string, 0, len(m.processes))
+	for name := range m.processes {
+		names = append(names, name)
+	}
+	return names
 }
 
 // CheckStatus handles the check_status tool
@@ -648,26 +792,6 @@ func (r *RealFileSystem) Getwd() (string, error) {
 	return os.Getwd()
 }
 
-// ProcessManager handles process lifecycle operations
-type ProcessManager interface {
-	Exit(code int)
-}
-
-// CommandRunner runs shell commands
-type CommandRunner interface {
-	Run(name string, args ...string) (string, error)
-	RunInDir(dir, name string, args ...string) (string, error)
-}
-
-// SharedServerRegistry tracks actively shared servers
-type SharedServerRegistry interface {
-	Register(name string, process interface{}) error
-	Unregister(name string) error
-	Get(name string) (interface{}, bool)
-	List() []string
-	IsShared(name string) bool
-}
-
 // ApplyDevOpsStack handles the apply_devops_stack tool
 func (h *Handler) ApplyDevOpsStack(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	args, _ := request.Params.Arguments.(map[string]interface{})
@@ -822,4 +946,229 @@ jobs:
           PR_REVIEW__REQUIRE_TESTS_REVIEW: "true"
           PR_CODE_SUGGESTIONS__NUM_CODE_SUGGESTIONS: 4
 `
+}
+
+// BootstrapSystem handles the bootstrap_system tool
+func (h *Handler) BootstrapSystem(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	cwd, err := h.FS.Getwd()
+	if err != nil {
+		return mcp.NewToolResultError(fmt.Sprintf("Failed to get current working directory: %v", err)), nil
+	}
+
+	// Find project root with MCPM directory
+	var rootDir string
+	if _, err := h.FS.Stat(filepath.Join(cwd, "MCPM")); err == nil {
+		rootDir = cwd
+	} else if _, err := h.FS.Stat(filepath.Join(cwd, "..", "MCPM")); err == nil {
+		rootDir = filepath.Join(cwd, "..")
+	} else {
+		return mcp.NewToolResultError("Could not locate MCPM directory. Please run Jarvis from the project root or Jarvis subdirectory."), nil
+	}
+
+	mcpmDir := filepath.Join(rootDir, "MCPM")
+
+	// 1. Install MCPM dependencies
+	output, err := h.Cmd.RunInDir(ctx, mcpmDir, "npm", "install")
+	if err != nil {
+		return mcp.NewToolResultError(fmt.Sprintf("Failed to run npm install in %s: %v\nOutput: %s", mcpmDir, err, output)), nil
+	}
+
+	// 2. Link MCPM
+	output, err = h.Cmd.RunInDir(ctx, mcpmDir, "npm", "link")
+	if err != nil {
+		return mcp.NewToolResultError(fmt.Sprintf("Failed to run npm link in %s: %v\nOutput: %s", mcpmDir, err, output)), nil
+	}
+
+	// 3. Install Default Servers (The Guardian Stack)
+	defaultServers := []string{"context7", "brave-search", "github"}
+	var warnings []string
+	for _, server := range defaultServers {
+		if _, err := h.Mcpm.Run("install", server); err != nil {
+			warnings = append(warnings, fmt.Sprintf("Warning: Failed to install default server %s: %v", server, err))
+		}
+	}
+
+	// 4. Start Infrastructure
+	scriptPath := filepath.Join(rootDir, "scripts", "manage-mcp.sh")
+	if _, err := h.FS.Stat(scriptPath); err == nil {
+		output, err = h.Cmd.Run(ctx, scriptPath, "start")
+		if err != nil {
+			return mcp.NewToolResultError(fmt.Sprintf("Failed to start infrastructure via script: %v\nOutput: %s", err, output)), nil
+		}
+	} else {
+		output, err = h.Cmd.RunInDir(ctx, rootDir, "docker", "compose", "up", "-d")
+		if err != nil {
+			return mcp.NewToolResultError(fmt.Sprintf("Failed to run docker compose up in %s: %v\nOutput: %s", rootDir, err, output)), nil
+		}
+	}
+
+	result := "System bootstrapped successfully! MCPM installed, default servers (context7, brave-search, github) set up, and Infrastructure started."
+	if len(warnings) > 0 {
+		result += "\n\n" + strings.Join(warnings, "\n")
+	}
+
+	return mcp.NewToolResultText(result), nil
+}
+
+// RestartService handles the restart_service tool
+func (h *Handler) RestartService(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	go func() {
+		time.Sleep(1 * time.Second)
+		h.ExitProcess(0)
+	}()
+	return mcp.NewToolResultText("Restarting Jarvis service..."), nil
+}
+
+// RestartInfrastructure handles the restart_infrastructure tool
+func (h *Handler) RestartInfrastructure(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	cwd, err := h.FS.Getwd()
+	if err != nil {
+		return mcp.NewToolResultError(fmt.Sprintf("Failed to get CWD: %v", err)), nil
+	}
+
+	// Find project root
+	var rootDir string
+	if _, err := h.FS.Stat(filepath.Join(cwd, "MCPM")); err == nil {
+		rootDir = cwd
+	} else if _, err := h.FS.Stat(filepath.Join(cwd, "..", "MCPM")); err == nil {
+		rootDir = filepath.Join(cwd, "..")
+	} else {
+		return mcp.NewToolResultError("Could not locate project root."), nil
+	}
+
+	scriptPath := filepath.Join(rootDir, "scripts", "manage-mcp.sh")
+	if _, err := h.FS.Stat(scriptPath); os.IsNotExist(err) {
+		return mcp.NewToolResultError("Management script not found at " + scriptPath), nil
+	}
+
+	output, err := h.Cmd.Run(ctx, scriptPath, "restart")
+	if err != nil {
+		return mcp.NewToolResultError(fmt.Sprintf("Restart failed: %v\nOutput: %s", err, output)), nil
+	}
+
+	return mcp.NewToolResultText(fmt.Sprintf("Infrastructure restarted successfully.\nOutput:\n%s", output)), nil
+}
+
+// ShareServer handles the share_server tool
+func (h *Handler) ShareServer(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	args, ok := request.Params.Arguments.(map[string]interface{})
+	if !ok {
+		return mcp.NewToolResultError("invalid arguments"), nil
+	}
+	name, ok := args["name"].(string)
+	if !ok || strings.TrimSpace(name) == "" {
+		return mcp.NewToolResultError("name argument is required"), nil
+	}
+
+	// Check if already shared
+	if _, exists := h.Processes.Get(name); exists {
+		return mcp.NewToolResultError(fmt.Sprintf("Server %s is already being shared", name)), nil
+	}
+
+	cmdArgs := []string{"share", name}
+	if port, ok := args["port"].(string); ok && port != "" {
+		cmdArgs = append(cmdArgs, "--port", port)
+	}
+	if noAuth, ok := args["no_auth"].(bool); ok && noAuth {
+		cmdArgs = append(cmdArgs, "--no-auth")
+	}
+
+	// Start mcpm share in background
+	proc, err := h.Cmd.StartBackground(ctx, "mcpm", cmdArgs...)
+	if err != nil {
+		return mcp.NewToolResultError(fmt.Sprintf("Failed to start share command: %v", err)), nil
+	}
+
+	// Register the process
+	h.Processes.Register(name, proc)
+
+	// Monitor for URL or failure
+	success := make(chan string)
+	failure := make(chan string)
+
+	go h.monitorShareProcess(proc.Stdout(), success, failure)
+
+	select {
+	case output := <-success:
+		return mcp.NewToolResultText(output), nil
+	case errStr := <-failure:
+		_ = proc.Kill()
+		h.Processes.Remove(name)
+		return mcp.NewToolResultError(errStr), nil
+	case <-time.After(30 * time.Second):
+		_ = proc.Kill()
+		h.Processes.Remove(name)
+		return mcp.NewToolResultError("Timeout waiting for share URL"), nil
+	}
+}
+
+func (h *Handler) monitorShareProcess(stdout io.Reader, success, failure chan<- string) {
+	scanner := bufio.NewScanner(stdout)
+	var output strings.Builder
+
+	for scanner.Scan() {
+		line := scanner.Text()
+		output.WriteString(line + "\n")
+
+		// Look for URL pattern
+		if strings.Contains(line, "http://") || strings.Contains(line, "https://") {
+			success <- output.String()
+			return
+		}
+
+		// Look for error patterns
+		if strings.Contains(strings.ToLower(line), "error") || strings.Contains(strings.ToLower(line), "failed") {
+			failure <- output.String()
+			return
+		}
+	}
+
+	// If we reach here without finding URL, it's a failure
+	if output.Len() > 0 {
+		failure <- output.String()
+	} else {
+		failure <- "No output received from share command"
+	}
+}
+
+// StopSharingServer handles the stop_sharing_server tool
+func (h *Handler) StopSharingServer(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	args, ok := request.Params.Arguments.(map[string]interface{})
+	if !ok {
+		return mcp.NewToolResultError("invalid arguments"), nil
+	}
+	name, ok := args["name"].(string)
+	if !ok || strings.TrimSpace(name) == "" {
+		return mcp.NewToolResultError("name argument is required"), nil
+	}
+
+	proc, exists := h.Processes.Get(name)
+	if !exists {
+		return mcp.NewToolResultError(fmt.Sprintf("Server %s is not currently shared", name)), nil
+	}
+
+	h.Processes.Remove(name)
+
+	if err := proc.Kill(); err != nil {
+		return mcp.NewToolResultError(fmt.Sprintf("Failed to stop sharing server %s: %v", name, err)), nil
+	}
+
+	return mcp.NewToolResultText(fmt.Sprintf("Stopped sharing server %s", name)), nil
+}
+
+// ListSharedServers handles the list_shared_servers tool
+func (h *Handler) ListSharedServers(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	names := h.Processes.List()
+
+	if len(names) == 0 {
+		return mcp.NewToolResultText("No servers are currently being shared."), nil
+	}
+
+	var builder strings.Builder
+	builder.WriteString("Currently shared servers:\n")
+	for _, name := range names {
+		builder.WriteString(fmt.Sprintf("- %s\n", name))
+	}
+
+	return mcp.NewToolResultText(builder.String()), nil
 }

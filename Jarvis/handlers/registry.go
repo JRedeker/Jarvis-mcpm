@@ -122,4 +122,26 @@ func RegisterAllHandlers(reg *Registry) {
 	reg.Register("apply_devops_stack", func(h *Handler) ToolHandler {
 		return h.ApplyDevOpsStack
 	})
+
+	// System Bootstrap & Infrastructure
+	reg.Register("bootstrap_system", func(h *Handler) ToolHandler {
+		return h.BootstrapSystem
+	})
+	reg.Register("restart_service", func(h *Handler) ToolHandler {
+		return h.RestartService
+	})
+	reg.Register("restart_infrastructure", func(h *Handler) ToolHandler {
+		return h.RestartInfrastructure
+	})
+
+	// Server Sharing
+	reg.Register("share_server", func(h *Handler) ToolHandler {
+		return h.ShareServer
+	})
+	reg.Register("stop_sharing_server", func(h *Handler) ToolHandler {
+		return h.StopSharingServer
+	})
+	reg.Register("list_shared_servers", func(h *Handler) ToolHandler {
+		return h.ListSharedServers
+	})
 }

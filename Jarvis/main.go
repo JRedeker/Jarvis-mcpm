@@ -6,14 +6,10 @@ import (
 	"io"
 	"log"
 	"os"
-	"os/exec"
 	"os/signal"
 	"path/filepath"
-	"strings"
-	"sync"
 	"syscall"
 
-	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"
 	"jarvis/handlers"
 )
@@ -25,11 +21,7 @@ var (
 	httpHost = flag.String("host", "127.0.0.1", "Host for HTTP server (default: 127.0.0.1)")
 )
 
-var (
-	sharedServers      = make(map[string]*exec.Cmd)
-	sharedServersMutex sync.Mutex
-	logFile            *os.File
-)
+var logFile *os.File
 
 func setupLogging() {
 	// Determine project root (assuming Jarvis runs from Jarvis/ or project root)
@@ -98,52 +90,6 @@ func main() {
 	h := handlers.CreateProductionHandler()
 	handlers.RegisterToolsWithMCPServer(s, h)
 
-	// Legacy tools that use global state (not yet migrated to handlers package)
-	// TODO: Migrate these to handlers package with proper dependency injection
-
-	// Tool: bootstrap_system
-	s.AddTool(mcp.NewTool("bootstrap_system",
-		mcp.WithDescription("Complete system initialization: installs MCPM, sets up default servers (context7, brave-search, github), and starts Docker infrastructure (PostgreSQL, Qdrant). One command to get fully operational."),
-	), handleBootstrapSystem)
-
-	// Tool: restart_service
-	s.AddTool(mcp.NewTool("restart_service",
-		mcp.WithDescription("Gracefully restarts Jarvis to apply configuration changes or resolve stuck states. Automatically saves state and reconnects active sessions. Use after editing server configs or when tools become unresponsive."),
-	), handleRestartService)
-
-	// Tool: restart_infrastructure
-	s.AddTool(mcp.NewTool("restart_infrastructure",
-		mcp.WithDescription("Safely reboots Docker infrastructure (PostgreSQL, Qdrant) with health checks and automatic reconnection. Resolves database connection issues, clears stale locks, and ensures all services are healthy. Zero data loss."),
-	), handleRestartInfrastructure)
-
-	// Tool: share_server (uses global sharedServers map)
-	s.AddTool(mcp.NewTool("share_server",
-		mcp.WithDescription("Exposes local MCP servers via secure tunnels with optional authentication. Enables remote teams to access your tools without VPN or port forwarding. Auto-generates shareable URLs with configurable access controls."),
-		mcp.WithString("name",
-			mcp.Description("Name of the server to share"),
-			mcp.Required(),
-		),
-		mcp.WithString("port",
-			mcp.Description("Port to run the shared server on")),
-		mcp.WithBoolean("no_auth",
-			mcp.Description("Disable authentication for the shared server"),
-		),
-	), handleShareServer)
-
-	// Tool: stop_sharing_server (uses global sharedServers map)
-	s.AddTool(mcp.NewTool("stop_sharing_server",
-		mcp.WithDescription("Revokes tunnel access and terminates shared server sessions. Immediately disconnects all remote clients. Changes are logged for security auditing."),
-		mcp.WithString("name",
-			mcp.Description("Name of the server to stop sharing"),
-			mcp.Required(),
-		),
-	), handleStopSharingServer)
-
-	// Tool: list_shared_servers (uses global sharedServers map)
-	s.AddTool(mcp.NewTool("list_shared_servers",
-		mcp.WithDescription("Shows all active server shares with tunnel URLs, authentication status, connected clients, and uptime. Useful for monitoring remote access and identifying security risks."),
-	), handleListSharedServers)
-
 	// Start the server based on transport mode
 	if *httpMode {
 		// Streamable HTTP mode (MCP 2025-03-26 spec)
@@ -173,45 +119,4 @@ func main() {
 			fmt.Printf("Server error: %v\n", err)
 		}
 	}
-}
-
-// Helper function to run mcpm commands
-func runMcpmCommand(args ...string) (string, error) {
-	log.Printf("Executing MCPM command: %v", args)
-	// mcpm is now available in PATH
-	cmd := exec.Command("mcpm", args...)
-	cmd.Env = append(os.Environ(), "MCPM_NON_INTERACTIVE=true", "MCPM_FORCE=true", "NO_COLOR=true")
-
-	output, err := cmd.CombinedOutput()
-	outputStr := string(output)
-
-	// Strip common noise from MCPM output
-	outputStr = stripMcpmNoise(outputStr)
-
-	if err != nil {
-		log.Printf("Command failed: %v. Output: %s", err, outputStr)
-		return fmt.Sprintf("Error: %v\n\n%s", err, outputStr), fmt.Errorf("command failed: %v", err)
-	}
-	log.Printf("Command success. Output length: %d", len(output))
-
-	return strings.TrimSpace(outputStr), nil
-}
-
-// stripMcpmNoise removes common warnings and noise from MCPM output
-func stripMcpmNoise(output string) string {
-	lines := strings.Split(output, "\n")
-	cleaned := make([]string, 0, len(lines))
-
-	for _, line := range lines {
-		// Skip warning lines
-		if strings.Contains(line, "Warning: Input is not a terminal") {
-			continue
-		}
-		if strings.Contains(line, "(fd=0)") && strings.Contains(line, "Warning:") {
-			continue
-		}
-		cleaned = append(cleaned, line)
-	}
-
-	return strings.Join(cleaned, "\n")
 }

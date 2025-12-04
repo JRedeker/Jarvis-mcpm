@@ -105,8 +105,13 @@ golangci-lint run
 
 ### Jarvis/ (Go MCP Server)
 - `main.go` - Entry point, MCP server setup, logging configuration
-- `tools.go` - Tool definitions and handlers for all Jarvis capabilities
-- `go.mod` - Go dependencies (requires Go 1.24+)
+- `handlers/` - Tool handlers with dependency injection for testability
+  - `handlers.go` - Core handler implementations
+  - `server.go` - MCP tool definitions
+  - `registry.go` - Handler registration
+- `testing/` - Test utilities (mocks, helpers, fixtures)
+- `smoketests/` - Integration smoke tests
+- `go.mod` - Go dependencies (requires Go 1.23+)
 
 ### MCPM/ (Node.js CLI)
 - `index.js` - CLI entry point using Commander
@@ -163,35 +168,40 @@ golangci-lint run
 | Search available tools | `search_servers("documentation")` | ~~`mcpm search documentation`~~ |
 | Bootstrap environment | `bootstrap_system()` | ~~Multiple manual steps~~ |
 
-## Important Jarvis Tools
+## Jarvis Tool Reference
 
-Jarvis exposes these key tools to AI agents (defined in `tools.go`):
+Jarvis exposes **24 MCP tools** across 7 categories. All handlers are defined in `handlers/server.go` with implementations in `handlers/handlers.go`.
 
-### System Management
-- `bootstrap_system()` - Self-initialization: installs MCPM, starts Docker infrastructure, installs default servers
-- `check_status()` - Comprehensive system diagnostics with health checks for all components
-- `restart_infrastructure()` - Safely reboots Docker containers (PostgreSQL, Qdrant)
-- `restart_service()` - Restarts Jarvis itself to apply configuration changes
+### Complete Tool Reference Table
 
-### Server Management
-- `install_server(name)` - Installs MCP servers with automatic dependency resolution and validation
-- `search_servers(query)` - Finds available servers with rich metadata and examples
-- `server_info(name)` - Detailed information about a specific server including installation instructions
-- `uninstall_server(name)` - Cleanly removes servers and updates configurations
-- `list_servers()` - Shows all installed servers across global and profile scopes
+| Category | Tool | Parameters | Description |
+|:---------|:-----|:-----------|:------------|
+| **System** | `check_status()` | - | System health check for MCPM, Docker, services |
+| **System** | `bootstrap_system()` | - | Complete system initialization |
+| **System** | `restart_service()` | - | Restart Jarvis to apply config changes |
+| **System** | `restart_infrastructure()` | - | Restart Docker infrastructure |
+| **Server** | `list_servers()` | - | List installed MCP servers |
+| **Server** | `server_info(name)` | `name` (required) | Detailed server information |
+| **Server** | `install_server(name)` | `name` (required) | Install from registry |
+| **Server** | `uninstall_server(name)` | `name` (required) | Remove server |
+| **Server** | `search_servers(query)` | `query` (required) | Search registry |
+| **Server** | `edit_server(name, ...)` | `name`, `command`, `args`, `env`, `url`, `headers` | Modify server config |
+| **Server** | `create_server(name, type, ...)` | `name`, `type` (required), `command`, `args`, `env`, `url`, `headers` | Register custom server |
+| **Server** | `usage_stats()` | - | Tool usage statistics |
+| **Profile** | `manage_profile(action, ...)` | `action` (required), `name`, `new_name`, `add_servers`, `remove_servers` | Create/edit/delete profiles |
+| **Profile** | `suggest_profile(testing)` | `testing` | Recommend profile stack |
+| **Profile** | `restart_profiles(profile)` | `profile` | Reload profiles |
+| **Client** | `manage_client(action, ...)` | `action` (required), `client_name`, `add_server`, `remove_server`, `add_profile`, `remove_profile`, `config_path` | Configure AI clients |
+| **Config** | `manage_config(action, ...)` | `action` (required), `key`, `value` | Get/set configuration |
+| **Config** | `migrate_config()` | - | Upgrade config format |
+| **DevOps** | `analyze_project()` | - | Detect languages/frameworks |
+| **DevOps** | `fetch_diff_context(staged)` | `staged` | Git diff for self-review |
+| **DevOps** | `apply_devops_stack(...)` | `project_type`, `force`, `enable_ai_review` | Scaffold CI/CD, linting |
+| **Sharing** | `share_server(name, ...)` | `name` (required), `port`, `no_auth` | Expose via tunnel |
+| **Sharing** | `stop_sharing_server(name)` | `name` (required) | Stop sharing |
+| **Sharing** | `list_shared_servers()` | - | List active shares |
 
-### Profile Management
-- `manage_profile(action, name, ...)` - Create, edit, delete MCPM profiles with server management
-- `suggest_profile(testing)` - Intelligently determines which profiles to activate based on context
-
-### Client Configuration
-- `manage_client(action, client_name, ...)` - Configure AI clients with profile and server assignments
-- `manage_config(action, key, value)` - Manage MCPM global configuration settings
-
-### Project Tools
-- `apply_devops_stack(project_type, force, enable_ai_review)` - Scaffolds projects with linting, pre-commit hooks, CI/CD
-- `analyze_project()` - Returns JSON report of detected languages and existing configurations
-- `fetch_diff_context(staged)` - Returns git status and diff for self-review before commits
+> See full API documentation: `docs/API_REFERENCE.md`
 
 ## Configuration Strategy
 
@@ -225,10 +235,19 @@ Jarvis must be configured directly in client config files pointing to the binary
 ## Development Guidelines
 
 ### Go (Jarvis)
-- Single-file architecture: `main.go` contains server setup, `tools.go` contains all tool logic
+- **Package architecture**: `main.go` for server setup, `handlers/` package for tool logic
+- **Dependency Injection**: All handlers accept interfaces for testability
+  - `McpmRunner` - MCPM CLI operations
+  - `DockerRunner` - Docker compose operations
+  - `GitRunner` - Git operations
+  - `FileSystem` - File system operations
+  - `CommandRunner` - Shell command execution
+  - `ProcessManager` - Shared server process management
 - Uses `github.com/mark3labs/mcp-go` for MCP protocol
 - Logging to `logs/jarvis.log` (auto-created)
-- Process management for shared servers uses `sync.Mutex` for thread safety
+- **Testing**: Mocks in `testing/mocks/`, helpers in `testing/helpers/`
+- Run tests: `go test -v ./...`
+- Run with coverage: `go test -coverprofile=coverage.out ./... && go tool cover -html=coverage.out`
 
 ### Node.js (MCPM)
 - Commander-based CLI with subcommands

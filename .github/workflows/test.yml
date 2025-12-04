@@ -88,6 +88,19 @@ jobs:
           args: --timeout=5m
         continue-on-error: true
 
+  shell-tests:
+    name: Shell Tests (bats)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install bats
+        run: sudo apt-get update && sudo apt-get install -y bats
+
+      - name: Run bats tests
+        run: bats scripts/tests/*.bats
+
   docker-build:
     name: Docker Build
     runs-on: ubuntu-latest

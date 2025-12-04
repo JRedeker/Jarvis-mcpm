@@ -6,11 +6,12 @@
 
 <div align="center">
 
-[![Go Version](https://img.shields.io/badge/go-1.24+-00ADD8?logo=go&logoColor=white)](https://go.dev/)
+[![Go Version](https://img.shields.io/badge/go-1.23+-00ADD8?logo=go&logoColor=white)](https://go.dev/)
 [![License](https://img.shields.io/badge/license-MIT-2EA043)](LICENSE)
 [![MCP Compliant](https://img.shields.io/badge/MCP-Compliant-6366f1)](https://modelcontextprotocol.io/)
 [![Docker](https://img.shields.io/badge/infrastructure-docker-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
-[![CI/CD](https://img.shields.io/github/actions/workflow/status/JRedeker/Jarvis-mcpm/jarvis-ci.yml?branch=main&label=CI%2FCD&logo=github)](https://github.com/JRedeker/Jarvis-mcpm/actions)
+[![Tests](https://img.shields.io/github/actions/workflow/status/JRedeker/Jarvis-mcpm/test.yml?branch=main&label=tests&logo=github)](https://github.com/JRedeker/Jarvis-mcpm/actions/workflows/test.yml)
+[![Coverage](https://img.shields.io/badge/coverage-60%25-yellow?logo=codecov)](Jarvis/)
 [![Go Report Card](https://goreportcard.com/badge/github.com/JRedeker/Jarvis-mcpm)](https://goreportcard.com/report/github.com/JRedeker/Jarvis-mcpm)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](#-contributing)
 [![Stars](https://img.shields.io/github/stars/JRedeker/Jarvis-mcpm?style=social)](https://github.com/JRedeker/Jarvis-mcpm/stargazers)
@@ -1103,6 +1104,42 @@ cd ../MCPM && npm install && npm link
 # 5. Run tests
 ./scripts/manage-mcp.sh test
 ```
+</details>
+
+<details>
+<summary><b>🧪 Running Tests</b></summary>
+
+**All Tests (Go + Docker):**
+```bash
+./scripts/manage-mcp.sh test
+```
+
+**Go Tests Only:**
+```bash
+cd Jarvis && go test -v ./...
+```
+
+**With Coverage Report:**
+```bash
+cd Jarvis && go test -coverprofile=coverage.out ./...
+go tool cover -func=coverage.out    # Summary
+go tool cover -html=coverage.out    # Interactive HTML report
+```
+
+**Run Specific Test:**
+```bash
+cd Jarvis && go test -v -run TestCheckStatus ./handlers/
+```
+
+**Test Packages:**
+| Package | Description | Coverage |
+|:--------|:------------|:---------|
+| `jarvis` | Main entry, MCP server setup | 15% |
+| `jarvis/handlers` | Core tool handlers with DI | 55% |
+| `jarvis/smoketests` | Integration smoke tests | 84% |
+| `jarvis/testing/mocks` | Mock implementations | 84% |
+
+**CI/CD:** Tests run automatically on push via GitHub Actions. See [`.github/workflows/test.yml`](.github/workflows/test.yml).
 </details>
 
 <details>
