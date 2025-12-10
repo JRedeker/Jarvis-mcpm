@@ -158,7 +158,7 @@ function help() {
     echo "  $0 rebuild         # Rebuild after config changes"
 }
 
-case "$1" in
+case "${1:-}" in
     start)
         start
         ;;
@@ -183,7 +183,7 @@ case "$1" in
     test)
         test
         ;;
-    help|--help|-h)
+    ""|help|--help|-h)
         help
         ;;
     *)
