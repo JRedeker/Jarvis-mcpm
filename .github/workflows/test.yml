@@ -35,7 +35,7 @@ jobs:
           fi
 
       - name: Upload coverage
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           files: ./Jarvis/coverage.out
           flags: go
