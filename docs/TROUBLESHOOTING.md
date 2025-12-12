@@ -15,8 +15,9 @@ check_status()  // Returns comprehensive system health report
 This checks:
 - MCPM CLI availability
 - Docker daemon status
+- Daemon process status (supervisor managed services)
 - Container health (PostgreSQL, Qdrant)
-- SSE endpoint connectivity
+- HTTP endpoint connectivity
 - Node.js and Python availability
 
 ---
@@ -55,7 +56,7 @@ docker ps
 - `5432` - PostgreSQL
 - `6333` - Qdrant HTTP
 - `6334` - Qdrant gRPC
-- `6275-6278` - Profile SSE endpoints
+- `6275-6278` - Profile HTTP endpoints
 
 **Solutions:**
 
@@ -156,7 +157,7 @@ which mcpm  # Should show path
 **Symptoms:**
 - Profile doesn't activate
 - Servers missing from profile
-- SSE connection fails
+- HTTP connection fails
 
 **Solutions:**
 
@@ -243,10 +244,10 @@ go tool cover -html=coverage.out
 
 ## Connection Issues
 
-### SSE Connections Failing
+### HTTP Connections Failing
 
 **Symptoms:**
-- "Connection refused" on SSE endpoints
+- "Connection refused" on HTTP endpoints
 - Tools timeout
 - Agent loses connection
 
@@ -257,7 +258,7 @@ go tool cover -html=coverage.out
    docker compose ps | grep daemon
    ```
 
-2. **Verify SSE ports:**
+2. **Verify HTTP ports:**
    ```bash
    curl http://localhost:6276/health  # Should return OK
    ```

@@ -219,6 +219,24 @@ func (m *InMemoryProcessManager) List() []string {
 func (h *Handler) CheckStatus(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	output, _ := h.Mcpm.Run("doctor")
 
+	// Check supervisor status if available
+	supOutput, err := h.Docker.ExecSupervisorctl(ctx, "status", "")
+	if err == nil && supOutput != "" {
+		// Filter out "No token data found" warnings
+		lines := strings.Split(supOutput, "\n")
+		var filteredLines []string
+		for _, line := range lines {
+			if !strings.Contains(line, "No token data found") && strings.TrimSpace(line) != "" {
+				filteredLines = append(filteredLines, line)
+			}
+		}
+
+		if len(filteredLines) > 0 {
+			output += "\n\n## 🕵️ Daemon Process Status (Supervisor)\n"
+			output += "```\n" + strings.Join(filteredLines, "\n") + "\n```"
+		}
+	}
+
 	// Check if the output indicates success
 	if strings.Contains(output, "All systems healthy") {
 		output += "\n\n🚀 **ALL SYSTEMS GO!** 🚀\n**Jarvis is ready to assist.**"

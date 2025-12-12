@@ -106,13 +106,35 @@ function health() {
     done
     echo ""
 
-    # Check Jarvis binary
+    # Check Jarvis Binary
     echo -e "${CYAN}Jarvis Binary:${NC}"
     if [ -f "$PROJECT_ROOT/Jarvis/jarvis" ]; then
         echo -e "  ${GREEN}✓${NC} Binary exists: $PROJECT_ROOT/Jarvis/jarvis"
         echo -e "  Version: $($PROJECT_ROOT/Jarvis/jarvis -help 2>&1 | head -1 || echo 'unknown')"
     else
         echo -e "  ${YELLOW}○${NC} Binary not built. Run: ./scripts/setup-jarvis.sh"
+    fi
+    echo ""
+
+    # Check Supervisor Status (MCPM Daemon)
+    echo -e "${CYAN}Daemon Process Status (Supervisor):${NC}"
+    if docker ps --format '{{.Names}}' | grep -q "^mcpm-daemon$"; then
+        # Capture status, filter out informational "No token" warnings
+        status_output=$(docker exec mcpm-daemon supervisorctl status 2>&1 | grep -v "No token data found" || true)
+
+        if [ -n "$status_output" ]; then
+            echo "$status_output" | while read -r line; do
+                if echo "$line" | grep -q "RUNNING"; then
+                    echo -e "  ${GREEN}✓${NC} $line"
+                else
+                    echo -e "  ${RED}✗${NC} $line"
+                fi
+            done
+        else
+            echo -e "  ${YELLOW}⚠ No status output or supervisor not reachable${NC}"
+        fi
+    else
+         echo -e "  ${YELLOW}⚠ mcpm-daemon container is not running${NC}"
     fi
 }
 

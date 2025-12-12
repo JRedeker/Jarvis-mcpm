@@ -65,9 +65,10 @@ func TestRegistry_ExecuteHandler(t *testing.T) {
 	// Create mocks
 	mcpm := NewMockMcpmRunner().
 		WithResponse("doctor", "✅ All systems healthy")
+	docker := NewMockDockerRunner()
 
 	// Create handler with dependencies
-	h := NewHandler(mcpm, nil, nil, nil)
+	h := NewHandler(mcpm, docker, nil, nil)
 
 	// Create registry and register
 	reg := NewRegistry()

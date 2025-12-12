@@ -40,7 +40,9 @@ func TestCheckStatus_Healthy(t *testing.T) {
 	mcpm := NewMockMcpmRunner().
 		WithResponse("doctor", "🩺 MCPM System Health Check\n\n✅ All systems healthy! No issues found.")
 
-	h := NewHandler(mcpm, nil, nil, nil)
+	docker := NewMockDockerRunner() // Use mock docker runner
+
+	h := NewHandler(mcpm, docker, nil, nil)
 	ctx := context.Background()
 
 	result, err := h.CheckStatus(ctx, mcp.CallToolRequest{})
@@ -68,7 +70,9 @@ func TestCheckStatus_Unhealthy(t *testing.T) {
 	mcpm := NewMockMcpmRunner().
 		WithResponse("doctor", "🩺 MCPM System Health Check\n\n❌ Issues found: Node.js not installed")
 
-	h := NewHandler(mcpm, nil, nil, nil)
+	docker := NewMockDockerRunner()
+
+	h := NewHandler(mcpm, docker, nil, nil)
 	ctx := context.Background()
 
 	result, err := h.CheckStatus(ctx, mcp.CallToolRequest{})
@@ -88,7 +92,8 @@ func TestCheckStatus_Unhealthy(t *testing.T) {
 
 func TestCheckStatus_CallsMcpmDoctor(t *testing.T) {
 	mcpm := NewMockMcpmRunner()
-	h := NewHandler(mcpm, nil, nil, nil)
+	docker := NewMockDockerRunner()
+	h := NewHandler(mcpm, docker, nil, nil)
 
 	h.CheckStatus(context.Background(), mcp.CallToolRequest{})
 

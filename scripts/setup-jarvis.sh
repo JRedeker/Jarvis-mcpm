@@ -161,7 +161,7 @@ if [ "$AUTO_CONFIG" = true ]; then
             # Create backup
             cp "$config_path" "${config_path}.backup.$(date +%Y%m%d_%H%M%S)"
 
-            # Use jq to update if available, otherwise warn
+            # Use jq to update if available
             if command -v jq &> /dev/null; then
                 if [ "$HTTP_MODE" = true ]; then
                     jq --arg url "$HTTP_URL" \
@@ -172,9 +172,48 @@ if [ "$AUTO_CONFIG" = true ]; then
                        '.mcpServers.jarvis = {"command": $cmd, "args": []}' \
                        "$config_path" > "${config_path}.tmp" && mv "${config_path}.tmp" "$config_path"
                 fi
-                echo -e "    ${GREEN}✓ Updated${NC}"
+                echo -e "    ${GREEN}✓ Updated (using jq)${NC}"
+
+            # Fallback to Python if jq is missing
+            elif command -v python3 &> /dev/null; then
+                export HTTP_MODE
+                export HTTP_URL
+                export ABS_BINARY_PATH
+                export CONFIG_PATH="$config_path"
+
+                python3 -c '
+import sys, json, os
+
+config_path = os.environ["CONFIG_PATH"]
+http_mode = os.environ.get("HTTP_MODE") == "true"
+http_url = os.environ.get("HTTP_URL")
+binary_path = os.environ.get("ABS_BINARY_PATH")
+
+try:
+    with open(config_path, "r") as f:
+        data = json.load(f)
+
+    if "mcpServers" not in data:
+        data["mcpServers"] = {}
+
+    if http_mode:
+        data["mcpServers"]["jarvis"] = {"url": http_url}
+    else:
+        data["mcpServers"]["jarvis"] = {"command": binary_path, "args": []}
+
+    with open(config_path, "w") as f:
+        json.dump(data, f, indent=2)
+except Exception as e:
+    sys.exit(1)
+'
+                if [ $? -eq 0 ]; then
+                    echo -e "    ${GREEN}✓ Updated (using python3)${NC}"
+                else
+                    echo -e "    ${RED}✗ Update failed (python3 error)${NC}"
+                fi
+
             else
-                echo -e "    ${YELLOW}⚠ jq not installed - manual update required${NC}"
+                echo -e "    ${YELLOW}⚠ jq and python3 not installed - manual update required${NC}"
             fi
         fi
     done
