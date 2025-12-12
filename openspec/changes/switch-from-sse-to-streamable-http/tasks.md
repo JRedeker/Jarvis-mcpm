@@ -1,0 +1,10 @@
+- [x] **Specs:** Draft spec for Daemon Transport Update <!-- id: 0 -->
+- [x] **Specs:** Draft spec for Jarvis Tool Updates <!-- id: 1 -->
+- [x] **Specs:** Draft spec for Configuration Migration <!-- id: 2 -->
+- [x] **Impl:** Update `mcpm-daemon` Dockerfile/Entrypoint to use Streamable HTTP <!-- id: 3 -->
+- [x] **Impl:** Update `Jarvis` `create_server` validation to allow `streamable-http` <!-- id: 4 -->
+- [x] **Impl:** Update `Jarvis` `check_status` to verify HTTP endpoints <!-- id: 5 -->
+- [x] **Impl:** Update `update_configs.py` to migrate `/sse` to `/mcp` <!-- id: 6 -->
+- [x] **Impl:** Update configuration templates (`config-templates/`) <!-- id: 7 -->
+- [x] **Impl:** Update documentation (`docs/`) <!-- id: 8 -->
+- [x] **Verify:** Run full integration suite with new transport <!-- id: 9 -->
