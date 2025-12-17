@@ -90,12 +90,12 @@ Jarvis implements a "3-Layer Stacking" logic to determine the active toolset dyn
 *   **Logic:**
     1.  **Base:** Detects project context (e.g., `p-pokeedge`) from CWD. Defaults to `p-new`.
     2.  **Global:** Appends `memory`. Appends `testing-all-tools` if `testing=true`.
-*   **Output:** JSON array of profile names (which correspond to SSE ports).
+*   **Output:** JSON array of profile names (which correspond to HTTP ports).
 
 ### Client Configuration Management (`manage_client`)
 Jarvis exposes advanced configuration for MCP clients.
 *   **Actions:** `edit`, `import`, `ls`, `config`.
-*   **SSE Support:** Can configure clients to point to local SSE endpoints (`http://localhost:XXXX/sse`) instead of spawning stdio processes.
+*   **HTTP Support:** Can configure clients to point to local HTTP endpoints (`http://localhost:XXXX/mcp`) instead of spawning stdio processes.
 
 ### Shared Servers (Tunneling)
 Jarvis manages a map of running background processes for the `share_server` tool.

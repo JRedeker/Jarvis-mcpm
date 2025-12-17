@@ -477,7 +477,7 @@ Create a new server configuration.
 
 - `server_name` (OPTIONAL):
 
-- `--type`: Server type
+- `--type`: Server type (stdio, remote, streamable-http)
 - `--command`: Command to execute (required for stdio servers)
 - `--args`: Command arguments (space-separated)
 - `--env`: Environment variables (KEY1=value1,KEY2=value2)
@@ -493,6 +493,9 @@ mcpm new myserver --type stdio --command "python -m myserver"
 
 # Create a remote server
 mcpm new apiserver --type remote --url "https://api.example.com"
+
+# Create a streamable-http server
+mcpm new httpserver --type streamable-http --url "http://localhost:6276/mcp"
 
 # Create server with environment variables
 mcpm new myserver --type stdio --command "python server.py" --env "API_KEY=secret,PORT=8080"
@@ -594,7 +597,7 @@ mcpm profile edit old-name --name new-name
 Launch MCP Inspector to test and debug servers in a profile.
 
     Creates a FastMCP proxy that aggregates servers and launches the Inspector.
-    Use --port, --http, --sse to customize transport options.
+    Use --port, --http to customize transport options.
 
 
 **Parameters:**
@@ -605,7 +608,6 @@ Launch MCP Inspector to test and debug servers in a profile.
 - `--port`: Port for the FastMCP proxy server
 - `--host`: Host for the FastMCP proxy server
 - `--http`: Use HTTP transport instead of stdio (flag)
-- `--sse`: Use SSE transport instead of stdio (flag)
 - `-h`, `--help`: Show this message and exit. (flag)
 
 **Examples:**
@@ -633,7 +635,7 @@ Create a secure public tunnel to all servers in a profile.
 
 - `profile_name` (REQUIRED):
 
-- `--port`: Port for the SSE server (random if not specified)
+- `--port`: Port for the HTTP server (random if not specified)
 - `--address`: Remote address for tunnel, use share.mcpm.sh if not specified
 - `--http`: Use HTTP instead of HTTPS. NOT recommended to use on public networks. (flag)
 - `--no-auth`: Disable authentication for the shared profile. (flag)
@@ -676,19 +678,17 @@ mcpm profile rm <arguments>
 
 ### mcpm profile run
 
-Execute all servers in a profile over stdio, HTTP, or SSE.
+Execute all servers in a profile over stdio or HTTP.
 
     Uses FastMCP proxy to aggregate servers into a unified MCP interface
     with proper capability namespacing. By default runs over stdio.
 
     Examples:
 
-    
+
         mcpm profile run web-dev                          # Run over stdio (default)
         mcpm profile run --http web-dev                   # Run over HTTP on 127.0.0.1:6276
-        mcpm profile run --sse web-dev                    # Run over SSE on 127.0.0.1:6276
         mcpm profile run --http --port 9000 ai            # Run over HTTP on 127.0.0.1:9000
-        mcpm profile run --sse --port 9000 ai             # Run over SSE on 127.0.0.1:9000
         mcpm profile run --http --host 0.0.0.0 web-dev    # Run over HTTP on 0.0.0.0:6276
 
     Debug logging: Set MCPM_DEBUG=1 for verbose output
@@ -699,9 +699,8 @@ Execute all servers in a profile over stdio, HTTP, or SSE.
 - `profile_name` (REQUIRED):
 
 - `--http`: Run profile over HTTP instead of stdio (flag)
-- `--sse`: Run profile over SSE instead of stdio (flag)
-- `--port`: Port for HTTP / SSE mode (default: 6276) (default: 6276)
-- `--host`: Host address for HTTP / SSE mode (default: 127.0.0.1) (default: 127.0.0.1)
+- `--port`: Port for HTTP mode (default: 6276) (default: 6276)
+- `--host`: Host address for HTTP mode (default: 127.0.0.1) (default: 127.0.0.1)
 - `-h`, `--help`: Show this message and exit. (flag)
 
 **Examples:**
@@ -716,7 +715,7 @@ mcpm profile run web-dev --port 8080 --http
 
 ## mcpm run
 
-Execute an installed MCP server in stdio (default), HTTP, or SSE mode.
+Execute an installed MCP server in stdio (default) or HTTP mode.
 
     By default, servers run over **stdio** for direct client communication.
 
@@ -724,22 +723,15 @@ Execute an installed MCP server in stdio (default), HTTP, or SSE mode.
 
     STDIO Mode (default):
 
-    
+
         mcpm run server-name
 
     HTTP Mode:
 
-    
+
         mcpm run --http server-name
         mcpm run --http --port 9000 server-name
         mcpm run --http --host 0.0.0.0 server-name
-
-    SSE Mode:
-
-    
-        mcpm run --sse server-name
-        mcpm run --sse --port 9000 server-name
-        mcpm run --sse --host 0.0.0.0 server-name
 
     Client Config Example:
         {"command": ["mcpm", "run", "mcp-server-browse"]}
@@ -754,10 +746,9 @@ Execute an installed MCP server in stdio (default), HTTP, or SSE mode.
 
 - `server_name` (REQUIRED):
 
-- `--http`: Run server in HTTP mode (mutually exclusive with --sse) (flag)
-- `--sse`: Run server in SSE mode (mutually exclusive with --http) (flag)
-- `--port`: Port for HTTP/SSE mode (default: 6276, auto-finds available) (default: 6276)
-- `--host`: Host for HTTP/SSE mode (use 0.0.0.0 for all interfaces) (default: 127.0.0.1)
+- `--http`: Run server in HTTP mode (flag)
+- `--port`: Port for HTTP mode (default: 6276, auto-finds available) (default: 6276)
+- `--host`: Host for HTTP mode (use 0.0.0.0 for all interfaces) (default: 127.0.0.1)
 - `-h`, `--help`: Show this message and exit. (flag)
 
 **Examples:**
@@ -822,7 +813,7 @@ Share a server from global configuration through a tunnel.
 
 - `server_name` (REQUIRED):
 
-- `--port`: Port for the SSE server (random if not specified)
+- `--port`: Port for the HTTP server (random if not specified)
 - `--address`: Remote address for tunnel, use share.mcpm.sh if not specified
 - `--http`: Use HTTP instead of HTTPS. NOT recommended to use on public networks. (flag)
 - `--timeout`: Timeout in seconds to wait for server requests before considering the server inactive (default: 30)

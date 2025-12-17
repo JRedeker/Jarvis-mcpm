@@ -72,7 +72,7 @@ Unlike standard MCP gateways that focus on proxying and aggregation, Jarvis adds
 Jarvis uses [**MCPM**](https://github.com/pathintegral-institute/mcpm.sh) (MCP Manager) backed by a **single Docker Daemon**. This architecture provides:
 
 - **Single Instance Efficiency:** Servers run once in a central daemon, not duplicated for every client.
-- **SSE Transport:** Clients connect via HTTP/SSE (`http://localhost:XXXX/sse`), enabling hot-reloads and shared state.
+- **Streamable HTTP Transport:** Clients connect via HTTP (`http://localhost:XXXX/mcp`), enabling hot-reloads and shared state.
 - **200+ Server Registry:** Curated MCP servers with metadata and installation recipes.
 - **Profile System:** Composable tool sets mapped to specific ports.
 
@@ -101,12 +101,12 @@ Jarvis is built on the **Model Context Protocol (MCP)**, making it instantly com
       "args": []
     },
     "memory": {
-      "url": "http://localhost:6277/sse",
-      "transport": "sse"
+      "url": "http://localhost:6277/mcp",
+      "transport": "streamable-http"
     },
     "p-pokeedge": {
-      "url": "http://localhost:6276/sse",
-      "transport": "sse"
+      "url": "http://localhost:6276/mcp",
+      "transport": "streamable-http"
     }
   }
 }
@@ -122,8 +122,8 @@ Jarvis is built on the **Model Context Protocol (MCP)**, making it instantly com
       "env": {}
     },
     "p-pokeedge": {
-      "url": "http://localhost:6276/sse",
-      "transport": "sse"
+      "url": "http://localhost:6276/mcp",
+      "transport": "streamable-http"
     }
   }
 }
@@ -134,8 +134,8 @@ Jarvis is built on the **Model Context Protocol (MCP)**, making it instantly com
 {
   "mcp.servers": {
     "p-pokeedge": {
-      "url": "http://localhost:6276/sse",
-      "transport": "sse"
+      "url": "http://localhost:6276/mcp",
+      "transport": "streamable-http"
     }
   }
 }
@@ -194,8 +194,8 @@ flowchart TD
 
     User -->|Prompt| Agent
     Agent -->|"Tool Call (Stdio)"| Jarvis
-    Agent -.->|"SSE Connection"| Profile1
-    Agent -.->|"SSE Connection"| Profile2
+    Agent -.->|"HTTP Connection"| Profile1
+    Agent -.->|"HTTP Connection"| Profile2
 
     Jarvis -->|"Manage (Docker CLI)"| Daemon
     Daemon -->|Hosts| Profile1
@@ -243,7 +243,7 @@ restart_profiles(profile="p-pokeedge")
 
 // Returns:
 ✅ Successfully restarted profile 'p-pokeedge'
-💡 Changes applied. Clients using SSE will see updates immediately.
+💡 Changes applied. Clients using HTTP will see updates immediately.
 ```
 
 #### `check_status()`

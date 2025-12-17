@@ -3,6 +3,7 @@
 const { Command } = require('commander');
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
 const toml = require('toml');
 const { execSync } = require('child_process');
 const chalk = require('chalk');
@@ -10,8 +11,8 @@ const chalk = require('chalk');
 const program = new Command();
 const configPath = path.join(__dirname, 'config', 'technologies.toml');
 
-// Helper to read config
-function readConfig() {
+// Helper to read registry config (TOML)
+function readRegistryConfig() {
     if (!fs.existsSync(configPath)) {
         console.error(chalk.red(`Config file not found at ${configPath}`));
         process.exit(1);
@@ -25,6 +26,43 @@ function readConfig() {
     }
 }
 
+// Helper to get user config path
+function getUserConfigPath() {
+    return path.join(os.homedir(), '.config', 'mcpm', 'servers.json');
+}
+
+// Helper to read user config
+function readUserConfig() {
+    const p = getUserConfigPath();
+    if (!fs.existsSync(p)) return {};
+    try {
+        return JSON.parse(fs.readFileSync(p, 'utf-8'));
+    } catch (e) {
+        return {};
+    }
+}
+
+// Helper to save user config
+function saveUserConfig(data) {
+    const p = getUserConfigPath();
+    const dir = path.dirname(p);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(p, JSON.stringify(data, null, 2));
+}
+
+// Helper to get all servers (registry + user)
+function getAllServers() {
+    const registry = readRegistryConfig();
+    const user = readUserConfig();
+
+    // Structure: { group: { name: config } }
+    const all = { ...registry.technologies };
+    if (Object.keys(user).length > 0) {
+        all['custom'] = user;
+    }
+    return all;
+}
+
 program
     .name('mcpm')
     .description('Model Context Protocol Manager CLI')
@@ -34,50 +72,49 @@ program
     .command('ls')
     .description('List installed MCP servers')
     .action(() => {
-        const config = readConfig();
+        const technologies = getAllServers();
         console.log(chalk.bold('Installed MCP Servers:'));
 
         let hasInstalled = false;
-        if (config.technologies) {
-            for (const group in config.technologies) {
-                let groupPrinted = false;
-                for (const key in config.technologies[group]) {
-                    const tech = config.technologies[group][key];
-                    let isInstalled = false;
+        for (const group in technologies) {
+            let groupPrinted = false;
+            for (const key in technologies[group]) {
+                const tech = technologies[group][key];
+                let isInstalled = false;
 
-                    // Check if installed in node_modules
-                    // If 'package' is defined, check that. If 'repo' is defined, check the key name?
-                    // Simple check: does node_modules/<package_name> exist?
-                    let pkgName = tech.package || key; // heuristic
+                // Check if installed in node_modules
+                let pkgName = tech.package || key;
 
-                    // Handle scoped packages
-                    if (!tech.package && tech.repo && tech.repo.includes('github.com/')) {
-                        // For git repos without explicit package name, we might not know the folder name easily
-                        // unless we enforced a convention.
-                        // For this dev version, let's just check if the key exists in package.json dependencies
-                        try {
-                            const pkgJson = require(path.join(__dirname, 'package.json'));
-                            if (pkgJson.dependencies && pkgJson.dependencies[pkgName]) {
-                                isInstalled = true;
-                            }
-                        } catch (e) {}
-                    } else {
-                         try {
-                            const pkgJson = require(path.join(__dirname, 'package.json'));
-                             if (pkgJson.dependencies && pkgJson.dependencies[pkgName]) {
-                                isInstalled = true;
-                            }
-                        } catch (e) {}
-                    }
-
-                    if (isInstalled) {
-                        if (!groupPrinted) {
-                            console.log(chalk.blue(`\n[${group}]`));
-                            groupPrinted = true;
+                // Handle scoped packages
+                if (!tech.package && tech.repo && tech.repo.includes('github.com/')) {
+                    try {
+                        const pkgJson = require(path.join(__dirname, 'package.json'));
+                        if (pkgJson.dependencies && pkgJson.dependencies[pkgName]) {
+                            isInstalled = true;
                         }
-                        console.log(`- ${key}: ${tech.description || ''} ${chalk.green('(Installed)')}`);
-                        hasInstalled = true;
+                    } catch (e) {}
+                } else {
+                        try {
+                        const pkgJson = require(path.join(__dirname, 'package.json'));
+                            if (pkgJson.dependencies && pkgJson.dependencies[pkgName]) {
+                            isInstalled = true;
+                        }
+                    } catch (e) {}
+                }
+
+                // If it's a user-defined server, it's considered "installed" (registered)
+                if (group === 'custom') {
+                    isInstalled = true;
+                }
+
+                if (isInstalled) {
+                    if (!groupPrinted) {
+                        console.log(chalk.blue(`\n[${group}]`));
+                        groupPrinted = true;
                     }
+                    const desc = tech.description ? `: ${tech.description}` : '';
+                    console.log(`- ${key}${desc} ${chalk.green('(Installed)')}`);
+                    hasInstalled = true;
                 }
             }
         }
@@ -92,16 +129,16 @@ program
     .description('Install an MCP server')
     .action((name) => {
         console.log(chalk.cyan(`Installing ${name}...`));
-        const config = readConfig();
+        const technologies = getAllServers();
         let found = false;
         let pkgName = name;
         let dockerImage = null;
 
         // Simple lookup strategy
-        for (const group in config.technologies) {
-             if (config.technologies[group][name]) {
+        for (const group in technologies) {
+             if (technologies[group][name]) {
                  found = true;
-                 const tech = config.technologies[group][name];
+                 const tech = technologies[group][name];
                  if (tech.docker) {
                      dockerImage = tech.docker;
                  }
@@ -114,7 +151,7 @@ program
         }
 
         if (!found) {
-             console.log(chalk.yellow(`Warning: ${name} not found in technologies.toml. Attempting direct npm install...`));
+             console.log(chalk.yellow(`Warning: ${name} not found in registry. Attempting direct npm install...`));
         }
 
         // Helper to print config snippet
@@ -155,13 +192,9 @@ program
             // Use --save to ensure it's added to package.json
             execSync(`npm install ${pkgName} --save`, { stdio: 'inherit', cwd: __dirname });
             console.log(chalk.green(`Successfully installed ${name}`));
-            // For npm, the target is the package name (or mapped name)
-            // We need to know the actual folder in node_modules. usually pkgName unless it's a git url.
-            // For git urls, npm usually installs to the repo name.
-            // For this prototype, we'll assume the user provided 'name' matches the folder or we'd need to parse pkgName.
+
             let folderName = pkgName;
             if (pkgName.startsWith('git+')) {
-                // simplistic fallback
                 folderName = name;
             }
             printConfigSnippet(name, 'npm', folderName);
@@ -169,6 +202,77 @@ program
             console.error(chalk.red(`Failed to install ${name}: ${e.message}`));
             process.exit(1);
         }
+    });
+
+program
+    .command('new <name>')
+    .description('Register a new custom MCP server')
+    .option('--type <type>', 'Transport type: stdio or streamable-http', 'stdio')
+    .option('--command <command>', 'Command to run (for stdio)')
+    .option('--args <args>', 'Arguments for command (space-separated)')
+    .option('--env <env>', 'Environment variables (KEY=value, comma-separated)')
+    .option('--url <url>', 'URL (for streamable-http)')
+    .option('--headers <headers>', 'Headers (KEY=value, comma-separated)')
+    .option('--force', 'Overwrite existing server')
+    .action((name, options) => {
+        // Check for removed SSE type with helpful error message
+        if (options.type === 'sse') {
+            console.error(chalk.red(`Error: Invalid type 'sse'. SSE transport has been removed.`));
+            console.error(chalk.yellow(`Use 'streamable-http' instead: mcpm new ${name} --type streamable-http --url <url>`));
+            process.exit(1);
+        }
+
+        // Validate type
+        const validTypes = ['stdio', 'http', 'streamable-http'];
+        if (!validTypes.includes(options.type)) {
+            console.error(chalk.red(`Invalid type: ${options.type}. Must be one of: ${validTypes.join(', ')}`));
+            process.exit(1);
+        }
+
+        // Validate required params
+        if (options.type === 'stdio' && !options.command) {
+            console.error(chalk.red('Error: --command is required for stdio type'));
+            process.exit(1);
+        }
+        if (['http', 'streamable-http'].includes(options.type) && !options.url) {
+            console.error(chalk.red(`Error: --url is required for ${options.type} type`));
+            process.exit(1);
+        }
+
+        const userConfig = readUserConfig();
+        if (userConfig[name] && !options.force) {
+            console.error(chalk.red(`Error: Server '${name}' already exists. Use --force to overwrite.`));
+            process.exit(1);
+        }
+
+        // Build server config object
+        const serverConfig = {
+            type: options.type,
+        };
+
+        if (options.command) serverConfig.command = options.command;
+        if (options.args) serverConfig.args = options.args.split(' '); // Basic splitting
+        if (options.url) serverConfig.url = options.url;
+
+        if (options.env) {
+            serverConfig.env = {};
+            options.env.split(',').forEach(pair => {
+                const [k, v] = pair.split('=');
+                if (k && v) serverConfig.env[k.trim()] = v.trim();
+            });
+        }
+
+        if (options.headers) {
+            serverConfig.headers = {};
+            options.headers.split(',').forEach(pair => {
+                const [k, v] = pair.split('=');
+                if (k && v) serverConfig.headers[k.trim()] = v.trim();
+            });
+        }
+
+        userConfig[name] = serverConfig;
+        saveUserConfig(userConfig);
+        console.log(chalk.green(`Successfully registered server '${name}'`));
     });
 
 program
@@ -192,10 +296,10 @@ program
     .command('search <query>')
     .description('Search for servers')
     .action((query) => {
-        const config = readConfig();
+        const technologies = getAllServers();
         console.log(chalk.bold(`Search results for "${query}":`));
-        for (const group in config.technologies) {
-            for (const key in config.technologies[group]) {
+        for (const group in technologies) {
+            for (const key in technologies[group]) {
                 if (key.includes(query)) {
                      console.log(`- ${key} (${group})`);
                 }
@@ -207,18 +311,47 @@ program
     .command('info <name>')
     .description('Get server info')
     .action((name) => {
-         const config = readConfig();
-         for (const group in config.technologies) {
-            if (config.technologies[group][name]) {
-                console.log(JSON.stringify(config.technologies[group][name], null, 2));
+         const technologies = getAllServers();
+
+         // Prioritize custom/user configuration
+         if (technologies['custom'] && technologies['custom'][name]) {
+             console.log(JSON.stringify(technologies['custom'][name], null, 2));
+             return;
+         }
+
+         for (const group in technologies) {
+            if (technologies[group][name]) {
+                console.log(JSON.stringify(technologies[group][name], null, 2));
                 return;
             }
         }
         console.error(chalk.red(`Server ${name} not found`));
     });
 
+program
+    .command('uninstall <name>')
+    .description('Remove an installed or registered server')
+    .action((name) => {
+        const userConfig = readUserConfig();
+        if (userConfig[name]) {
+            delete userConfig[name];
+            saveUserConfig(userConfig);
+            console.log(chalk.green(`Successfully removed custom server '${name}'`));
+            return;
+        }
+
+        console.log(chalk.cyan(`Attempting to uninstall '${name}' from dependencies...`));
+        try {
+             execSync(`npm uninstall ${name}`, { stdio: 'inherit', cwd: __dirname });
+             console.log(chalk.green(`Successfully uninstalled '${name}'`));
+        } catch (e) {
+             console.error(chalk.red(`Failed to uninstall '${name}': ${e.message}`));
+             process.exit(1);
+        }
+    });
+
 // Stubs for other commands to prevent Jarvis errors
-['uninstall', 'edit', 'new', 'usage', 'client', 'profile', 'config', 'migrate', 'share'].forEach(cmd => {
+['edit', 'usage', 'client', 'profile', 'config', 'migrate', 'share'].forEach(cmd => {
     program.command(cmd).action(() => {
         console.log(chalk.yellow(`Command '${cmd}' is not yet fully implemented in this version.`));
     });

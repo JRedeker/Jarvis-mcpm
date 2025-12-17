@@ -7,6 +7,12 @@ set -e
 
 echo "=== MCPM Daemon Starting ==="
 
+# Install from local source if available (Dev Mode)
+if [ -d "/opt/mcpm_source" ]; then
+    echo "Installing MCPM from local source..."
+    pip install -e /opt/mcpm_source
+fi
+
 # Export all API keys to environment (they're passed via docker-compose)
 # These will be inherited by supervisor-managed processes
 export FIRECRAWL_API_KEY="${FIRECRAWL_API_KEY:-}"
@@ -60,11 +66,13 @@ SUPERVISOR_HEADER
     for profile in "${PROFILES[@]}"; do
         port="${PROFILE_PORTS[$profile]}"
         if [ -n "$port" ]; then
-            echo "Configuring profile: $profile on port $port"
+            # All profiles use HTTP transport (SSE removed per MCP 2025-03-26 spec)
+            transport="--http"
+            echo "Configuring profile: $profile on port $port (HTTP transport)"
             cat >> /etc/supervisor/conf.d/mcpm-profiles.conf << EOF
 
 [program:mcpm-$profile]
-command=mcpm profile run --http --host 0.0.0.0 --port $port $profile
+command=mcpm profile run $transport --host 0.0.0.0 --port $port $profile
 autostart=true
 autorestart=true
 stderr_logfile=/var/log/mcpm/$profile.err.log
