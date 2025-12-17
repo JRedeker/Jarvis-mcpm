@@ -10,7 +10,7 @@ This document provides a complete reference for all Jarvis MCP tools.
 
 ### `check_status`
 
-Comprehensive system health check for MCPM, Docker, and all services. Validates Node.js, Python, dependencies, running containers, and SSE endpoints. Returns actionable fix suggestions for any issues found.
+Comprehensive system health check for MCPM, Docker, and all services. Validates Node.js, Python, dependencies, running containers, and Streamable HTTP endpoints. Returns actionable fix suggestions for any issues found.
 
 ---
 

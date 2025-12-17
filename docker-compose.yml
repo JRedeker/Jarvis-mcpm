@@ -56,6 +56,8 @@ services:
       - ${HOME}/.config/mcpm:/root/.config/mcpm:ro
       # Mount basic-memory data directory
       - ${HOME}/.basic-memory:/root/.basic-memory
+      # Mount source code for dev mode
+      - ./mcpm_source:/opt/mcpm_source
       # Logs
       - mcpm_logs:/var/log/mcpm
     environment:

@@ -63,8 +63,6 @@
       "args": []
     },
     "p-pokeedge": {
-      "url": "http://localhost:6276/sse",
-      "transport": "sse",
       "alwaysAllow": [
         "brave-search_brave_web_search",
         "brave-search_brave_local_search",
@@ -86,19 +84,21 @@
         "kagimcp_kagi_summarizer",
         "time_get_current_time",
         "time_convert_time"
-      ]
+      ],
+      "url": "http://localhost:6276/mcp/",
+      "transport": "streamable-http"
     },
     "memory": {
-      "url": "http://localhost:6277/sse",
-      "transport": "sse"
+      "url": "http://localhost:6277/mcp/",
+      "transport": "streamable-http"
     },
     "morph": {
-      "url": "http://localhost:6278/sse",
-      "transport": "sse"
+      "url": "http://localhost:6278/mcp/",
+      "transport": "streamable-http"
     },
     "qdrant": {
-      "url": "http://localhost:6279/sse",
-      "transport": "sse"
+      "url": "http://localhost:6279/mcp/",
+      "transport": "streamable-http"
     }
   }
 }

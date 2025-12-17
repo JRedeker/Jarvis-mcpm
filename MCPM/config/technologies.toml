@@ -1,0 +1,15 @@
+[web]
+brave-search = { description = "Brave Search MCP Server", package = "@modelcontextprotocol/server-brave-search" }
+
+[development]
+github = { description = "GitHub Integration", package = "@modelcontextprotocol/server-github" }
+git = { description = "Git Control", package = "mcp-server-git" }
+
+[ai]
+context7 = { description = "Context7 Memory & Knowledge", package = "context7" }
+memory = { description = "Memory Service", package = "@modelcontextprotocol/server-memory" }
+
+[data]
+postgres = { description = "PostgreSQL Database", package = "@modelcontextprotocol/server-postgres" }
+sqlite = { description = "SQLite Database", package = "@modelcontextprotocol/server-sqlite" }
+filesystem = { description = "Local Filesystem", package = "@modelcontextprotocol/server-filesystem" }

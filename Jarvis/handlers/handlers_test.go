@@ -531,7 +531,8 @@ func TestManageClient_List(t *testing.T) {
 	mcpm := NewMockMcpmRunner().
 		WithResponse("client", "Clients:\n- claude-code\n- claude-desktop\n- codex")
 
-	h := NewHandler(mcpm, nil, nil, nil)
+	fs := NewMockFileSystem()
+	h := NewHandler(mcpm, nil, nil, fs)
 	ctx := context.Background()
 	req := newRequest(map[string]interface{}{"action": "ls"})
 
@@ -542,8 +543,9 @@ func TestManageClient_List(t *testing.T) {
 	}
 
 	text := getResultText(result)
-	if !strings.Contains(text, "claude-code") {
-		t.Errorf("Expected claude-code in list, got: %s", text)
+	// Check for known clients in the list output
+	if !strings.Contains(text, "OpenCode") && !strings.Contains(text, "Claude") {
+		t.Errorf("Expected client names in list, got: %s", text)
 	}
 }
 

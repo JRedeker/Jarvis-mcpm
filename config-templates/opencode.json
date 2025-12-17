@@ -1,0 +1,30 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "jarvis": {
+      "type": "local",
+      "command": ["${JARVIS_PATH}"],
+      "enabled": true
+    },
+    "p-pokeedge": {
+      "type": "remote",
+      "url": "http://localhost:6276/mcp",
+      "enabled": true
+    },
+    "memory": {
+      "type": "remote",
+      "url": "http://localhost:6277/mcp",
+      "enabled": true
+    },
+    "morph": {
+      "type": "remote",
+      "url": "http://localhost:6278/mcp",
+      "enabled": true
+    },
+    "qdrant": {
+      "type": "remote",
+      "url": "http://localhost:6279/mcp",
+      "enabled": true
+    }
+  }
+}

@@ -22,7 +22,7 @@ graph TD
 
     subgraph "Layer 3: Execution Gateway (Jarvis)"
         Agent[AI Agent] -->|Stdio| Jarvis[Jarvis Server]
-        Agent -.->|SSE| Daemon
+        Agent -.->|HTTP| Daemon
         Jarvis -->|Manage| Daemon
         Jarvis -->|Install| MCPM_CLI
     end
@@ -57,7 +57,7 @@ graph TD
 *   **Management:** `scripts/manage-mcp.sh` (Unified start/stop/logs/test controller).
 *   **Container Runtime:** Docker Compose (`docker-compose.yml`).
 *   **Services:**
-    *   **MCPM Daemon:** `mcp-mcpm-daemon` (Hosts SSE Profiles on ports 6276+).
+    *   **MCPM Daemon:** `mcp-mcpm-daemon` (Hosts Streamable HTTP Profiles on ports 6276+).
     *   **PostgreSQL:** `postgres:15` on port `5432`.
     *   **Qdrant:** `qdrant/qdrant:latest` on port `6333` (Vector Store).
 

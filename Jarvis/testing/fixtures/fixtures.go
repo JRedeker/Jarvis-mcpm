@@ -127,6 +127,15 @@ var AllProfiles = []mocks.ProfileInfo{
 
 // Common client definitions
 
+// OpenCodeClient is the OpenCode AI coding agent
+var OpenCodeClient = mocks.ClientInfo{
+	Name:       "opencode",
+	ConfigPath: "/home/test/.config/opencode/opencode.json",
+	Installed:  true,
+	Servers:    []string{"jarvis"},
+	Profiles:   []string{"p-pokeedge", "memory", "morph"},
+}
+
 // ClaudeCodeClient is the Claude Code CLI client
 var ClaudeCodeClient = mocks.ClientInfo{
 	Name:       "claude-code",
@@ -156,6 +165,7 @@ var CodexClient = mocks.ClientInfo{
 
 // AllClients is a collection of typical clients
 var AllClients = []mocks.ClientInfo{
+	OpenCodeClient,
 	ClaudeCodeClient,
 	ClaudeDesktopClient,
 	CodexClient,

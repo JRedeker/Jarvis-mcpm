@@ -935,7 +935,7 @@ func formatSmokeTestReport(report *smoketests.SmokeTestReport) string {
 
 ---
 
-### Phase 3: Test Definitions for Core Servers (Week 2)
+## Phase 3: Transport Protocol Migration (SSE → Streamable HTTP)
 
 **Create test specs for existing servers:**
 

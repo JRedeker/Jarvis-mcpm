@@ -1369,14 +1369,9 @@ cmd_health() {
     local containers=$(docker compose -f "$PROJECT_ROOT/docker-compose.yml" ps -q 2>/dev/null | wc -l)
     echo "📦 Containers: $containers running"
 
-    # Check SSE endpoints
-    for port in 6276 6277 6278; do
-        if curl -s -m 2 "http://localhost:$port/sse/" -H "Accept: text/event-stream" | head -1 | grep -q "endpoint"; then
-            echo "✅ Port $port: SSE responding"
-        else
-            echo "❌ Port $port: Not responding"
-        fi
-    done
+    # Check HTTP health endpoint
+    if curl -s -m 2 "http://localhost:$port/health" | grep -q "healthy"; then
+        echo "✅ Port $port: HTTP responding"
 
     # Check Jarvis binary
     if [ -x "$PROJECT_ROOT/Jarvis/jarvis" ]; then

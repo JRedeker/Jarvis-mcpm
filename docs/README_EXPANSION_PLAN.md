@@ -1062,8 +1062,7 @@ create_server(
   env="API_KEY=secret,DEBUG=true"
 )
 
-// Register remote SSE server
-create_server(
+    // Register remote Streamable HTTP servercreate_server(
   name="company-internal",
   type="remote",
   url="https://internal.company.com/mcp",

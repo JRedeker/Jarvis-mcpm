@@ -411,7 +411,7 @@ func (h *Handler) ManageClient(ctx context.Context, request mcp.CallToolRequest)
 	}
 	action, ok := args["action"].(string)
 	if !ok || strings.TrimSpace(action) == "" {
-		return mcp.NewToolResultError("❌ Action is required and cannot be empty.\n\n💡 Valid actions: ls, edit, import, config\n\nExamples:\n- manage_client(\"ls\") - List all configured clients\n- manage_client(\"edit\", client_name=\"codex\", add_server=\"brave-search\")"), nil
+		return mcp.NewToolResultError("❌ Action is required and cannot be empty.\n\n💡 Valid actions: ls, edit, import, config\n\nExamples:\n- manage_client(\"ls\") - List all configured clients\n- manage_client(\"edit\", client_name=\"opencode\", add_profile=\"memory\")"), nil
 	}
 
 	// Validate action is one of the allowed values
@@ -420,15 +420,24 @@ func (h *Handler) ManageClient(ctx context.Context, request mcp.CallToolRequest)
 		return mcp.NewToolResultError(fmt.Sprintf("❌ Invalid action '%s'\n\n💡 Valid actions: ls, edit, import, config\n\n- ls: List all configured clients\n- edit: Add/remove servers or profiles from a client\n- import: Import client configuration\n- config: Get or set client config path", action)), nil
 	}
 
-	cmdArgs := []string{"client", action}
-
-	if action == "edit" || action == "import" || action == "config" {
-		clientName, ok := args["client_name"].(string)
-		if !ok || strings.TrimSpace(clientName) == "" {
-			return mcp.NewToolResultError(fmt.Sprintf("❌ client_name is required for action '%s'\n\n💡 Tip: Use manage_client(\"ls\") to see available client names\n\nCommon clients: codex, claude-code, claude-desktop, gemini, kilocode", action)), nil
-		}
-		cmdArgs = append(cmdArgs, clientName)
+	// Handle ls action - list all known clients
+	if action == "ls" {
+		return h.listClients(ctx)
 	}
+
+	// For other actions, client_name is required
+	clientName, ok := args["client_name"].(string)
+	if !ok || strings.TrimSpace(clientName) == "" {
+		return mcp.NewToolResultError(fmt.Sprintf("❌ client_name is required for action '%s'\n\n💡 Tip: Use manage_client(\"ls\") to see available client names\n\nSupported clients: opencode, claude-code, claude-desktop", action)), nil
+	}
+
+	// Handle OpenCode specifically with native support
+	if clientName == "opencode" {
+		return h.manageOpenCodeClient(ctx, action, args)
+	}
+
+	// Fall back to MCPM CLI for other clients
+	cmdArgs := []string{"client", action, clientName}
 
 	if action == "edit" {
 		cmdArgs = append(cmdArgs, buildManageClientArgs(args)...)
@@ -450,6 +459,225 @@ func (h *Handler) ManageClient(ctx context.Context, request mcp.CallToolRequest)
 	}
 
 	return mcp.NewToolResultText(output), nil
+}
+
+// listClients lists all known MCP clients and their detection status
+func (h *Handler) listClients(ctx context.Context) (*mcp.CallToolResult, error) {
+	var sb strings.Builder
+	sb.WriteString("## 📱 MCP Clients\n\n")
+
+	for name, client := range KnownClients {
+		detected := "❌ Not detected"
+		configPath := ""
+
+		// Try to detect the client
+		if name == "opencode" {
+			if path, err := DetectOpenCodeConfig(h.FS); err == nil {
+				detected = "✅ Detected"
+				configPath = path
+			}
+		} else {
+			// Check standard paths for other clients
+			for _, p := range client.ConfigPaths {
+				expandedPath := expandPath(p)
+				if _, err := h.FS.Stat(expandedPath); err == nil {
+					detected = "✅ Detected"
+					configPath = expandedPath
+					break
+				}
+			}
+		}
+
+		sb.WriteString(fmt.Sprintf("### %s\n", client.DisplayName))
+		sb.WriteString(fmt.Sprintf("- Status: %s\n", detected))
+		if configPath != "" {
+			sb.WriteString(fmt.Sprintf("- Config: `%s`\n", configPath))
+		}
+		sb.WriteString("\n")
+	}
+
+	sb.WriteString("💡 Use `manage_client(\"config\", client_name=\"opencode\", config_path=\"/path/to/config\")` to set a custom config path.\n")
+
+	return mcp.NewToolResultText(sb.String()), nil
+}
+
+// manageOpenCodeClient handles OpenCode-specific client management
+func (h *Handler) manageOpenCodeClient(ctx context.Context, action string, args map[string]interface{}) (*mcp.CallToolResult, error) {
+	switch action {
+	case "config":
+		return h.openCodeConfig(ctx, args)
+	case "edit":
+		return h.openCodeEdit(ctx, args)
+	case "import":
+		return h.openCodeImport(ctx, args)
+	default:
+		return mcp.NewToolResultError(fmt.Sprintf("Unknown action '%s' for OpenCode", action)), nil
+	}
+}
+
+// openCodeConfig handles getting/setting OpenCode config path
+func (h *Handler) openCodeConfig(ctx context.Context, args map[string]interface{}) (*mcp.CallToolResult, error) {
+	if configPath, ok := args["config_path"].(string); ok && configPath != "" {
+		// Validate the path exists or can be created
+		expandedPath := expandPath(configPath)
+		dir := filepath.Dir(expandedPath)
+		if err := h.FS.MkdirAll(dir, 0755); err != nil {
+			return mcp.NewToolResultError(fmt.Sprintf("❌ Cannot create config directory: %v", err)), nil
+		}
+
+		return mcp.NewToolResultText(fmt.Sprintf("✅ OpenCode config path set to: `%s`\n\n💡 Use `manage_client(\"edit\", client_name=\"opencode\", add_profile=\"jarvis\")` to configure MCP servers.", expandedPath)), nil
+	}
+
+	// Get current config path
+	path, err := DetectOpenCodeConfig(h.FS)
+	if err != nil {
+		return mcp.NewToolResultText(fmt.Sprintf("❌ %v\n\n💡 Create a config file at one of the expected locations, or use config_path to specify a custom location.", err)), nil
+	}
+
+	// List configured servers
+	serverList, err := ListOpenCodeServers(h.FS, path)
+	if err != nil {
+		return mcp.NewToolResultText(fmt.Sprintf("✅ OpenCode config found at: `%s`\n\n⚠️ Could not read servers: %v", path, err)), nil
+	}
+
+	return mcp.NewToolResultText(fmt.Sprintf("✅ OpenCode config: `%s`\n\n%s", path, serverList)), nil
+}
+
+// openCodeEdit handles adding/removing profiles from OpenCode config
+func (h *Handler) openCodeEdit(ctx context.Context, args map[string]interface{}) (*mcp.CallToolResult, error) {
+	// Detect config path
+	configPath, err := DetectOpenCodeConfig(h.FS)
+	if err != nil {
+		// If not found, use the global default
+		home, homeErr := os.UserHomeDir()
+		if homeErr != nil {
+			return mcp.NewToolResultError(fmt.Sprintf("❌ Cannot determine config path: %v", err)), nil
+		}
+		configPath = filepath.Join(home, ".config", "opencode", "opencode.json")
+	}
+
+	// Override with explicit config_path if provided
+	if path, ok := args["config_path"].(string); ok && path != "" {
+		configPath = expandPath(path)
+	}
+
+	var results []string
+
+	// Handle add_profile
+	if addProfile, ok := args["add_profile"].(string); ok && addProfile != "" {
+		profiles := strings.Split(addProfile, ",")
+		for _, profile := range profiles {
+			profile = strings.TrimSpace(profile)
+			if profile == "" {
+				continue
+			}
+
+			// Get jarvis path for jarvis profile
+			jarvisPath := ""
+			if profile == "jarvis" {
+				// Try to find Jarvis binary
+				cwd, _ := h.FS.Getwd()
+				possiblePaths := []string{
+					filepath.Join(cwd, "Jarvis", "jarvis"),
+					filepath.Join(cwd, "..", "Jarvis", "jarvis"),
+					filepath.Join(cwd, "jarvis"),
+				}
+				for _, p := range possiblePaths {
+					if _, err := h.FS.Stat(p); err == nil {
+						jarvisPath = p
+						break
+					}
+				}
+				if jarvisPath == "" {
+					results = append(results, fmt.Sprintf("⚠️ Could not find Jarvis binary. Please provide the path manually."))
+					continue
+				}
+			}
+
+			if err := AddProfileToOpenCode(h.FS, configPath, profile, jarvisPath); err != nil {
+				results = append(results, fmt.Sprintf("❌ Failed to add %s: %v", profile, err))
+			} else {
+				results = append(results, fmt.Sprintf("✅ Added %s", profile))
+			}
+		}
+	}
+
+	// Handle remove_profile
+	if removeProfile, ok := args["remove_profile"].(string); ok && removeProfile != "" {
+		profiles := strings.Split(removeProfile, ",")
+		for _, profile := range profiles {
+			profile = strings.TrimSpace(profile)
+			if profile == "" {
+				continue
+			}
+
+			if err := RemoveProfileFromOpenCode(h.FS, configPath, profile); err != nil {
+				results = append(results, fmt.Sprintf("❌ Failed to remove %s: %v", profile, err))
+			} else {
+				results = append(results, fmt.Sprintf("✅ Removed %s", profile))
+			}
+		}
+	}
+
+	if len(results) == 0 {
+		return mcp.NewToolResultError("❌ No changes specified. Use add_profile or remove_profile.\n\n💡 Example: manage_client(\"edit\", client_name=\"opencode\", add_profile=\"jarvis,memory,p-pokeedge\")"), nil
+	}
+
+	output := fmt.Sprintf("## OpenCode Configuration Updated\n\nConfig: `%s`\n\n%s\n\n💡 Restart OpenCode to apply changes.", configPath, strings.Join(results, "\n"))
+	return mcp.NewToolResultText(output), nil
+}
+
+// openCodeImport handles importing a template configuration
+func (h *Handler) openCodeImport(ctx context.Context, args map[string]interface{}) (*mcp.CallToolResult, error) {
+	// Detect or create config path
+	configPath, err := DetectOpenCodeConfig(h.FS)
+	if err != nil {
+		home, homeErr := os.UserHomeDir()
+		if homeErr != nil {
+			return mcp.NewToolResultError(fmt.Sprintf("❌ Cannot determine config path: %v", err)), nil
+		}
+		configPath = filepath.Join(home, ".config", "opencode", "opencode.json")
+	}
+
+	// Override with explicit config_path if provided
+	if path, ok := args["config_path"].(string); ok && path != "" {
+		configPath = expandPath(path)
+	}
+
+	// Find Jarvis binary
+	jarvisPath := ""
+	cwd, _ := h.FS.Getwd()
+	possiblePaths := []string{
+		filepath.Join(cwd, "Jarvis", "jarvis"),
+		filepath.Join(cwd, "..", "Jarvis", "jarvis"),
+		filepath.Join(cwd, "jarvis"),
+	}
+	for _, p := range possiblePaths {
+		if _, err := h.FS.Stat(p); err == nil {
+			jarvisPath = p
+			break
+		}
+	}
+
+	if jarvisPath == "" {
+		return mcp.NewToolResultError("❌ Could not find Jarvis binary. Please build Jarvis first:\n\n```bash\ncd Jarvis && go build -o jarvis .\n```"), nil
+	}
+
+	// Generate template
+	template := GenerateOpenCodeTemplate(jarvisPath)
+
+	// Ensure directory exists
+	dir := filepath.Dir(configPath)
+	if err := h.FS.MkdirAll(dir, 0755); err != nil {
+		return mcp.NewToolResultError(fmt.Sprintf("❌ Failed to create config directory: %v", err)), nil
+	}
+
+	// Write config
+	if err := h.FS.WriteFile(configPath, []byte(template), 0644); err != nil {
+		return mcp.NewToolResultError(fmt.Sprintf("❌ Failed to write config: %v", err)), nil
+	}
+
+	return mcp.NewToolResultText(fmt.Sprintf("✅ OpenCode configuration imported!\n\nConfig: `%s`\n\nConfigured servers:\n- jarvis (local)\n- p-pokeedge (http://localhost:6276/mcp)\n- memory (http://localhost:6277/mcp)\n- morph (http://localhost:6278/mcp)\n\n💡 Make sure Docker infrastructure is running: `./scripts/manage-mcp.sh start`", configPath)), nil
 }
 
 // ManageConfig handles the manage_config tool
