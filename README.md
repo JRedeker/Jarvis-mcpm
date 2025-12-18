@@ -9,7 +9,7 @@
  ╚════╝ ╚═╝  ╚═╝╚═╝  ╚═╝  ╚═══╝  ╚═╝╚══════╝
 ```
 
-**The Intelligent Infrastructure Layer for AI Agents**
+**The Agentic MCP Server for Dynamic Tool Management**
 
 <div align="center">
 
@@ -21,162 +21,170 @@
 
 </div>
 
-> Agents are great at logic, bad at logistics. Jarvis enforces the engineering loop—scaffolding projects, running pre-commits, and managing infrastructure so your agent stays on the rails.
+> **Jarvis lets your AI agent manage its own tools.** Install servers, switch profiles, configure clients—all through natural language. One MCP server to rule them all.
+
+---
+
+## The Problem
+
+You're using Claude, Cursor, or another AI client. You have MCP servers for memory, search, code tools. But:
+
+- **Static configs** — Every new tool requires manual JSON editing and client restart
+- **Per-client duplication** — Same servers configured separately in Claude, Cursor, VS Code
+- **No agent autonomy** — Your agent can't install tools it needs mid-conversation
+- **Context switching** — Different projects need different tool sets
+
+## The Solution
+
+Jarvis is an **agentic-first MCP server** that gives your AI agent control over its own tooling:
+
+```
+You: "I need to analyze some PDFs"
+Agent: [searches registry → installs pdf-parse → uses it immediately]
+Agent: "Done. The contract has a 30-day payment term on page 3."
+```
+
+**No config editing. No restart. The agent handles it.**
+
+---
+
+## Core Capabilities
+
+### 1. Dynamic Tool Installation
+
+Your agent discovers and installs tools from a registry of 200+ MCP servers:
+
+```javascript
+jarvis_server({ action: "search", query: "pdf" })     // Find tools
+jarvis_server({ action: "install", name: "pdf-parse" }) // Install
+// Tool is immediately available—no restart needed
+```
+
+### 2. Profile-Based Tool Sets
+
+Group tools into profiles. Switch entire toolsets based on project context:
+
+```javascript
+jarvis_profile({ action: "suggest" })  // Auto-detect best profile for current directory
+// Returns: "project-frontend" for React apps, "project-backend" for Go services
+```
+
+| Profile | Tools | Use Case |
+|---------|-------|----------|
+| `p-pokeedge` | Context7, Brave, Firecrawl | Web research |
+| `memory` | Basic Memory, Qdrant | Persistent context |
+| `morph` | Morph Fast Apply | Semantic code edits |
+
+### 3. Multi-Client Management
+
+Configure Claude Desktop, Cursor, VS Code, OpenCode—all from one place:
+
+```javascript
+jarvis_client({ action: "edit", client_name: "cursor", add_profile: "memory" })
+// Cursor now has memory tools. No manual JSON editing.
+```
+
+### 4. Self-Healing Infrastructure
+
+Agent detects and repairs its own infrastructure:
+
+```
+You: "My search isn't working"
+Agent: [checks status → finds Qdrant down → restarts → confirms healthy]
+Agent: "Fixed. Qdrant was down, restarted it. Search should work now."
+```
 
 ---
 
 ## Installation
 
-| Method | Command |
-|--------|---------|
-| **Quick Start** | `git clone https://github.com/JRedeker/Jarvis-mcpm.git && ./Jarvis-mcpm/scripts/setup-jarvis.sh` |
-| **Auto-Configure** | `./scripts/setup-jarvis.sh --auto-config` |
-| **HTTP Mode** | `./scripts/setup-jarvis.sh --http --port 6275` |
-
----
-
-## Quick Start
-
-### 1. Install
 ```bash
 git clone https://github.com/JRedeker/Jarvis-mcpm.git
 ./Jarvis-mcpm/scripts/setup-jarvis.sh
 ```
 
-### 2. Configure Your Client
-Copy the JSON output into your client config:
-- **Claude Desktop:** `~/.config/Claude/claude_desktop_config.json`
-- **Cursor:** `~/.cursor/mcp.json`
-- **Claude CLI:** `~/.claude.json`
-
-### 3. Test It
-Tell your agent:
-> "Bootstrap the system and analyze this project"
-
-**Expected Output:**
-```
-✅ MCPM installed successfully
-✅ Infrastructure started (PostgreSQL: healthy, Qdrant: healthy)
-✅ Detected: Python project (pyproject.toml)
-✅ Created .pre-commit-config.yaml (Ruff, Gitleaks)
-✅ Created .github/workflows/ci.yml
-
-💡 Next: Make a commit to test the pre-commit hooks
-```
+Copy the output JSON into your AI client config, or use `--auto-config` to do it automatically.
 
 ---
 
 ## How It Works
 
 ```mermaid
-flowchart LR
-    User[You] -->|Prompt| Agent[AI Agent]
-    Agent -->|Tool Call| Jarvis[Jarvis Gateway]
-    Jarvis -->|Manage| Daemon[MCPM Daemon]
-
-    subgraph Profiles
-        P1[p-pokeedge :6276]
-        P2[memory :6277]
-        P3[morph :6278]
+flowchart TB
+    subgraph Clients["AI Clients"]
+        Claude[Claude Desktop]
+        Cursor[Cursor]
+        VSCode[VS Code]
+        OpenCode[OpenCode]
     end
 
-    Daemon --> Profiles
-    Profiles --> DB[(PostgreSQL)]
-    Profiles --> Vector[(Qdrant)]
+    subgraph Jarvis["Jarvis (Agentic MCP Server)"]
+        Gateway[Tool Management API]
+        Registry[(200+ Server Registry)]
+    end
+
+    subgraph Daemon["MCPM Daemon"]
+        P1[Profile: Research]
+        P2[Profile: Memory]
+        P3[Profile: Code Tools]
+    end
+
+    Clients -->|"Install/Switch/Configure"| Gateway
+    Gateway --> Registry
+    Gateway -->|Manage| Daemon
+    Daemon --> P1 & P2 & P3
 ```
 
-**Jarvis** validates inputs, formats outputs, and provides DevOps scaffolding.
-**MCPM Daemon** hosts 200+ MCP servers as composable profiles.
-**Infrastructure** powers persistent memory and vector search.
+**Jarvis sits between your AI clients and the MCP ecosystem.** It's the only MCP server your agent needs to manage all other MCP servers.
 
 ---
 
-## What Makes Jarvis Different
+## Tool Reference
 
-| Feature | Standard Gateway | Jarvis |
-|---------|-----------------|--------|
-| **Output** | Raw CLI + ANSI codes | Clean Markdown with emojis |
-| **Validation** | None | Pre-execution checks |
-| **DevOps** | Manual | Auto CI/CD, pre-commit, secrets |
-| **Recovery** | Manual | Self-healing |
-| **Tools** | Fixed | 200+ installable on-demand |
+8 tools, action-based routing:
 
----
-
-## Example Workflows
-
-<details>
-<summary><b>DevOps Scaffolding</b> — Production-ready in one request</summary>
-
-**You:** *"This repo needs proper CI/CD"*
-
-**Jarvis creates:**
-- `.pre-commit-config.yaml` (Ruff + Gitleaks)
-- `.github/workflows/ci.yml`
-- Pre-commit hooks installed
-</details>
+| Tool | What It Does |
+|:-----|:-------------|
+| `jarvis_server` | Install, uninstall, search, configure MCP servers |
+| `jarvis_profile` | Create and switch tool profiles |
+| `jarvis_client` | Configure AI clients (Claude, Cursor, etc.) |
+| `jarvis_check_status` | System health diagnostics |
+| `jarvis_system` | Bootstrap, restart infrastructure |
+| `jarvis_project` | Analyze projects, apply DevOps stacks |
+| `jarvis_config` | Manage global settings |
+| `jarvis_share` | Share servers via tunnels |
 
 <details>
-<summary><b>Self-Healing</b> — Auto-repair crashed services</summary>
-
-**You:** *"My search is broken"*
-
-**Jarvis:** Detects Qdrant is down → restarts containers → confirms healthy
-</details>
-
-<details>
-<summary><b>Dynamic Tools</b> — Install capabilities mid-conversation</summary>
-
-**You:** *"Summarize this PDF"*
-
-**Jarvis:** Searches registry → installs `pdf-parse` → hot-loads without restart
-</details>
-
-<details>
-<summary><b>Security</b> — Block secrets before commit</summary>
-
-**Agent:** *"Committing..."* → **Blocked:** Secret in line 42 → Moves to `.env` → Commits clean
-</details>
-
----
-
-## Tool Reference (v3.0)
-
-8 consolidated tools with action-based routing:
-
-| Tool | Actions |
-|:-----|:--------|
-| `jarvis_check_status` | System health |
-| `jarvis_server` | list, info, install, uninstall, search, edit, create |
-| `jarvis_profile` | list, create, edit, delete, suggest, restart |
-| `jarvis_client` | list, edit, import, config |
-| `jarvis_config` | get, set, list, migrate |
-| `jarvis_project` | analyze, diff, devops |
-| `jarvis_system` | bootstrap, restart, restart_infra |
-| `jarvis_share` | start, stop, list |
-
-<details>
-<summary><b>Examples</b></summary>
+<summary><b>Example Commands</b></summary>
 
 ```javascript
+// Install a new tool
+jarvis_server({ action: "install", name: "brave-search" })
+
+// Switch project profile
+jarvis_profile({ action: "edit", name: "my-project", add_servers: "context7,firecrawl" })
+
+// Configure a client
+jarvis_client({ action: "edit", client_name: "opencode", add_profile: "memory" })
+
+// Check system health
 jarvis_check_status()
-jarvis_server({ action: "install", name: "pdf-parse" })
-jarvis_profile({ action: "suggest" })
-jarvis_project({ action: "devops", project_type: "python" })
+
+// Bootstrap everything
 jarvis_system({ action: "bootstrap" })
 ```
 </details>
 
 ---
 
-## Compatibility
+## Universal Compatibility
 
-**Models:** Claude, GPT, Gemini, DeepSeek, Llama — any MCP-compatible model
+**Models:** Any MCP-compatible model — Claude, GPT, Gemini, DeepSeek, Llama
 
-**Clients:** Claude Desktop, Cursor, Windsurf, VS Code, Zed, OpenCode
+**Clients:** Claude Desktop, Claude CLI, Cursor, Windsurf, VS Code, Zed, OpenCode, Kilo Code
 
 <details>
-<summary><b>Client Config Example</b></summary>
+<summary><b>Client Configuration</b></summary>
 
 ```json
 {
@@ -184,35 +192,25 @@ jarvis_system({ action: "bootstrap" })
     "jarvis": {
       "command": "/path/to/Jarvis/jarvis",
       "args": []
-    },
-    "memory": {
-      "url": "http://localhost:6277/mcp"
     }
   }
 }
 ```
+
+That's it. Jarvis manages everything else.
 </details>
 
 ---
 
-## Profile Endpoints
+## Why Jarvis?
 
-| Profile | Port | Purpose |
-|---------|------|---------|
-| `p-pokeedge` | 6276 | Research (Context7, Brave, Firecrawl) |
-| `memory` | 6277 | Persistent memory |
-| `morph` | 6278 | Semantic code transforms |
-| `qdrant` | 6279 | Vector database |
-
----
-
-## Troubleshooting
-
-| Issue | Solution |
-|-------|----------|
-| Docker not running | `sudo systemctl start docker` |
-| MCPM not found | `jarvis_system({ action: "bootstrap" })` |
-| Full diagnostics | `jarvis_check_status()` |
+| Without Jarvis | With Jarvis |
+|----------------|-------------|
+| Edit JSON configs manually | Agent installs tools via natural language |
+| Restart client for new tools | Hot-load tools mid-conversation |
+| Duplicate configs per client | One source of truth, multi-client |
+| Fixed tool set per session | Dynamic capabilities on-demand |
+| Manual infrastructure repair | Self-healing |
 
 ---
 
@@ -224,7 +222,6 @@ jarvis_system({ action: "bootstrap" })
 | [FAQ](docs/FAQ.md) | Common questions |
 | [Architecture](docs/TECHNICAL_ARCHITECTURE.md) | Technical deep dive |
 | [Configuration](docs/CONFIGURATION_STRATEGY.md) | 3-Layer Profile Stack |
-| [API Reference](docs/API_REFERENCE.md) | Full tool docs |
 | [Troubleshooting](docs/TROUBLESHOOTING.md) | Issue resolution |
 
 ---
