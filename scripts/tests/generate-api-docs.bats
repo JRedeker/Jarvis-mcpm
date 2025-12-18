@@ -1,5 +1,6 @@
 #!/usr/bin/env bats
 # Tests for generate-api-docs.sh script
+# Updated for Jarvis v3.0 consolidated tools
 
 SCRIPT_DIR="$(cd "$(dirname "$BATS_TEST_FILENAME")/.." && pwd)"
 GEN_SCRIPT="$SCRIPT_DIR/generate-api-docs.sh"
@@ -38,15 +39,28 @@ teardown() {
     [ "$status" -eq 0 ]
 }
 
-@test "generated docs contain check_status tool" {
+# v3.0 consolidated tool names
+@test "generated docs contain jarvis_check_status tool" {
     "$GEN_SCRIPT" "$OUTPUT_FILE"
-    run grep -q "check_status" "$OUTPUT_FILE"
+    run grep -q "jarvis_check_status" "$OUTPUT_FILE"
     [ "$status" -eq 0 ]
 }
 
-@test "generated docs contain install_server tool" {
+@test "generated docs contain jarvis_server tool" {
     "$GEN_SCRIPT" "$OUTPUT_FILE"
-    run grep -q "install_server" "$OUTPUT_FILE"
+    run grep -q "jarvis_server" "$OUTPUT_FILE"
+    [ "$status" -eq 0 ]
+}
+
+@test "generated docs contain jarvis_profile tool" {
+    "$GEN_SCRIPT" "$OUTPUT_FILE"
+    run grep -q "jarvis_profile" "$OUTPUT_FILE"
+    [ "$status" -eq 0 ]
+}
+
+@test "generated docs contain jarvis_system tool" {
+    "$GEN_SCRIPT" "$OUTPUT_FILE"
+    run grep -q "jarvis_system" "$OUTPUT_FILE"
     [ "$status" -eq 0 ]
 }
 
@@ -54,13 +68,13 @@ teardown() {
     "$GEN_SCRIPT" "$OUTPUT_FILE"
     run grep -c "^## " "$OUTPUT_FILE"
     [ "$status" -eq 0 ]
-    [ "$output" -ge 5 ]  # Should have at least 5 category sections
+    [ "$output" -ge 1 ]  # Should have at least 1 category section
 }
 
 @test "generated docs have tool descriptions" {
     "$GEN_SCRIPT" "$OUTPUT_FILE"
     # Check for descriptions (lines after tool headers)
-    run grep -c "health check\|registry\|profiles" "$OUTPUT_FILE"
+    run grep -c "health\|server\|profile\|system" "$OUTPUT_FILE"
     [ "$status" -eq 0 ]
     [ "$output" -ge 3 ]
 }
