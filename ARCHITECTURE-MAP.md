@@ -47,52 +47,66 @@ graph TD
 
 ### Jarvis (`./Jarvis/`)
 *   **Purpose:** The **intelligent presentation layer** and primary interface for AI agents to control the system.
-*   **Key Files:** `main.go`, `tools.go`, `Dockerfile`.
+*   **Version:** 3.0 (Consolidated Tools)
+*   **Key Files:** `main.go`, `handlers/consolidated.go`, `handlers/server.go`, `Dockerfile`.
 *   **Responsibility:**
-    *   **Presentation Layer:** Wraps raw MCPM CLI output with clean formatting, stripping ANSI codes and terminal noise.
+    *   **Presentation Layer:** Wraps raw MCPM CLI/API output with clean formatting, stripping ANSI codes and terminal noise.
     *   **Smart Error Handling:** Provides actionable error messages with suggestions for next steps.
     *   **Input Validation:** Prevents common mistakes before execution (invalid server names, empty queries, etc.).
     *   **Context Awareness:** Suggests appropriate actions based on project state and configuration.
-    *   **Tool Exposure:** Exposes `mcpm` CLI functionality as 23 callable MCP tools with benefits-focused descriptions.
+    *   **Tool Exposure:** Exposes `mcpm` functionality as **8 consolidated MCP tools** (reduced from 24 for context efficiency).
     *   **Batch Operations:** Enables complex workflows in single commands vs. multiple CLI invocations.
-    *   **Relationship:** Jarvis *uses* MCPM. It does not contain MCPM logic but executes the `mcpm` binary found in the system PATH.
+    *   **Relationship:** Jarvis *uses* MCPM (via HTTP API or CLI fallback). It does not contain MCPM logic.
 
-*   **Phase 1 Improvements (Latest):**
-    *   Enhanced all 23 tool descriptions to highlight benefits and use cases
-    *   Added intelligent validation and helpful suggestions to key tools
-    *   Positioned as the primary interface over direct MCPM CLI for AI agents
-    *   Comprehensive test suite (6 test functions, 23+ test cases)
-    *   Pre-commit hooks enforcing Go formatting and security checks
+*   **v3.0 Tool Consolidation:**
+    | Tool | Actions |
+    |:-----|:--------|
+    | `jarvis_check_status` | (single purpose) |
+    | `jarvis_server` | list, info, install, uninstall, search, edit, create, usage |
+    | `jarvis_profile` | list, create, edit, delete, suggest, restart |
+    | `jarvis_client` | list, edit, import, config |
+    | `jarvis_config` | get, set, list, migrate |
+    | `jarvis_project` | analyze, diff, devops |
+    | `jarvis_system` | bootstrap, restart, restart_infra |
+    | `jarvis_share` | start, stop, list |
+
+*   **Benefits:** 52% payload reduction (~5.3KB vs ~11KB), ~1,400 tokens saved per connection
 
 ## 3. Data Flow & Management (Presentation Layer Pattern)
 
-Jarvis implements a **presentation layer pattern** that sits between AI agents and the MCPM CLI:
+Jarvis implements a **presentation layer pattern** that sits between AI agents and MCPM:
 
-1.  **Agent Request:** An AI agent connects to the Jarvis MCP server and requests to install a tool (e.g., `install_server("brave")`).
-2.  **Validation:** Jarvis validates the input (server name format, non-empty values, allowed actions).
-3.  **Execution:** Jarvis executes the corresponding `mcpm` command with environment variables (e.g., `MCPM_NON_INTERACTIVE=true MCPM_FORCE=true mcpm install brave`).
-4.  **Package Management:** The `mcpm` CLI (running from the global installation or PATH) reads the registry from `./MCPM/config/technologies.toml` (or its internal config) and performs the installation.
-5.  **Output Processing:** Jarvis captures the raw CLI output, strips ANSI codes and terminal warnings, and formats it as clean Markdown.
-6.  **Smart Response:** Jarvis adds context-aware suggestions (e.g., "Next step: Use manage_profile() to add it to a profile") and returns the enhanced response to the agent.
-7.  **Configuration:** `mcpm` updates the local registry and generates the necessary JSON configuration for IDEs.
+1.  **Agent Request:** An AI agent connects to the Jarvis MCP server and requests to install a tool (e.g., `jarvis_server(action="install", name="brave")`).
+2.  **Validation:** Jarvis validates the input (action type, server name format, non-empty values).
+3.  **Execution:** Jarvis calls the MCPM API (preferred) or CLI fallback with appropriate parameters.
+4.  **Package Management:** MCPM reads the registry from `./MCPM/config/technologies.toml` and performs the installation.
+5.  **Output Processing:** Jarvis captures the response, strips ANSI codes and terminal warnings, and formats it as clean Markdown.
+6.  **Smart Response:** Jarvis adds context-aware suggestions (e.g., "Next step: Use `jarvis_profile(action='edit')` to add it to a profile") and returns the enhanced response to the agent.
+7.  **Configuration:** MCPM updates the local registry and generates the necessary JSON configuration for IDEs.
 
 **Key Advantage:** AI agents receive clean, actionable responses instead of raw terminal output, reducing hallucinations and improving workflow efficiency.
 
-## 4. Future Roadmap
+## 4. Roadmap
 
 ### Phase 1: Making Jarvis the Obvious Choice (✅ Complete)
 *   [x] Centralize MCPM-specific code into `./MCPM/`.
 *   [x] Establish Jarvis as intelligent presentation layer.
-*   [x] Enhanced all 23 tool descriptions with benefits-focused copy.
+*   [x] Enhanced tool descriptions with benefits-focused copy.
 *   [x] Added smart error handling with validation and suggestions.
 *   [x] Updated documentation positioning Jarvis as primary interface.
-*   [x] Comprehensive test suite (23+ test cases, all passing).
-*   [ ] Standardize configuration paths (deferred to Phase 2).
+*   [x] Comprehensive test suite (all passing).
 
-### Phase 2: Enhanced Integration
+### Phase 2: Tool Consolidation (✅ Complete - v3.0)
+*   [x] Consolidated 24 tools into 8 action-based tools.
+*   [x] Added MCPM HTTP API transport (with CLI fallback).
+*   [x] 52% context token reduction (~1,400 tokens saved per connection).
+*   [x] Standardized `jarvis_` prefix for all tools.
+*   [x] Updated all documentation to v3.0 syntax.
+
+### Phase 3: Enhanced Integration (In Progress)
 *   **Dynamic Config Loading:** Ensure `mcpm` can dynamically load configuration from the repository structure regardless of execution context.
 *   **Containerization:** Fully containerize the Jarvis + MCPM stack so it can be deployed as a single unit (e.g., a "Management Sidecar").
 
-### Phase 3: Autonomous Management
-*   **Self-Healing:** Jarvis detects unhealthy servers (via `check_status`) and automatically attempts repairs using `mcpm`.
-*   **Semantic Discovery:** Enhance `search_servers` to use the vector database (Qdrant) for finding tools based on natural language descriptions.
+### Phase 4: Autonomous Management
+*   **Self-Healing:** Jarvis detects unhealthy servers (via `jarvis_check_status`) and automatically attempts repairs.
+*   **Semantic Discovery:** Enhance `jarvis_server(action="search")` to use the vector database (Qdrant) for finding tools based on natural language descriptions.

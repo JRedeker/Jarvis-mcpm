@@ -1,4 +1,4 @@
-# 🤖 Jarvis: The MCP Automation Gateway
+# 🤖 Jarvis: The MCP Automation Gateway (v3.0)
 
 Jarvis is your autonomous "hands" for managing the Model Context Protocol (MCP) ecosystem.
 
@@ -6,24 +6,44 @@ Jarvis is your autonomous "hands" for managing the Model Context Protocol (MCP) 
 For the complete operational guide, standard, and architecture, read:
 **`AGENTS.md`** (Located in the project root)
 
-## 🛠️ Core Tool Reference
+## 🛠️ Core Tool Reference (Consolidated v3.0)
 
-### 🚀 Initialization & Health
-*   **`bootstrap_system()`**: Init package manager and infrastructure.
-*   **`check_status()`**: Run system diagnostics (Doctor).
+### 🚀 System Operations
+*   **`jarvis_check_status()`**: Run system diagnostics (Doctor).
+*   **`jarvis_system(action="bootstrap")`**: Init package manager and infrastructure.
+*   **`jarvis_system(action="restart")`**: Restart Jarvis service.
+*   **`jarvis_system(action="restart_infra")`**: Restart Docker infrastructure.
 
 ### 🧠 Profile & Client Management (The 3-Layer Stack)
-*   **`manage_profile(action, name, ...)`**: Create/Edit server collections.
-*   **`manage_client(action, client_name, ...)`**: Wire profiles to clients (Claude, Cursor, etc.).
-*   **`suggest_profile(client_name)`**: Ask Jarvis which profiles should be active for the current directory.
+*   **`jarvis_profile(action="list|create|edit|delete", name, ...)`**: Create/Edit server collections.
+*   **`jarvis_profile(action="suggest")`**: Ask Jarvis which profiles should be active for the current directory.
+*   **`jarvis_profile(action="restart", profile)`**: Reload profiles.
+*   **`jarvis_client(action="list|edit|import|config", client_name, ...)`**: Wire profiles to clients (Claude, OpenCode, etc.).
 
 ### 📦 Server Management
-*   **`install_server(name)`**: Install new capabilities.
-*   **`search_servers(query)`**: Discover new tools.
-*   **`list_servers()`**: inventory check.
+*   **`jarvis_server(action="install", name)`**: Install new capabilities.
+*   **`jarvis_server(action="search", query)`**: Discover new tools.
+*   **`jarvis_server(action="list")`**: Inventory check.
+*   **`jarvis_server(action="info", name)`**: Detailed server information.
+*   **`jarvis_server(action="uninstall", name)`**: Remove server.
+*   **`jarvis_server(action="edit", name, ...)`**: Modify server config.
+*   **`jarvis_server(action="create", name, type, ...)`**: Register custom server.
+
+### 📁 Project Tools
+*   **`jarvis_project(action="analyze")`**: Detect languages and frameworks.
+*   **`jarvis_project(action="diff")`**: Git status and diff for review.
+*   **`jarvis_project(action="devops")`**: Apply DevOps stack.
 
 ### 🌐 Sharing
-*   **`share_server(name)`**: Expose local tools via secure tunnel.
+*   **`jarvis_share(action="start", name)`**: Expose local tools via secure tunnel.
+*   **`jarvis_share(action="stop", name)`**: Stop sharing.
+*   **`jarvis_share(action="list")`**: List active shares.
+
+### ⚙️ Configuration
+*   **`jarvis_config(action="list")`**: List all config values.
+*   **`jarvis_config(action="get", key)`**: Get config value.
+*   **`jarvis_config(action="set", key, value)`**: Set config value.
+*   **`jarvis_config(action="migrate")`**: Upgrade config format.
 
 ## 💡 Pro-Tip
-Always prefer `manage_profile` and `manage_client` over manual configuration. Jarvis handles the wiring logic for you.
+Always prefer `jarvis_profile` and `jarvis_client` over manual configuration. Jarvis handles the wiring logic for you.

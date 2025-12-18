@@ -166,11 +166,11 @@ golangci-lint run
 ### When to Use Jarvis vs Direct MCPM
 
 **✓ ALWAYS use Jarvis tools:**
-- Installing servers → `install_server(name)` not `mcpm install`
-- Managing profiles → `manage_profile(...)` not `mcpm profile`
-- Checking system health → `check_status()` not `mcpm doctor`
-- Configuring clients → `manage_client(...)` not `mcpm client`
-- Searching servers → `search_servers(query)` not `mcpm search`
+- Installing servers → `jarvis_server(action="install", name="...")` not `mcpm install`
+- Managing profiles → `jarvis_profile(action="edit", ...)` not `mcpm profile`
+- Checking system health → `jarvis_check_status()` not `mcpm doctor`
+- Configuring clients → `jarvis_client(action="edit", ...)` not `mcpm client`
+- Searching servers → `jarvis_server(action="search", query="...")` not `mcpm search`
 
 **⚠️ Only use direct MCPM CLI when:**
 - Debugging Jarvis itself
@@ -181,44 +181,47 @@ golangci-lint run
 
 | Task | Use Jarvis Tool | Not Direct CLI |
 |------|----------------|----------------|
-| Install MCP server | `install_server("brave-search")` | ~~`mcpm install brave-search`~~ |
-| Check system health | `check_status()` | ~~`mcpm doctor`~~ |
-| Add to profile | `manage_profile("edit", "p-pokeedge", add_servers="...")` | ~~`mcpm profile edit`~~ |
-| Search available tools | `search_servers("documentation")` | ~~`mcpm search documentation`~~ |
-| Bootstrap environment | `bootstrap_system()` | ~~Multiple manual steps~~ |
+| Install MCP server | `jarvis_server(action="install", name="brave-search")` | ~~`mcpm install brave-search`~~ |
+| Check system health | `jarvis_check_status()` | ~~`mcpm doctor`~~ |
+| Add to profile | `jarvis_profile(action="edit", name="p-pokeedge", add_servers="...")` | ~~`mcpm profile edit`~~ |
+| Search available tools | `jarvis_server(action="search", query="documentation")` | ~~`mcpm search documentation`~~ |
+| Bootstrap environment | `jarvis_system(action="bootstrap")` | ~~Multiple manual steps~~ |
 
 ## Jarvis Tool Reference
 
-Jarvis exposes **24 MCP tools** across 7 categories. All handlers are defined in `handlers/server.go` with implementations in `handlers/handlers.go`.
+Jarvis exposes **8 consolidated MCP tools** (v3.0) for context token efficiency. All handlers are defined in `handlers/server.go` with implementations in `handlers/consolidated.go`.
 
 ### Complete Tool Reference Table
 
-| Category | Tool | Parameters | Description |
-|:---------|:-----|:-----------|:------------|
-| **System** | `check_status()` | - | System health check for MCPM, Docker, services |
-| **System** | `bootstrap_system()` | - | Complete system initialization |
-| **System** | `restart_service()` | - | Restart Jarvis to apply config changes |
-| **System** | `restart_infrastructure()` | - | Restart Docker infrastructure |
-| **Server** | `list_servers()` | - | List installed MCP servers |
-| **Server** | `server_info(name)` | `name` (required) | Detailed server information |
-| **Server** | `install_server(name)` | `name` (required) | Install from registry |
-| **Server** | `uninstall_server(name)` | `name` (required) | Remove server |
-| **Server** | `search_servers(query)` | `query` (required) | Search registry |
-| **Server** | `edit_server(name, ...)` | `name`, `command`, `args`, `env`, `url`, `headers` | Modify server config |
-| **Server** | `create_server(name, type, ...)` | `name`, `type` (required), `command`, `args`, `env`, `url`, `headers` | Register custom server |
-| **Server** | `usage_stats()` | - | Tool usage statistics |
-| **Profile** | `manage_profile(action, ...)` | `action` (required), `name`, `new_name`, `add_servers`, `remove_servers` | Create/edit/delete profiles |
-| **Profile** | `suggest_profile(testing)` | `testing` | Recommend profile stack |
-| **Profile** | `restart_profiles(profile)` | `profile` | Reload profiles |
-| **Client** | `manage_client(action, ...)` | `action` (required), `client_name`, `add_server`, `remove_server`, `add_profile`, `remove_profile`, `config_path` | Configure AI clients |
-| **Config** | `manage_config(action, ...)` | `action` (required), `key`, `value` | Get/set configuration |
-| **Config** | `migrate_config()` | - | Upgrade config format |
-| **DevOps** | `analyze_project()` | - | Detect languages/frameworks |
-| **DevOps** | `fetch_diff_context(staged)` | `staged` | Git diff for self-review |
-| **DevOps** | `apply_devops_stack(...)` | `project_type`, `force`, `enable_ai_review` | Scaffold CI/CD, linting |
-| **Sharing** | `share_server(name, ...)` | `name` (required), `port`, `no_auth` | Expose via tunnel |
-| **Sharing** | `stop_sharing_server(name)` | `name` (required) | Stop sharing |
-| **Sharing** | `list_shared_servers()` | - | List active shares |
+| Tool | Actions | Key Parameters |
+|:-----|:--------|:---------------|
+| `jarvis_check_status` | - | System health check for MCPM, Docker, services |
+| `jarvis_server` | list, info, install, uninstall, search, edit, create, usage | `action` (required), `name`, `query`, `type`, `command`, `args`, `env`, `url`, `headers` |
+| `jarvis_profile` | list, create, edit, delete, suggest, restart | `action` (required), `name`, `new_name`, `add_servers`, `remove_servers`, `profile`, `testing` |
+| `jarvis_client` | list, edit, import, config | `action` (required), `client_name`, `add_server`, `remove_server`, `add_profile`, `remove_profile`, `config_path` |
+| `jarvis_config` | get, set, list, migrate | `action` (required), `key`, `value` |
+| `jarvis_project` | analyze, diff, devops | `action` (required), `staged`, `project_type`, `force`, `enable_ai_review` |
+| `jarvis_system` | bootstrap, restart, restart_infra | `action` (required) |
+| `jarvis_share` | start, stop, list | `action` (required), `name`, `port`, `no_auth` |
+
+### Usage Examples
+
+```javascript
+// Install a server
+jarvis_server({ action: "install", name: "brave-search" })
+
+// List all profiles
+jarvis_profile({ action: "list" })
+
+// Configure OpenCode client
+jarvis_client({ action: "edit", client_name: "opencode", add_profile: "memory" })
+
+// Bootstrap entire system
+jarvis_system({ action: "bootstrap" })
+
+// Analyze current project
+jarvis_project({ action: "analyze" })
+```
 
 > See full API documentation: `docs/API_REFERENCE.md`
 
@@ -308,7 +311,7 @@ This project follows **semantic versioning** with conventional commits:
 ## Debugging
 
 If Jarvis tools fail:
-1. Run `check_status()` for diagnostics
+1. Run `jarvis_check_status()` for diagnostics
 2. Check logs: `logs/jarvis.log`, `logs/management.log`
 3. For MCPM issues, set environment variables:
    - `export MCPM_NON_INTERACTIVE=true`

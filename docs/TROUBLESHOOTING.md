@@ -1,4 +1,4 @@
-# Jarvis Troubleshooting Guide
+# Jarvis Troubleshooting Guide (v3.0)
 
 This guide covers common issues and their solutions when using Jarvis.
 
@@ -6,10 +6,10 @@ This guide covers common issues and their solutions when using Jarvis.
 
 ## Quick Diagnostics
 
-Always start with the `check_status()` tool:
+Always start with the `jarvis_check_status()` tool:
 
 ```javascript
-check_status()  // Returns comprehensive system health report
+jarvis_check_status()  // Returns comprehensive system health report
 ```
 
 This checks:
@@ -72,7 +72,7 @@ sudo ss -tlnp | grep 5432
 ### Containers Unhealthy
 
 **Symptoms:**
-- `check_status()` shows containers as unhealthy
+- `jarvis_check_status()` shows containers as unhealthy
 - Database connections fail
 - Memory tools return errors
 
@@ -80,7 +80,7 @@ sudo ss -tlnp | grep 5432
 
 ```javascript
 // Let Jarvis fix it
-restart_infrastructure()
+jarvis_system({ action: "restart_infra" })
 
 // If that fails, manually:
 ```
@@ -105,6 +105,56 @@ docker compose logs -f qdrant
 
 ---
 
+## MCPM API Server Issues
+
+### API Server Not Reachable
+
+**Symptoms:**
+- `check_status()` shows API server as not reachable
+- HTTP transport falls back to CLI
+- "Connection refused" on port 6275
+
+**Solutions:**
+
+1. **Check if API server is running:**
+   ```bash
+   curl http://localhost:6275/api/v1/health
+   ```
+
+2. **Start API server manually:**
+   ```bash
+   cd MCPM
+   npm run serve
+   # or
+   mcpm serve --port 6275
+   ```
+
+3. **Via Docker (recommended):**
+   ```bash
+   docker compose up mcpm-daemon
+   ```
+
+4. **Check supervisor status (in container):**
+   ```bash
+   docker exec mcp-daemon supervisorctl status
+   ```
+
+### Transport Selection
+
+**Environment Variables:**
+
+| Variable | Default | Description |
+|:---------|:--------|:------------|
+| `JARVIS_MCPM_TRANSPORT` | `http` | Transport: `http` or `cli` |
+| `MCPM_API_URL` | `http://localhost:6275` | API server URL |
+
+**Force CLI Transport (fallback):**
+```bash
+export JARVIS_MCPM_TRANSPORT=cli
+```
+
+---
+
 ## MCPM Issues
 
 ### Command Not Found
@@ -117,7 +167,7 @@ docker compose logs -f qdrant
 
 ```javascript
 // Use Jarvis to fix
-bootstrap_system()
+jarvis_system({ action: "bootstrap" })
 ```
 
 Or manually:
@@ -132,19 +182,19 @@ which mcpm  # Should show path
 ### Server Installation Fails
 
 **Symptoms:**
-- `install_server()` returns error
+- `jarvis_server(action="install")` returns error
 - "Server not found in registry"
 
 **Solutions:**
 
 1. **Check spelling** - Server names are case-sensitive:
    ```javascript
-   search_servers("brave")  // Find correct name
+   jarvis_server({ action: "search", query: "brave" })  // Find correct name
    ```
 
 2. **Check registry** - Verify server exists:
    ```javascript
-   server_info("brave-search")  // Get details
+   jarvis_server({ action: "info", name: "brave-search" })  // Get details
    ```
 
 3. **Network issues** - npm install may fail:
@@ -163,13 +213,13 @@ which mcpm  # Should show path
 
 ```javascript
 // List all profiles
-manage_profile("ls")
+jarvis_profile({ action: "list" })
 
 // Check specific profile
-server_info("profile-name")
+jarvis_server({ action: "info", name: "profile-name" })
 
 // Restart profiles
-restart_profiles()
+jarvis_profile({ action: "restart" })
 ```
 
 ---
@@ -265,7 +315,7 @@ go tool cover -html=coverage.out
 
 3. **Restart daemon:**
    ```javascript
-   restart_profiles()
+   jarvis_profile({ action: "restart" })
    ```
 
 ### Agent Can't Reach Jarvis
@@ -299,7 +349,7 @@ go tool cover -html=coverage.out
 **Common Causes:**
 1. **Network latency** - npm/registry calls are slow
 2. **Docker startup** - First call after boot is slow
-3. **Large operations** - `apply_devops_stack()` does file I/O
+3. **Large operations** - `jarvis_project(action="devops")` does file I/O
 
 **Solutions:**
 
@@ -369,13 +419,13 @@ For debugging specific tools, check the handler implementation in `handlers/hand
 
 **Cause:** Server name doesn't exist
 
-**Solution:** Use `search_servers()` to find correct name
+**Solution:** Use `jarvis_server({ action: "search", query: "..." })` to find correct name
 
 ### "Profile does not exist"
 
 **Cause:** Referencing non-existent profile
 
-**Solution:** Use `manage_profile("ls")` to list profiles
+**Solution:** Use `jarvis_profile({ action: "list" })` to list profiles
 
 ### "Docker daemon not responding"
 
@@ -389,7 +439,7 @@ For debugging specific tools, check the handler implementation in `handlers/hand
 
 1. **Check Status First:**
    ```javascript
-   check_status()
+   jarvis_check_status()
    ```
 
 2. **Check Logs:**
@@ -405,7 +455,7 @@ For debugging specific tools, check the handler implementation in `handlers/hand
 
 4. **Report Issues:**
    - [GitHub Issues](https://github.com/JRedeker/Jarvis-mcpm/issues)
-   - Include `check_status()` output
+   - Include `jarvis_check_status()` output
    - Include relevant log snippets
 
 ---

@@ -9,7 +9,7 @@ This document provides a comprehensive map of the MCPM (Model Context Protocol M
 ### Core Components
 
 *   **MCPM (CLI):** The primary command-line interface for installing, configuring, and managing MCP servers. It handles package downloads, environment configuration, and IDE config generation.
-*   **Jarvis (Management Server):** A specialized MCP server that wraps the `mcpm` CLI. It exposes management capabilities (install, list, search, configure) as MCP tools, allowing AI agents to programmatically manage the ecosystem.
+*   **Jarvis (Management Server):** A specialized MCP server (v3.0) that wraps the `mcpm` CLI/API. It exposes management capabilities as **8 consolidated MCP tools** (reduced from 24 for context efficiency), allowing AI agents to programmatically manage the ecosystem.
 *   **MCP Servers:** Independent services providing specific capabilities (e.g., file system access, web search, GitHub integration). These run as local processes (stdio) managed by the IDEs.
 *   **Qdrant:** A vector database used by specific MCP servers (like `memory`) for semantic search and storage.
 *   **PostgreSQL:** Optional backend for specific tools requiring relational data storage.
@@ -89,9 +89,9 @@ graph TD
 
 ## 4. Component Relationships
 
-### Jarvis <-> MCPM CLI
+### Jarvis <-> MCPM CLI/API
 *   **Relationship:** Wrapper / Execution
-*   **Mechanism:** Jarvis runs as an MCP server and executes `mcpm` CLI commands as subprocesses to perform actions like installing servers or updating configurations. This allows AI agents to "drive" the CLI.
+*   **Mechanism:** Jarvis runs as an MCP server and calls the MCPM HTTP API (preferred) or CLI as subprocess (fallback) to perform actions. AI agents use consolidated tools like `jarvis_server(action="install")` to drive operations.
 
 ### MCPM <-> MCP Servers
 *   **Relationship:** Management
@@ -103,7 +103,7 @@ graph TD
 
 ### IDEs <-> Jarvis
 *   **Relationship:** Management Interface
-*   **Mechanism:** IDEs spawn Jarvis just like any other MCP server. Agents use Jarvis tools (`install_server`, `search_servers`) to modify the system state.
+*   **Mechanism:** IDEs spawn Jarvis just like any other MCP server. Agents use Jarvis v3.0 consolidated tools (e.g., `jarvis_server(action="install")`, `jarvis_server(action="search")`) to modify the system state.
 
 ### MCP Servers <-> Infrastructure
 *   **Relationship:** Persistence
@@ -113,7 +113,7 @@ graph TD
 
 ## 5. Key Data Flows
 
-1.  **Agent-Driven Installation:** Agent calls Jarvis tool `install_server("sqlite")` -> Jarvis executes `mcpm install sqlite` -> MCPM downloads package.
+1.  **Agent-Driven Installation:** Agent calls `jarvis_server(action="install", name="sqlite")` -> Jarvis calls MCPM API (or CLI fallback) -> MCPM downloads package.
 2.  **Manual Configuration:** User runs `mcpm config` -> MCPM outputs JSON config -> User updates IDE settings.
 3.  **Runtime:** IDE starts -> Spawns configured MCP servers (including Jarvis) -> Servers communicate via stdio -> Servers access local resources or APIs.
 

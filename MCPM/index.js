@@ -350,6 +350,29 @@ program
         }
     });
 
+// API Server command
+program
+    .command('serve')
+    .description('Start the MCPM API server')
+    .option('-p, --port <port>', 'Port to listen on', '6275')
+    .option('-h, --host <host>', 'Host to bind to', '0.0.0.0')
+    .action(async (options) => {
+        const { startServer } = require('./api/server');
+        const port = parseInt(options.port, 10);
+        const host = options.host;
+
+        console.log(chalk.cyan(`Starting MCPM API Server...`));
+        try {
+            await startServer(port, host);
+            console.log(chalk.green(`MCPM API Server running on http://${host}:${port}`));
+            console.log(chalk.blue(`API Base: http://${host}:${port}/api/v1`));
+            console.log(chalk.gray(`Press Ctrl+C to stop`));
+        } catch (err) {
+            console.error(chalk.red(`Failed to start server: ${err.message}`));
+            process.exit(1);
+        }
+    });
+
 // Stubs for other commands to prevent Jarvis errors
 ['edit', 'usage', 'client', 'profile', 'config', 'migrate', 'share'].forEach(cmd => {
     program.command(cmd).action(() => {

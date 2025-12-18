@@ -38,11 +38,11 @@ This document outlines a comprehensive plan to enhance Jarvis's tool discoverabi
 
 ✅ **Excellent Tool Descriptions** (9/10)
 - Clear, action-oriented descriptions explaining WHAT, WHY, and WHEN
-- Example: `install_server` describes purpose, capabilities, and benefits
+- Example: `jarvis_server(action="install")` describes purpose, capabilities, and benefits
 
 ✅ **Exceptional Error Handling** (10/10)
 - Actionable error messages with troubleshooting steps
-- Helpful "next steps" suggestions (e.g., "Use search_servers() to find similar servers")
+- Helpful "next steps" suggestions (e.g., "Use `jarvis_server(action='search')` to find similar servers")
 - Emoji-based visual indicators (✅/❌) for quick parsing
 
 ✅ **Human-Readable Output** (10/10)
@@ -151,38 +151,35 @@ graph TD
 **Implementation:**
 
 ```go
-// BEFORE
+// NOTE: Jarvis v3.0 uses consolidated action-based tools
+// BEFORE (v2.x - 24 tools)
 s.AddTool(mcp.NewTool("manage_client",
-    mcp.WithDescription("Configure AI clients (Claude Code, Claude Desktop, Codex, Gemini, etc.) with servers and profiles. Lists installed clients, adds/removes configurations, and persists paths automatically."),
-    // ... parameters
+    mcp.WithDescription("Configure AI clients..."),
 ), handleManageClient)
 
-// AFTER
-s.AddTool(mcp.NewTool("manage_client",
-    mcp.WithDescription(`Configure AI clients (Claude Code, Claude Desktop, Codex, Gemini, etc.) with servers and profiles. Lists installed clients, adds/removes configurations, and persists paths automatically.
+// AFTER (v3.0 - 8 consolidated tools)
+s.AddTool(mcp.NewTool("jarvis_client",
+    mcp.WithDescription(`Configure AI clients (Claude Code, Claude Desktop, Codex, Gemini, etc.) with servers and profiles.
 
 Examples:
-  • List all clients: manage_client(action="ls")
-  • Add server to client: manage_client(action="edit", client_name="codex", add_server="brave-search")
-  • Add profile to client: manage_client(action="edit", client_name="codex", add_profile="memory")
-  • Get config path: manage_client(action="config", client_name="codex")
-  • Set config path: manage_client(action="config", client_name="codex", config_path="/path/to/config.json")`),
-    // ... parameters
-), handleManageClient)
+  • List all clients: jarvis_client(action="list")
+  • Add server to client: jarvis_client(action="edit", client_name="codex", add_server="brave-search")
+  • Add profile to client: jarvis_client(action="edit", client_name="codex", add_profile="memory")
+  • Get config path: jarvis_client(action="config", client_name="codex")
+  • Set config path: jarvis_client(action="config", client_name="codex", config_path="/path/to/config.json")`),
+), h.Client)
 ```
 
-**Tools Requiring Examples (Priority Order):**
+**v3.0 Consolidated Tools (Priority Order):**
 
-1. `manage_client` - Most complex parameter combinations
-2. `manage_profile` - Multiple action types
-3. `install_server` - Core workflow
-4. `search_servers` - Query patterns
-5. `apply_devops_stack` - Configuration options
-6. `manage_config` - Key-value operations
-7. `edit_server` - Optional parameters
-8. `create_server` - stdio vs remote types
-9. `suggest_profile` - Testing mode usage
-10. `fetch_diff_context` - staged vs unstaged
+1. `jarvis_client` - Most complex parameter combinations (actions: list, edit, import, config)
+2. `jarvis_profile` - Multiple action types (actions: list, create, edit, delete, suggest, restart)
+3. `jarvis_server` - Core workflow (actions: list, info, install, uninstall, search, edit, create, usage)
+4. `jarvis_project` - Project operations (actions: analyze, diff, devops)
+5. `jarvis_config` - Key-value operations (actions: get, set, list, migrate)
+6. `jarvis_system` - System management (actions: bootstrap, restart, restart_infra)
+7. `jarvis_share` - Server sharing (actions: start, stop, list)
+8. `jarvis_check_status` - Single purpose diagnostics
 
 **Testing:**
 ```bash
@@ -235,12 +232,14 @@ mcp.WithString("add_servers",
 
 | Tool | Parameter | Enhancement |
 |------|-----------|-------------|
-| `install_server` | `name` | Example: "brave-search" |
-| `manage_client` | `action` | Enum: ["ls", "edit", "import", "config"] |
-| `manage_profile` | `action` | Enum: ["ls", "create", "edit", "delete"] |
-| `apply_devops_stack` | `project_type` | Enum: ["python", "go", "node", "general"] |
-| `manage_config` | `action` | Enum: ["ls", "set", "unset"] |
-| `create_server` | `type` | Enum: ["stdio", "remote"] |
+| `jarvis_server` | `action` | Enum: ["list", "info", "install", "uninstall", "search", "edit", "create", "usage"] |
+| `jarvis_server` | `name` | Example: "brave-search" |
+| `jarvis_client` | `action` | Enum: ["list", "edit", "import", "config"] |
+| `jarvis_profile` | `action` | Enum: ["list", "create", "edit", "delete", "suggest", "restart"] |
+| `jarvis_project` | `action` | Enum: ["analyze", "diff", "devops"] |
+| `jarvis_config` | `action` | Enum: ["get", "set", "list", "migrate"] |
+| `jarvis_system` | `action` | Enum: ["bootstrap", "restart", "restart_infra"] |
+| `jarvis_share` | `action` | Enum: ["start", "stop", "list"] |
 
 **Testing:**
 ```bash

@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -104,6 +105,45 @@ func NewHandler(mcpm McpmRunner, docker DockerRunner, git GitRunner, fs FileSyst
 		Processes:   NewInMemoryProcessManager(),
 		ExitProcess: os.Exit,
 	}
+}
+
+// NewMcpmRunner creates an McpmRunner based on the JARVIS_MCPM_TRANSPORT environment variable
+// Supported values: "http" (default), "cli"
+// If "http" is selected but the API server is not reachable, it falls back to CLI
+func NewMcpmRunner() McpmRunner {
+	transport := os.Getenv("JARVIS_MCPM_TRANSPORT")
+	apiURL := os.Getenv("MCPM_API_URL")
+
+	// Default to HTTP transport
+	if transport == "" {
+		transport = "http"
+	}
+
+	switch transport {
+	case "http":
+		runner := NewHTTPMcpmRunner(apiURL)
+		// Test connectivity - if API is not available, fall back to CLI
+		if _, err := runner.Run("doctor"); err != nil {
+			// API not available, fall back to CLI
+			return &RealMcpmRunner{}
+		}
+		return runner
+	case "cli":
+		return &RealMcpmRunner{}
+	default:
+		// Unknown transport, use CLI as fallback
+		return &RealMcpmRunner{}
+	}
+}
+
+// NewDefaultHandler creates a Handler with default dependencies, auto-selecting MCPM transport
+func NewDefaultHandler() *Handler {
+	return NewHandler(
+		NewMcpmRunner(),
+		&RealDockerRunner{},
+		&RealGitRunner{},
+		&RealFileSystem{},
+	)
 }
 
 // NewHandlerWithAll creates a Handler with all dependencies explicitly provided
@@ -219,6 +259,13 @@ func (m *InMemoryProcessManager) List() []string {
 func (h *Handler) CheckStatus(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	output, _ := h.Mcpm.Run("doctor")
 
+	// Check MCPM API Server health
+	apiStatus := checkMcpmAPIHealth()
+	if apiStatus != "" {
+		output += "\n\n## 🌐 MCPM API Server\n"
+		output += apiStatus
+	}
+
 	// Check supervisor status if available
 	supOutput, err := h.Docker.ExecSupervisorctl(ctx, "status", "")
 	if err == nil && supOutput != "" {
@@ -243,6 +290,26 @@ func (h *Handler) CheckStatus(ctx context.Context, request mcp.CallToolRequest) 
 	}
 
 	return mcp.NewToolResultText(output), nil
+}
+
+// checkMcpmAPIHealth checks if the MCPM API server is running
+func checkMcpmAPIHealth() string {
+	apiURL := os.Getenv("MCPM_API_URL")
+	if apiURL == "" {
+		apiURL = "http://localhost:6275"
+	}
+
+	client := &http.Client{Timeout: 5 * time.Second}
+	resp, err := client.Get(apiURL + "/api/v1/health")
+	if err != nil {
+		return fmt.Sprintf("- Status: ❌ Not reachable (%s)\n- URL: %s", err.Error(), apiURL)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == 200 {
+		return fmt.Sprintf("- Status: ✅ Healthy\n- URL: %s/api/v1", apiURL)
+	}
+	return fmt.Sprintf("- Status: ⚠️ Unhealthy (HTTP %d)\n- URL: %s", resp.StatusCode, apiURL)
 }
 
 // ListServers handles the list_servers tool

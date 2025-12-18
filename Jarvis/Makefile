@@ -1,7 +1,8 @@
-.PHONY: all build test lint clean fmt help install
+.PHONY: all build test lint clean fmt help install docker update
 
 # Binary name
 BINARY_NAME=jarvis
+VERSION=3.0.0
 
 # Go parameters
 GOCMD=go
@@ -12,12 +13,15 @@ GOGET=$(GOCMD) get
 GOFMT=$(GOCMD) fmt
 GOMOD=$(GOCMD) mod
 
+# Build flags
+LDFLAGS=-ldflags="-s -w -X main.Version=$(VERSION)"
+
 all: test build
 
 ## build: Build the binary
 build:
-	@echo "Building $(BINARY_NAME)..."
-	$(GOBUILD) -o $(BINARY_NAME) -v
+	@echo "Building $(BINARY_NAME) v$(VERSION)..."
+	$(GOBUILD) $(LDFLAGS) -o $(BINARY_NAME) -v
 
 ## test: Run all tests
 test:
@@ -91,8 +95,35 @@ run: build
 check: fmt vet lint test
 	@echo "All checks passed!"
 
+## docker: Build Docker image
+docker:
+	@echo "Building Docker image..."
+	docker build -t jarvis:$(VERSION) -t jarvis:latest .
+
+## docker-run: Run Docker container
+docker-run: docker
+	docker run --rm -it jarvis:latest
+
+## update: Update all dependencies to latest
+update:
+	@echo "Updating dependencies..."
+	$(GOGET) -u ./...
+	$(GOMOD) tidy
+	@echo "Dependencies updated!"
+
+## security: Run security checks
+security:
+	@echo "Running security checks..."
+	@if command -v gosec > /dev/null; then \
+		gosec ./...; \
+	else \
+		echo "gosec not installed. Install with: go install github.com/securego/gosec/v2/cmd/gosec@latest"; \
+	fi
+
 ## help: Show this help message
 help:
+	@echo "Jarvis MCP Server v$(VERSION)"
+	@echo ""
 	@echo "Usage: make [target]"
 	@echo ""
 	@echo "Available targets:"

@@ -2,6 +2,7 @@
 
 **System Context:** Model Context Protocol (MCP) Management & Execution Environment
 **Primary Function:** Orchestration of MCP servers via CLI management and agentic gateways.
+**Version:** 3.0 (Tool Consolidation)
 
 ## 1. System Architecture
 
@@ -18,13 +19,14 @@ graph TD
     subgraph "Layer 2: Package Management (MCPM)"
         MCPM_CLI[MCPM CLI] -->|Reads| Registry[Technology Registry]
         MCPM_CLI -->|Builds| Daemon_Image[Daemon Image]
+        MCPM_API[MCPM API :6275] -->|Wraps| MCPM_CLI
     end
 
     subgraph "Layer 3: Execution Gateway (Jarvis)"
         Agent[AI Agent] -->|Stdio| Jarvis[Jarvis Server]
         Agent -.->|HTTP| Daemon
+        Jarvis -->|HTTP/CLI| MCPM_API
         Jarvis -->|Manage| Daemon
-        Jarvis -->|Install| MCPM_CLI
     end
 
     MCPM_CLI -.->|Configures| Daemon
@@ -34,16 +36,22 @@ graph TD
 
 ### 2.1. Jarvis Gateway (`./Jarvis/`)
 *   **Type:** MCP Server (Go)
+*   **Version:** 3.0 (Consolidated Tools)
 *   **Role:** Agentic Interface & Presentation Layer.
-*   **Mechanism:** Wraps `mcpm` CLI commands into executable MCP tools.
-*   **Enhancement:** Acts as a "Presentation Layer" by capturing raw CLI output, stripping ANSI color codes, and wrapping the result in clean Markdown with status emojis (✅/❌) for optimal LLM consumption.
-*   **Key Tools:**
-    *   `apply_devops_stack(project_type)`: Scaffolds new projects or upgrades existing ones with safe-mode logic.
-    *   `analyze_project()`: Returns JSON structure of the current directory (languages, configs).
-    *   `restart_infrastructure()`: Reboots the Docker stack via management script.
-    *   `install_server(name)`: Invokes `mcpm install`.
-    *   `check_status()`: Diagnostics via `mcpm doctor`.
-*   **Dependency:** Requires `mcpm` binary in system PATH.
+*   **Mechanism:** Wraps `mcpm` CLI/API into 8 consolidated MCP tools (reduced from 24 for context efficiency).
+*   **Enhancement:** Acts as a "Presentation Layer" by capturing raw output, stripping ANSI color codes, and wrapping the result in clean Markdown with status emojis (✅/❌) for optimal LLM consumption.
+*   **Consolidated Tools (v3.0):**
+    | Tool | Actions | Example |
+    |:-----|:--------|:--------|
+    | `jarvis_check_status` | (single purpose) | System diagnostics |
+    | `jarvis_server` | list, info, install, uninstall, search, edit, create, usage | `jarvis_server(action="install", name="context7")` |
+    | `jarvis_profile` | list, create, edit, delete, suggest, restart | `jarvis_profile(action="list")` |
+    | `jarvis_client` | list, edit, import, config | `jarvis_client(action="edit", client_name="opencode")` |
+    | `jarvis_config` | get, set, list, migrate | `jarvis_config(action="list")` |
+    | `jarvis_project` | analyze, diff, devops | `jarvis_project(action="analyze")` |
+    | `jarvis_system` | bootstrap, restart, restart_infra | `jarvis_system(action="bootstrap")` |
+    | `jarvis_share` | start, stop, list | `jarvis_share(action="list")` |
+*   **Dependency:** Requires `mcpm` binary in system PATH or MCPM API server running.
 
 ### 2.2. MCPM Core (`./MCPM/`)
 *   **Type:** Node.js CLI Application
@@ -64,16 +72,16 @@ graph TD
 ## 3. Operational Workflows
 
 ### 3.1. Server Installation Path
-1.  **Trigger:** Agent calls `jarvis.install_server("brave")`.
-2.  **Execution:** Jarvis spawns `mcpm install brave`.
+1.  **Trigger:** Agent calls `jarvis_server(action="install", name="brave")`.
+2.  **Execution:** Jarvis calls MCPM API (or spawns `mcpm install brave` as fallback).
 3.  **Resolution:** MCPM resolves "brave" from `technologies.toml`.
 4.  **Action:** MCPM installs npm package `@modelcontextprotocol/server-brave-search`.
 5.  **Config:** MCPM updates local registry and regenerates IDE config files.
 
-### 3.2. Semantic Search Path (Future)
-1.  **Trigger:** Agent calls `jarvis.search_servers("web search")`.
-2.  **Query:** Jarvis queries Qdrant vector store (via `memory` server or direct client).
-3.  **Result:** Returns relevant server packages based on description embeddings.
+### 3.2. Server Search Path
+1.  **Trigger:** Agent calls `jarvis_server(action="search", query="web search")`.
+2.  **Query:** Jarvis queries the MCPM registry for matching servers.
+3.  **Result:** Returns relevant server packages based on name/description matching.
 
 ## 4. Development Environment Setup
 
@@ -100,13 +108,13 @@ The system is designed to be bootstrapped by the agent itself.
     Start your agent and give the instruction:
     > "Please bootstrap the system."
 
-    Jarvis will automatically:
+    Jarvis will call `jarvis_system(action="bootstrap")` which automatically:
     - Install the MCPM CLI dependencies.
     - Link the `mcpm` command to your system.
     - Start the Docker infrastructure (Postgres & Qdrant).
 
 4.  **Verify:**
-    Ask the agent: *"Check system status"* to confirm everything is running.
+    Ask the agent: *"Check system status"* and Jarvis will call `jarvis_check_status()` to confirm everything is running.
 
 ## 5. Documentation Index
 

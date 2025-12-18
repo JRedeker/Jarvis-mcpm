@@ -3,6 +3,7 @@ set -e
 
 # MCPM Daemon Entrypoint
 # Starts all configured profiles as Streamable HTTP services using supervisor
+# Also runs the MCPM API server for structured HTTP access
 # Updated from SSE to HTTP transport (MCP 2025-03-26 spec)
 
 echo "=== MCPM Daemon Starting ==="
@@ -11,6 +12,13 @@ echo "=== MCPM Daemon Starting ==="
 if [ -d "/opt/mcpm_source" ]; then
     echo "Installing MCPM from local source..."
     pip install -e /opt/mcpm_source
+fi
+
+# Install/update Node.js MCPM CLI if available (for API server)
+if [ -d "/opt/mcpm-cli" ]; then
+    echo "Installing MCPM CLI dependencies..."
+    cd /opt/mcpm-cli && npm install --production 2>/dev/null || true
+    cd /
 fi
 
 # Export all API keys to environment (they're passed via docker-compose)
@@ -34,6 +42,9 @@ declare -A PROFILE_PORTS=(
     ["qdrant"]=6279
     ["p-new"]=6280
 )
+
+# MCPM API Server port
+MCPM_API_PORT=6275
 
 # Generate supervisor config for each enabled profile
 generate_supervisor_config() {
@@ -81,6 +92,21 @@ environment=HOME="/root",PATH="/root/.local/bin:/usr/local/bin:/usr/bin:/bin"
 EOF
         fi
     done
+
+    # Add MCPM API Server (Node.js) if available
+    if [ -d "/opt/mcpm-cli" ]; then
+        echo "Configuring MCPM API Server on port $MCPM_API_PORT"
+        cat >> /etc/supervisor/conf.d/mcpm-profiles.conf << EOF
+
+[program:mcpm-api]
+command=node /opt/mcpm-cli/api/server.js
+autostart=true
+autorestart=true
+stderr_logfile=/var/log/mcpm/api.err.log
+stdout_logfile=/var/log/mcpm/api.out.log
+environment=HOME="/root",PATH="/usr/local/bin:/usr/bin:/bin",MCPM_API_PORT="$MCPM_API_PORT"
+EOF
+    fi
 }
 
 # Wait for MCPM config to be available (mounted volume)

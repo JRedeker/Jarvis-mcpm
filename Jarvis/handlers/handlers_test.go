@@ -1324,3 +1324,449 @@ func TestApplyDevOpsStack_GitInitError(t *testing.T) {
 		t.Errorf("Expected git init error message, got: %s", text)
 	}
 }
+
+// ==================== Consolidated Handler Tests ====================
+
+func TestServer_ActionRouting(t *testing.T) {
+	tests := []struct {
+		name           string
+		action         string
+		args           map[string]interface{}
+		expectedOutput string
+	}{
+		{
+			name:           "list action",
+			action:         "list",
+			args:           map[string]interface{}{},
+			expectedOutput: "Server List",
+		},
+		{
+			name:           "info action",
+			action:         "info",
+			args:           map[string]interface{}{"name": "context7"},
+			expectedOutput: "context7",
+		},
+		{
+			name:           "search action",
+			action:         "search",
+			args:           map[string]interface{}{"query": "memory"},
+			expectedOutput: "Search Results",
+		},
+		{
+			name:           "usage action",
+			action:         "usage",
+			args:           map[string]interface{}{},
+			expectedOutput: "Usage",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mcpm := NewMockMcpmRunner().
+				WithResponse("ls", "Server List").
+				WithResponse("info", "context7: installed").
+				WithResponse("search", "Search Results: memory-server").
+				WithResponse("usage", "Usage Statistics")
+
+			h := NewHandler(mcpm, nil, nil, nil)
+			ctx := context.Background()
+
+			args := tt.args
+			args["action"] = tt.action
+			req := newRequest(args)
+
+			result, err := h.Server(ctx, req)
+
+			if err != nil {
+				t.Fatalf("Server() returned error: %v", err)
+			}
+			if result.IsError {
+				t.Fatalf("Server() returned error result: %s", getResultText(result))
+			}
+
+			text := getResultText(result)
+			if !strings.Contains(text, tt.expectedOutput) {
+				t.Errorf("Expected output containing '%s', got: %s", tt.expectedOutput, text)
+			}
+		})
+	}
+}
+
+func TestServer_InvalidAction(t *testing.T) {
+	mcpm := NewMockMcpmRunner()
+	h := NewHandler(mcpm, nil, nil, nil)
+	ctx := context.Background()
+
+	req := newRequest(map[string]interface{}{"action": "invalid"})
+	result, _ := h.Server(ctx, req)
+
+	if result == nil || !result.IsError {
+		t.Error("Expected error result for invalid action")
+	}
+	text := getResultText(result)
+	if !strings.Contains(text, "invalid action") {
+		t.Errorf("Expected invalid action error, got: %s", text)
+	}
+}
+
+func TestServer_MissingAction(t *testing.T) {
+	mcpm := NewMockMcpmRunner()
+	h := NewHandler(mcpm, nil, nil, nil)
+	ctx := context.Background()
+
+	req := newRequest(map[string]interface{}{})
+	result, _ := h.Server(ctx, req)
+
+	if result == nil || !result.IsError {
+		t.Error("Expected error result for missing action")
+	}
+	text := getResultText(result)
+	if !strings.Contains(text, "action is required") {
+		t.Errorf("Expected action required error, got: %s", text)
+	}
+}
+
+func TestProfile_ActionRouting(t *testing.T) {
+	tests := []struct {
+		name           string
+		action         string
+		args           map[string]interface{}
+		expectedOutput string
+	}{
+		{
+			name:           "list action",
+			action:         "list",
+			args:           map[string]interface{}{},
+			expectedOutput: "Profile List",
+		},
+		{
+			name:           "create action",
+			action:         "create",
+			args:           map[string]interface{}{"name": "test-profile"},
+			expectedOutput: "Created",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mcpm := NewMockMcpmRunner().
+				WithResponse("profile", "Profile List\nCreated profile")
+
+			h := NewHandler(mcpm, nil, nil, nil)
+			ctx := context.Background()
+
+			args := tt.args
+			args["action"] = tt.action
+			req := newRequest(args)
+
+			_, err := h.Profile(ctx, req)
+
+			if err != nil {
+				t.Fatalf("Profile() returned error: %v", err)
+			}
+		})
+	}
+}
+
+func TestProfile_SuggestAction(t *testing.T) {
+	fs := NewMockFileSystem().WithCwd("/home/user/projects/pokeedge")
+	h := NewHandler(nil, nil, nil, fs)
+	ctx := context.Background()
+
+	req := newRequest(map[string]interface{}{"action": "suggest"})
+	result, err := h.Profile(ctx, req)
+
+	if err != nil {
+		t.Fatalf("Profile() suggest action returned error: %v", err)
+	}
+
+	text := getResultText(result)
+	if !strings.Contains(text, "p-pokeedge") {
+		t.Errorf("Expected p-pokeedge in suggest output, got: %s", text)
+	}
+}
+
+func TestProfile_InvalidAction(t *testing.T) {
+	h := NewHandler(nil, nil, nil, nil)
+	ctx := context.Background()
+
+	req := newRequest(map[string]interface{}{"action": "badaction"})
+	result, _ := h.Profile(ctx, req)
+
+	if result == nil || !result.IsError {
+		t.Error("Expected error result for invalid action")
+	}
+}
+
+func TestClient_ActionRouting(t *testing.T) {
+	mcpm := NewMockMcpmRunner().
+		WithResponse("client", "Client list")
+	fs := NewMockFileSystem().WithCwd("/home/user/project")
+
+	h := NewHandler(mcpm, nil, nil, fs)
+	ctx := context.Background()
+
+	// Test list action (should map to ls)
+	req := newRequest(map[string]interface{}{"action": "list"})
+	result, err := h.Client(ctx, req)
+
+	if err != nil {
+		t.Fatalf("Client() returned error: %v", err)
+	}
+	// The listClients function returns a formatted list
+	text := getResultText(result)
+	if !strings.Contains(text, "MCP Clients") {
+		t.Errorf("Expected MCP Clients header, got: %s", text)
+	}
+}
+
+func TestClient_InvalidAction(t *testing.T) {
+	h := NewHandler(nil, nil, nil, nil)
+	ctx := context.Background()
+
+	req := newRequest(map[string]interface{}{"action": "badaction"})
+	result, _ := h.Client(ctx, req)
+
+	if result == nil || !result.IsError {
+		t.Error("Expected error result for invalid action")
+	}
+}
+
+func TestConfig_ActionRouting(t *testing.T) {
+	mcpm := NewMockMcpmRunner().
+		WithResponse("config", "Config output").
+		WithResponse("migrate", "Migration complete")
+
+	h := NewHandler(mcpm, nil, nil, nil)
+	ctx := context.Background()
+
+	tests := []struct {
+		name   string
+		action string
+		args   map[string]interface{}
+	}{
+		{"get", "get", map[string]interface{}{"key": "default_profile"}},
+		{"set", "set", map[string]interface{}{"key": "default_profile", "value": "memory"}},
+		{"list", "list", map[string]interface{}{}},
+		{"migrate", "migrate", map[string]interface{}{}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			args := tt.args
+			args["action"] = tt.action
+			req := newRequest(args)
+
+			result, err := h.Config(ctx, req)
+			if err != nil {
+				t.Fatalf("Config() returned error: %v", err)
+			}
+			if result.IsError {
+				t.Errorf("Config() returned error result for action %s", tt.action)
+			}
+		})
+	}
+}
+
+func TestConfig_InvalidAction(t *testing.T) {
+	h := NewHandler(nil, nil, nil, nil)
+	ctx := context.Background()
+
+	req := newRequest(map[string]interface{}{"action": "badaction"})
+	result, _ := h.Config(ctx, req)
+
+	if result == nil || !result.IsError {
+		t.Error("Expected error result for invalid action")
+	}
+}
+
+func TestProject_ActionRouting(t *testing.T) {
+	git := NewMockGitRunner().
+		WithStatus("M  file.go").
+		WithDiff("diff content")
+	fs := NewMockFileSystem().
+		WithCwd("/home/user/project").
+		WithDir("/home/user/project", []os.DirEntry{}).
+		WithFile("/home/user/project/.git", []byte{})
+
+	h := NewHandler(nil, nil, git, fs)
+	ctx := context.Background()
+
+	tests := []struct {
+		name   string
+		action string
+		args   map[string]interface{}
+		check  func(text string) bool
+	}{
+		{
+			name:   "analyze",
+			action: "analyze",
+			args:   map[string]interface{}{},
+			check:  func(text string) bool { return strings.Contains(text, "path") },
+		},
+		{
+			name:   "diff",
+			action: "diff",
+			args:   map[string]interface{}{},
+			check:  func(text string) bool { return strings.Contains(text, "Local Review Context") },
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			args := tt.args
+			args["action"] = tt.action
+			req := newRequest(args)
+
+			result, err := h.Project(ctx, req)
+			if err != nil {
+				t.Fatalf("Project() returned error: %v", err)
+			}
+
+			text := getResultText(result)
+			if !tt.check(text) {
+				t.Errorf("Project() output check failed for action %s: %s", tt.action, text)
+			}
+		})
+	}
+}
+
+func TestProject_InvalidAction(t *testing.T) {
+	h := NewHandler(nil, nil, nil, nil)
+	ctx := context.Background()
+
+	req := newRequest(map[string]interface{}{"action": "badaction"})
+	result, _ := h.Project(ctx, req)
+
+	if result == nil || !result.IsError {
+		t.Error("Expected error result for invalid action")
+	}
+}
+
+func TestSystem_InvalidAction(t *testing.T) {
+	h := NewHandler(nil, nil, nil, nil)
+	ctx := context.Background()
+
+	req := newRequest(map[string]interface{}{"action": "badaction"})
+	result, _ := h.System(ctx, req)
+
+	if result == nil || !result.IsError {
+		t.Error("Expected error result for invalid action")
+	}
+}
+
+func TestShare_ActionRouting(t *testing.T) {
+	h := NewHandler(nil, nil, nil, nil)
+	h.Processes = NewInMemoryProcessManager()
+	ctx := context.Background()
+
+	// Test list action (no shares)
+	req := newRequest(map[string]interface{}{"action": "list"})
+	result, err := h.Share(ctx, req)
+
+	if err != nil {
+		t.Fatalf("Share() returned error: %v", err)
+	}
+
+	text := getResultText(result)
+	if !strings.Contains(text, "No servers are currently being shared") {
+		t.Errorf("Expected no shares message, got: %s", text)
+	}
+}
+
+func TestShare_InvalidAction(t *testing.T) {
+	h := NewHandler(nil, nil, nil, nil)
+	ctx := context.Background()
+
+	req := newRequest(map[string]interface{}{"action": "badaction"})
+	result, _ := h.Share(ctx, req)
+
+	if result == nil || !result.IsError {
+		t.Error("Expected error result for invalid action")
+	}
+}
+
+// ==================== Payload Size Verification ====================
+
+func TestToolDefinitions_CountAndSize(t *testing.T) {
+	h := NewHandler(nil, nil, nil, nil)
+	defs := GetToolDefinitions(h)
+
+	// Verify we have exactly 8 tools
+	if len(defs) != 8 {
+		t.Errorf("Expected 8 consolidated tools, got %d", len(defs))
+	}
+
+	// Verify tool names follow jarvis_ prefix convention
+	expectedTools := map[string]bool{
+		"jarvis_check_status": true,
+		"jarvis_server":       true,
+		"jarvis_profile":      true,
+		"jarvis_client":       true,
+		"jarvis_config":       true,
+		"jarvis_project":      true,
+		"jarvis_system":       true,
+		"jarvis_share":        true,
+	}
+
+	for _, def := range defs {
+		if !expectedTools[def.Tool.Name] {
+			t.Errorf("Unexpected tool name: %s", def.Tool.Name)
+		}
+		delete(expectedTools, def.Tool.Name)
+	}
+
+	if len(expectedTools) > 0 {
+		t.Errorf("Missing expected tools: %v", expectedTools)
+	}
+}
+
+func TestToolDefinitions_DescriptionLengths(t *testing.T) {
+	h := NewHandler(nil, nil, nil, nil)
+	defs := GetToolDefinitions(h)
+
+	// Descriptions should be concise (aim for <80 chars)
+	const maxDescriptionLength = 80
+
+	for _, def := range defs {
+		desc := def.Tool.Description
+		if len(desc) > maxDescriptionLength {
+			t.Errorf("Tool %s description too long (%d chars): %s",
+				def.Tool.Name, len(desc), desc)
+		}
+	}
+}
+
+func TestToolDefinitions_PayloadSize(t *testing.T) {
+	h := NewHandler(nil, nil, nil, nil)
+	defs := GetToolDefinitions(h)
+
+	// Marshal each tool to get actual JSON size
+	totalSize := 0
+	for _, def := range defs {
+		data, err := json.Marshal(def.Tool)
+		if err != nil {
+			t.Fatalf("Failed to marshal tool %s: %v", def.Tool.Name, err)
+		}
+		totalSize += len(data)
+	}
+
+	// Add overhead for the array wrapper {"tools": [...]}
+	totalSize += 20
+
+	// Target: significant reduction from original ~11KB
+	// With 8 tools instead of 24, and shorter descriptions, we expect ~4-5KB
+	const maxPayloadSize = 6000 // Conservative target
+	if totalSize > maxPayloadSize {
+		t.Errorf("Actual payload size %d exceeds target %d bytes", totalSize, maxPayloadSize)
+	}
+
+	// Log for visibility
+	t.Logf("Actual payload size: %d bytes (target: <%d, original: ~11000)", totalSize, maxPayloadSize)
+
+	// Also log per-tool sizes for analysis
+	for _, def := range defs {
+		data, _ := json.Marshal(def.Tool)
+		t.Logf("  %s: %d bytes", def.Tool.Name, len(data))
+	}
+}

@@ -8,11 +8,37 @@ Its core mission is to empower AI agents to be self-sufficient by providing them
 ## Tech Stack
 - **Core Server (Jarvis):** Go (Golang) - chosen for performance, static typing, and concurrency.
 - **CLI Manager (MCPM):** Node.js - chosen for its rich ecosystem and ease of scripting.
+  - **MCPM API Server:** Express.js REST API for structured HTTP communication.
 - **Reference Implementation (mcpm_source):** Python - likely the original prototype or logic source (FastMCP).
 - **Infrastructure:** Docker & Docker Compose.
   - **Databases:** PostgreSQL (relational), Qdrant (vector/memory).
-  - **Runtime:** `mcpm-daemon` (Python/Node environment for running tools).
+  - **Runtime:** `mcpm-daemon` (Python/Node environment for running tools and API server).
 - **Scripts:** Bash (for glue logic and testing).
+
+## Communication Architecture
+
+### Jarvis <-> MCPM Communication
+Jarvis supports two transports for communicating with MCPM:
+
+1. **HTTP Transport (Default):** Calls the MCPM REST API at `http://localhost:6275/api/v1`
+   - Structured JSON responses
+   - Faster (single long-running process)
+   - Type-safe and testable
+   - Auto-fallback to CLI if API unreachable
+
+2. **CLI Transport (Fallback):** Spawns `mcpm` subprocess
+   - Used when API server is not available
+   - Original implementation
+
+### Port Allocation
+| Port | Service |
+|:-----|:--------|
+| 6275 | MCPM API Server |
+| 6276 | p-pokeedge profile |
+| 6277 | memory profile |
+| 6278 | morph profile |
+| 6279 | qdrant profile |
+| 6280 | p-new profile |
 
 ## Project Conventions
 

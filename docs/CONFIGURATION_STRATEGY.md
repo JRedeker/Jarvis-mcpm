@@ -90,10 +90,10 @@ OpenCode uses a different configuration format with native Jarvis support. See [
 
 **Quick Setup:**
 ```javascript
-// Use Jarvis to import starter config
-use_tool("manage_client", {
-  "action": "import",
-  "client_name": "opencode"
+// Use Jarvis to import starter config (v3.0 syntax)
+jarvis_client({
+  action: "import",
+  client_name: "opencode"
 })
 ```
 
@@ -154,4 +154,4 @@ use_tool("manage_client", {
 1.  **Update Docker:** Ensure `mcpm-daemon` is running in `docker-compose.yml` (latest image).
 2.  **Update Configs:** Replace `transport: sse` with `transport: streamable-http` and change `/sse` to `/mcp` in all endpoint URLs.
 3.  **Restart:** Restart clients.
-4.  **Verify:** Use `jarvis.check_status()` to confirm the daemon is healthy.
+4.  **Verify:** Use `jarvis_check_status()` to confirm the daemon is healthy.

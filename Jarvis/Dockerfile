@@ -1,39 +1,53 @@
+# Jarvis MCP Server - Dockerfile
+# Version: 3.0 (Consolidated Tools)
+#
+# This builds a containerized Jarvis that can be used as a standalone MCP server.
+# For full functionality, mount the MCPM config directory.
+
 # Build stage
 FROM golang:1.24-alpine AS builder
 
 WORKDIR /app
 
+# Install build dependencies
+# hadolint ignore=DL3018
+RUN apk add --no-cache git
+
+# Download dependencies first (better caching)
 COPY go.mod go.sum ./
 RUN go mod download
 
+# Build the binary
 COPY . .
-RUN CGO_ENABLED=0 GOOS=linux go build -o jarvis .
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o jarvis .
 
-# Runtime stage
-FROM node:18-bookworm-slim
+# Runtime stage - using Node.js 22 LTS for MCPM compatibility
+FROM node:22-bookworm-slim
+
+LABEL org.opencontainers.image.title="Jarvis MCP Server"
+LABEL org.opencontainers.image.description="Intelligent MCP management gateway with 8 consolidated tools"
+LABEL org.opencontainers.image.version="3.0"
+LABEL org.opencontainers.image.source="https://github.com/pathintegral-institute/mcpm.sh"
 
 WORKDIR /app
 
-# Install runtime dependencies if needed (e.g. git for some MCP servers)
+# Install runtime dependencies
 # hadolint ignore=DL3008
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
+    curl \
     git \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy built binary from builder
 COPY --from=builder /app/jarvis .
 
-# We need the MCPM source code to be available and linked
-# Assuming the build context is the root of the repo, but standard docker build context for this file is usually Jarvis/
-# If we want to bundle MCPM with Jarvis image, we need to change how this image is built or copy it in.
-# For now, let's assume we copy MCPM from a 'mcpm_context' or we just don't support the full bundled image yet
-# because the "bootstrap" flow relies on local folders.
+# Create config directory
+RUN mkdir -p /root/.config/mcpm
 
-# HOWEVER, to make this image standalone-functional as requested by "working state":
-# We should copy the MCPM directory from the context if possible.
-# But strictly speaking, the user's new flow is "run jarvis binary locally".
-# So this Dockerfile is for a "containerized jarvis" deployment.
+# Health check - Jarvis responds to MCP initialize
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
+    CMD echo '{"jsonrpc":"2.0","method":"ping","id":1}' | timeout 5 ./jarvis 2>/dev/null | grep -q "pong" || exit 1
 
-# Let's at least make it a valid Node environment so it COULD run MCPM if mounted/installed.
+# Run as stdio MCP server
 ENTRYPOINT ["./jarvis"]

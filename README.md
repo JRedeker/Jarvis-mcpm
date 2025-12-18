@@ -207,19 +207,18 @@ flowchart TD
 
 ---
 
-## 🔧 Tool Reference
+## 🔧 Tool Reference (v3.0)
 
-Jarvis exposes **23 MCP tools** across 6 categories. Click to expand examples:
+Jarvis exposes **8 consolidated MCP tools** using action-based routing for ~52% context token reduction. Click to expand examples:
 
 <details>
-<summary><b>⚙️ System Management</b> — bootstrap, health checks, self-healing</summary>
+<summary><b>⚙️ System & Infrastructure</b> — bootstrap, health checks, self-healing</summary>
 
-#### `bootstrap_system()`
+#### `jarvis_system(action="bootstrap")`
 **One-command system initialization**
 
 ```javascript
-// Agent calls
-bootstrap_system()
+jarvis_system({ action: "bootstrap" })
 
 // Jarvis executes:
 // 1. Installs MCPM CLI (npm install + link)
@@ -231,26 +230,26 @@ bootstrap_system()
 ✅ Infrastructure started (PostgreSQL: healthy, Qdrant: healthy, Daemon: healthy)
 ```
 
-#### `restart_profiles(profile)`
+#### `jarvis_profile(action="restart")`
 **Hot-reload MCP servers without restarting clients**
 
 ```javascript
 // Reload all profiles after config change
-restart_profiles()
+jarvis_profile({ action: "restart" })
 
 // Reload specific profile
-restart_profiles(profile="p-pokeedge")
+jarvis_profile({ action: "restart", profile: "p-pokeedge" })
 
 // Returns:
 ✅ Successfully restarted profile 'p-pokeedge'
 💡 Changes applied. Clients using HTTP will see updates immediately.
 ```
 
-#### `check_status()`
+#### `jarvis_check_status()`
 **Comprehensive system health diagnostics**
 
 ```javascript
-check_status()
+jarvis_check_status()
 
 // Returns:
 ## System Status Report
@@ -265,36 +264,36 @@ check_status()
 <details>
 <summary><b>📦 Server Management</b> — install, search, discover tools</summary>
 
-#### `install_server(name)`
+#### `jarvis_server(action="install")`
 **Dynamic tool installation from MCPM registry**
 
 ```javascript
 // Agent needs PDF capabilities
-install_server("pdf-parse")
+jarvis_server({ action: "install", name: "pdf-parse" })
 
 // Returns:
 ⚙️ Installing pdf-parse...
 ✅ npm package @modelcontextprotocol/server-pdf installed
 ✅ Server registered in MCPM
-💡 Next step: Use manage_profile("edit", "your-project", add_servers="pdf-parse")
+💡 Next step: Use jarvis_profile(action="edit", name="your-project", add_servers="pdf-parse")
 ```
 
-#### `search_servers(query)`
+#### `jarvis_server(action="search")`
 **Semantic search across 200+ specialized tools**
 
 ```javascript
-search_servers("pdf extraction")
+jarvis_server({ action: "search", query: "pdf extraction" })
 
 // Returns:
 ## Search Results for "pdf extraction"
 
 📦 **pdf-parse** - Extract text and metadata from PDF documents
    Tags: pdf, extraction, documents, text
-   Install: install_server("pdf-parse")
+   Install: jarvis_server(action="install", name="pdf-parse")
 
 📦 **pdf-reader** - Advanced PDF processing with OCR support
    Tags: pdf, ocr, images, tables
-   Install: install_server("pdf-reader")
+   Install: jarvis_server(action="install", name="pdf-reader")
 
 💡 Found 2 results. These are specialized MCP servers—not available in typical clients.
 ```
@@ -305,19 +304,19 @@ search_servers("pdf extraction")
 <details>
 <summary><b>📂 Profile Management</b> — composable configuration, auto-detection</summary>
 
-#### `manage_profile(action, name, add_servers)`
+#### `jarvis_profile(action="create|edit")`
 **Composable configuration management**
 
 ```javascript
 // Create new project profile
-manage_profile("create", "project-frontend")
+jarvis_profile({ action: "create", name: "project-frontend" })
 
 // Returns:
 ✅ Profile "project-frontend" created
-💡 Add servers with: manage_profile("edit", "project-frontend", add_servers="...")
+💡 Add servers with: jarvis_profile(action="edit", name="project-frontend", add_servers="...")
 
 // Add tools to profile
-manage_profile("edit", "project-frontend", add_servers="brave-search,context7")
+jarvis_profile({ action: "edit", name: "project-frontend", add_servers: "brave-search,context7" })
 
 // Returns:
 ✅ Added brave-search to project-frontend
@@ -325,12 +324,12 @@ manage_profile("edit", "project-frontend", add_servers="brave-search,context7")
 💡 Activate with: mcpm profile run project-frontend
 ```
 
-#### `suggest_profile(client_name)`
+#### `jarvis_profile(action="suggest")`
 **Intelligent profile stack recommendation**
 
 ```javascript
 // Agent in /home/user/my-react-app
-suggest_profile(client_name="cursor")
+jarvis_profile({ action: "suggest" })
 
 // Returns:
 ## Recommended Profile Stack
@@ -351,12 +350,11 @@ suggest_profile(client_name="cursor")
 <details>
 <summary><b>🏗️ DevOps Tools</b> — scaffolding, CI/CD, pre-commit hooks</summary>
 
-#### `apply_devops_stack(project_type)`
+#### `jarvis_project(action="devops")`
 **Production-ready scaffolding**
 
 ```javascript
-// Apply stack
-apply_devops_stack(project_type="python", enable_ai_review=true)
+jarvis_project({ action: "devops", project_type: "python", enable_ai_review: true })
 
 // Returns:
 ✅ Git initialized
@@ -370,12 +368,12 @@ apply_devops_stack(project_type="python", enable_ai_review=true)
 💡 Next: Make your first commit to test the hooks
 ```
 
-#### `fetch_diff_context(staged)`
+#### `jarvis_project(action="diff")`
 **Self-review before commits**
 
 ```javascript
 // Agent about to commit
-fetch_diff_context(staged=true)
+jarvis_project({ action: "diff", staged: true })
 ```
 
 **Returns:**
@@ -398,44 +396,49 @@ Changes to be committed:
 </details>
 
 <details>
-<summary><b>📋 Complete Tool List</b> — all 23 tools by category</summary>
+<summary><b>📋 Complete Tool List</b> — all 8 consolidated tools (v3.0)</summary>
 
-**System (4 tools):**
-- `bootstrap_system()` - One-command initialization
-- `check_status()` - Health diagnostics
-- `restart_infrastructure()` - Docker service recovery
-- `restart_service()` - Restart Jarvis itself
+| Tool | Actions | Description |
+|:-----|:--------|:------------|
+| `jarvis_check_status` | - | System health diagnostics |
+| `jarvis_server` | list, info, install, uninstall, search, edit, create, usage | Server management |
+| `jarvis_profile` | list, create, edit, delete, suggest, restart | Profile management |
+| `jarvis_client` | list, edit, import, config | AI client configuration |
+| `jarvis_config` | get, set, list, migrate | MCPM configuration |
+| `jarvis_project` | analyze, diff, devops | Project analysis & DevOps |
+| `jarvis_system` | bootstrap, restart, restart_infra | System operations |
+| `jarvis_share` | start, stop, list | Server sharing |
 
-**Servers (5 tools):**
-- `install_server(name)` - Install from registry
-- `uninstall_server(name)` - Remove server
-- `search_servers(query)` - Find tools
-- `server_info(name)` - Detailed info
-- `list_servers()` - Show installed
+**Examples:**
+```javascript
+// System
+jarvis_check_status()
+jarvis_system({ action: "bootstrap" })
+jarvis_system({ action: "restart_infra" })
 
-**Profiles (2 tools):**
-- `manage_profile(...)` - Create/edit/delete
-- `suggest_profile(...)` - Smart recommendations
+// Servers
+jarvis_server({ action: "list" })
+jarvis_server({ action: "install", name: "brave-search" })
+jarvis_server({ action: "search", query: "documentation" })
 
-**Clients (2 tools):**
-- `manage_client(...)` - Configure AI clients
-- `manage_config(...)` - Global settings
+// Profiles
+jarvis_profile({ action: "list" })
+jarvis_profile({ action: "edit", name: "p-pokeedge", add_servers: "context7" })
+jarvis_profile({ action: "suggest" })
 
-**DevOps (3 tools):**
-- `analyze_project()` - Detect languages/configs
-- `apply_devops_stack(...)` - Scaffold projects
-- `fetch_diff_context(...)` - Review before commit
+// Clients
+jarvis_client({ action: "list" })
+jarvis_client({ action: "edit", client_name: "opencode", add_profile: "memory" })
 
-**Sharing (3 tools):**
-- `create_server(...)` - Register custom servers
-- `edit_server(...)` - Modify server config
-- `share_server(...)` - Expose via tunnel
+// Project
+jarvis_project({ action: "analyze" })
+jarvis_project({ action: "diff", staged: true })
+jarvis_project({ action: "devops", project_type: "go" })
 
-**Advanced (4 tools):**
-- `migrate_config()` - Upgrade MCPM v1→v2
-- `list_shared_servers()` - Show active tunnels
-- `stop_sharing_server(...)` - Revoke tunnel access
-- `usage_stats()` - Analytics and metrics
+// Sharing
+jarvis_share({ action: "start", name: "context7" })
+jarvis_share({ action: "list" })
+```
 </details>
 
 ---
@@ -490,7 +493,7 @@ Changes to be committed:
 
 ---
 
-**For Developers:** See the [Tool Reference](#-tool-reference) section for the full list of 24 tools Jarvis exposes to agents.
+**For Developers:** See the [Tool Reference](#-tool-reference-v30) section for the full list of 8 consolidated tools Jarvis exposes to agents.
 
 ---
 
@@ -875,7 +878,7 @@ Expose local MCP servers to remote agents via secure tunnels:
 
 ```javascript
 // Share a server
-share_server("context7", port="8080", no_auth=false)
+jarvis_share({ action: "start", name: "context7", port: "8080", no_auth: false })
 
 // Returns:
 ✅ context7 shared successfully
@@ -916,7 +919,7 @@ brew install --cask docker
 ./scripts/manage-mcp.sh start
 ```
 
-Or let the agent run `bootstrap_system()` to handle it automatically.
+Or let the agent run `jarvis_system(action="bootstrap")` to handle it automatically.
 </details>
 
 <details>
@@ -925,11 +928,11 @@ Or let the agent run `bootstrap_system()` to handle it automatically.
 **Absolutely!** Jarvis uses the MCPM registry with 200+ servers. Install any tool:
 
 ```javascript
-search_servers("your-tool-category")  // Find tools
-install_server("tool-name")           // Install
+jarvis_server({ action: "search", query: "your-tool-category" })  // Find tools
+jarvis_server({ action: "install", name: "tool-name" })           // Install
 ```
 
-You can also register custom servers with `create_server()`.
+You can also register custom servers with `jarvis_server(action="create")`.
 </details>
 
 <details>
@@ -964,7 +967,7 @@ If your tool speaks MCP, it works with Jarvis. See [Universal Compatibility](#-u
 <summary><b>How does Jarvis handle secrets and security?</b></summary>
 
 **Pre-Commit Protection:**
-- `apply_devops_stack()` installs `gitleaks` hook
+- `jarvis_project(action="devops")` installs `gitleaks` hook
 - Scans commits for API keys, tokens, passwords
 - **Blocks commit** if secrets detected
 - Forces agent to use environment variables
@@ -983,17 +986,17 @@ If your tool speaks MCP, it works with Jarvis. See [Universal Compatibility](#-u
 
 1. **Check System Health:**
    ```javascript
-   check_status()
+   jarvis_check_status()
    ```
 
 2. **Common Fixes:**
    - **Docker not running:** `./scripts/manage-mcp.sh start`
-   - **MCPM not found:** `bootstrap_system()`
+   - **MCPM not found:** `jarvis_system({ action: "bootstrap" })`
    - **Port conflicts:** Run `docker compose ps`
 
 3. **Self-Healing:**
    ```javascript
-   restart_infrastructure()  // Repairs crashed services
+   jarvis_system({ action: "restart_infra" })  // Repairs crashed services
    ```
 
 See [Troubleshooting](#-troubleshooting) for detailed error resolution.
@@ -1075,7 +1078,7 @@ cd MCPM && npm install && npm link
 </details>
 
 **Still Stuck?**
-1. Run full diagnostic: `check_status()`
+1. Run full diagnostic: `jarvis_check_status()`
 2. Check logs: `cat logs/jarvis.log`
 3. [Report bugs on GitHub](https://github.com/JRedeker/Jarvis-mcpm/issues)
 

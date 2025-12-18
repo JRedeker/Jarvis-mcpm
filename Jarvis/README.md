@@ -1,7 +1,9 @@
 # Jarvis: Server Component
 
-**Version:** 1.0.0
-**Language:** Go (1.24+)
+**Version:** 3.0.0 (Context Efficiency Edition)
+**Language:** Go 1.24+
+**MCP SDK:** [mcp-go v0.43.2](https://github.com/mark3labs/mcp-go)
+**Last Updated:** December 2025
 
 ## Overview
 
@@ -11,11 +13,14 @@ While the [Root README](../README.md) covers high-level usage and tools, this do
 
 ## 📂 Directory Structure
 
-*   **`main.go`**: The single-file entry point. It defines:
-    *   **Tool Definitions:** The schema for every tool exposed to the agent (`install_server`, `bootstrap_system`, etc.).
-    *   **Execution Logic:** The handlers that invoke the `mcpm` CLI via `exec.Command`.
-    *   **MCP Server:** The server instance using `github.com/mark3labs/mcp-go`.
-*   **`Dockerfile`**: Defines the container image for running Jarvis in a deployed environment (though local execution is preferred for tool management).
+*   **`main.go`**: Entry point for the MCP server using `github.com/mark3labs/mcp-go`.
+*   **`handlers/`**: Tool handlers with dependency injection for testability
+    *   `server.go` - Consolidated tool definitions (8 tools in v3.0)
+    *   `consolidated.go` - Action-based routing handlers
+    *   `handlers.go` - Core business logic implementations
+    *   `registry.go` - Handler registration
+*   **`testing/`**: Test utilities (mocks, helpers, fixtures)
+*   **`Dockerfile`**: Container image for deployed environments.
 
 ## 🛠️ Building from Source
 
@@ -40,13 +45,28 @@ You can run the binary directly to test the Stdio transport (though it will expe
 
 ## 🧩 Key Implementation Details
 
-### The `bootstrap_system` Tool
-Located in `main.go`, this critical tool is responsible for self-initialization. It performs the following heuristic:
+### Consolidated Tool Architecture (v3.0)
+
+In v3.0, Jarvis consolidated 24 tools into 8 action-based tools for **52% context token reduction**:
+
+| Tool | Actions | Description |
+|:-----|:--------|:------------|
+| `jarvis_check_status` | - | System health check |
+| `jarvis_server` | list, info, install, uninstall, search, edit, create, usage | Server management |
+| `jarvis_profile` | list, create, edit, delete, suggest, restart | Profile management |
+| `jarvis_client` | list, edit, import, config | Client configuration |
+| `jarvis_config` | get, set, list, migrate | MCPM configuration |
+| `jarvis_project` | analyze, diff, devops | Project analysis & DevOps |
+| `jarvis_system` | bootstrap, restart, restart_infra | System operations |
+| `jarvis_share` | start, stop, list | Server sharing |
+
+### `jarvis_system` (action="bootstrap")
+Self-initialization tool:
 1.  Locates the project root by looking for the `MCPM/` directory.
 2.  Runs `npm install` and `npm link` inside `MCPM/`.
 3.  Runs `docker-compose up -d` in the root.
 
-### The `apply_devops_stack` Tool
+### `jarvis_project` (action="devops")
 Transforms Jarvis into a Project Architect.
 *   **Input:** `project_type` (optional), `enable_ai_review` (bool), `force` (bool).
 *   **Safe Mode:** Checks for existing configs first. Use `force=true` to overwrite.
@@ -57,17 +77,17 @@ Transforms Jarvis into a Project Architect.
     4.  **AI Review:** Generates `.github/workflows/pr_agent.yml`.
     5.  **Ignore:** Creates `.gitignore`.
 
-### The `analyze_project` Tool
+### `jarvis_project` (action="analyze")
 Enables intelligent decision making for agents.
 *   **Output:** JSON report of detected languages (`go`, `python`, `node`) and existing configurations (Git, Pre-commit, Workflows).
 *   **Use Case:** Agents call this *before* applying the stack to determine the correct strategy.
 
-### The `restart_infrastructure` Tool
+### `jarvis_system` (action="restart_infra")
 Self-healing capability for the environment.
 *   **Action:** Executes `scripts/manage-mcp.sh restart`.
 *   **Result:** Safely reboots the Postgres and Qdrant containers and logs the output.
 
-### The `fetch_diff_context` Tool
+### `jarvis_project` (action="diff")
 Enables the "Local Review Loop" for agents.
 *   **Input:** `staged` (bool).
 *   **Output:** A formatted Markdown report containing:
@@ -76,7 +96,7 @@ Enables the "Local Review Loop" for agents.
     *   `git diff` content (staged or HEAD).
 *   **Use Case:** Allows the Agent to "see" its own changes before committing, enabling self-correction.
 
-### The `restart_profiles` Tool (Daemon Orchestration)
+### `jarvis_profile` (action="restart")
 Manages the `mcpm-daemon` container, allowing hot-reloads of MCP servers.
 *   **Input:** `profile` (optional string).
 *   **Action:**
@@ -84,21 +104,21 @@ Manages the `mcpm-daemon` container, allowing hot-reloads of MCP servers.
     *   If empty: Runs `docker compose restart mcpm-daemon`.
 *   **Benefit:** Updates API keys or server configs without disconnecting the AI client.
 
-### The `suggest_profile` Tool (Smart Stacking)
+### `jarvis_profile` (action="suggest")
 Jarvis implements a "3-Layer Stacking" logic to determine the active toolset dynamically.
-*   **Input:** `client_name` (string), `testing` (bool).
+*   **Input:** `testing` (bool).
 *   **Logic:**
     1.  **Base:** Detects project context (e.g., `p-pokeedge`) from CWD. Defaults to `p-new`.
     2.  **Global:** Appends `memory`. Appends `testing-all-tools` if `testing=true`.
 *   **Output:** JSON array of profile names (which correspond to HTTP ports).
 
-### Client Configuration Management (`manage_client`)
+### `jarvis_client` (Client Configuration Management)
 Jarvis exposes advanced configuration for MCP clients.
-*   **Actions:** `edit`, `import`, `ls`, `config`.
+*   **Actions:** `list`, `edit`, `import`, `config`.
 *   **HTTP Support:** Can configure clients to point to local HTTP endpoints (`http://localhost:XXXX/mcp`) instead of spawning stdio processes.
 
-### Shared Servers (Tunneling)
-Jarvis manages a map of running background processes for the `share_server` tool.
+### `jarvis_share` (Server Tunneling)
+Jarvis manages a map of running background processes for server sharing.
 *   **Concurrency:** Uses `sync.Mutex` to safely manage the state of shared tunnels.
 *   **Process Management:** Captures `stdout` to detect the public URL generated by `mcpm share`.
 
@@ -153,56 +173,67 @@ GitHub Actions workflow runs on every push:
 - Full test suite with race detection
 - Build verification
 
-## 🎯 Phase 1 Improvements (Latest)
+## 🎯 Version 3.0: Context Efficiency Edition
 
-The latest release includes **Phase 1: Making Jarvis the Obvious Choice**, which positions Jarvis as the primary interface for AI agents:
+The v3.0 release consolidates 24 tools into 8 action-based tools for **52% context token reduction** (~1,400 tokens saved per connection).
 
-### Enhanced Tool Descriptions
+### Key Changes
 
-All 23 tools now feature **benefits-focused descriptions** that highlight:
-- Specific capabilities and outcomes
-- When and why to use the tool
-- Key differentiators from alternatives
-
-**Example:**
-```go
-// Before (generic):
-"Install a new MCP server using MCPM"
-
-// After (compelling):
-"Install MCP servers with automatic dependency resolution, validation,
-and clean error messages. Handles Docker, npm, and pip installations seamlessly."
-```
+- **Tool Consolidation:** 24 → 8 tools using action-based routing
+- **Namespace:** All tools prefixed with `jarvis_`
+- **Payload Reduction:** ~11KB → ~5.3KB
+- **Breaking Change:** Old tool names replaced (see migration guide in AGENTS.md)
 
 ### Smart Error Handling
 
-Key tools now include **intelligent validation and helpful suggestions**:
+All consolidated tools include **intelligent validation and helpful suggestions**:
 
-**install_server:**
+**jarvis_server (action="install"):**
 - ❌ Validates server name format (rejects spaces/slashes)
-- 💡 Suggests `search_servers()` on 404 errors
+- 💡 Suggests `jarvis_server(action="search")` on 404 errors
 - ✅ Provides next steps after installation
 - Detects "already installed" and suggests profile management
 
-**uninstall_server:**
-- ❌ Validates non-empty server name
-- 💡 Suggests `list_servers()` when server not found
-- ⚠️ Warns about profile updates after removal
-
-**search_servers:**
+**jarvis_server (action="search"):**
 - ❌ Validates non-empty query
 - 💡 Provides tips when no results found
-- 💡 Adds next step guidance to use `server_info()`
+- 💡 Adds next step guidance to use `jarvis_server(action="info")`
 
-**manage_client:**
-- ❌ Validates action against allowed values
+**jarvis_client:**
+- ❌ Validates action against allowed values (list, edit, import, config)
 - 💡 Provides examples for each action type
 - 💡 Lists common client names when required
 - ✅ Adds next step guidance after successful edits
 
 ### Documentation Updates
 
-- **CLAUDE.md** now features prominent "Using Jarvis (Primary Interface)" section
+- **AGENTS.md** includes full migration guide (old → new tool mapping)
+- **CLAUDE.md** updated with v3.0 consolidated tool reference
 - Clear guidance on when to use Jarvis vs direct MCPM CLI
-- Quick reference table with tool mappings
-- Categorized tool reference (System/Server/Profile/Client/Project Management)
+
+## 📦 Dependencies
+
+| Package | Version | Description |
+|:--------|:--------|:------------|
+| [mcp-go](https://github.com/mark3labs/mcp-go) | v0.43.2 | MCP server SDK |
+| [testify](https://github.com/stretchr/testify) | v1.11.1 | Testing framework |
+| [go-cmp](https://github.com/google/go-cmp) | v0.7.0 | Value comparison |
+
+## 🐳 Docker
+
+Build and run Jarvis as a container:
+
+```bash
+# Build image
+make docker
+
+# Or manually
+docker build -t jarvis:3.0.0 .
+
+# Run (stdio mode)
+docker run --rm -it jarvis:latest
+```
+
+## 📄 License
+
+MIT License - See [LICENSE](../LICENSE) for details.

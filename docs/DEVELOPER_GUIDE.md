@@ -2,11 +2,28 @@
 
 This guide covers how to develop, test, and contribute to Jarvis.
 
+**Version:** 3.0 (Tool Consolidation)
+
 ---
 
 ## Architecture Overview
 
 Jarvis is an MCP (Model Context Protocol) server written in Go that provides intelligent tool management for AI agents.
+
+### v3.0 Consolidated Tools
+
+Jarvis v3.0 consolidated 24 tools into 8 action-based tools for 52% context token reduction:
+
+| Tool | Actions |
+|:-----|:--------|
+| `jarvis_check_status` | (single purpose) |
+| `jarvis_server` | list, info, install, uninstall, search, edit, create, usage |
+| `jarvis_profile` | list, create, edit, delete, suggest, restart |
+| `jarvis_client` | list, edit, import, config |
+| `jarvis_config` | get, set, list, migrate |
+| `jarvis_project` | analyze, diff, devops |
+| `jarvis_system` | bootstrap, restart, restart_infra |
+| `jarvis_share` | start, stop, list |
 
 ### Component Structure
 
@@ -15,16 +32,16 @@ Jarvis-Dev/
 ├── Jarvis/                 # Go MCP server
 │   ├── main.go            # Entry point, server setup
 │   ├── handlers/          # Tool handlers (DI-based)
-│   │   ├── handlers.go    # Handler implementations
-│   │   ├── server.go      # MCP tool definitions
+│   │   ├── consolidated.go # v3.0 consolidated handlers
+│   │   ├── handlers.go    # Legacy handler implementations
+│   │   ├── server.go      # MCP tool definitions (8 tools)
 │   │   └── registry.go    # Handler registration
 │   ├── testing/           # Test utilities
 │   │   ├── mocks/         # Mock implementations
 │   │   ├── helpers/       # Test helpers
 │   │   └── fixtures/      # Test data
 │   └── smoketests/        # Integration tests
-├── MCPM/                   # Node.js CLI
-├── mcpm_source/            # Python reference (archived)
+├── MCPM/                   # Node.js CLI + API server
 ├── scripts/                # Management scripts
 └── docs/                   # Documentation
 ```
@@ -163,30 +180,69 @@ func CreateProductionHandler() *Handler {
 
 ---
 
-## Adding a New Tool
+## Adding a New Action to an Existing Tool
+
+In v3.0, we use consolidated action-based tools. To add a new action:
+
+### Step 1: Add the Action Handler
+
+Add to `handlers/consolidated.go` in the appropriate switch statement:
+
+```go
+// In the Server handler for a new server action
+case "my_action":
+    name, _ := args["name"].(string)
+    if name == "" {
+        return mcp.NewToolResultError("name is required for my_action"), nil
+    }
+    output, _ := h.Mcpm.Run("my-action", name)
+    return mcp.NewToolResultText(output), nil
+```
+
+### Step 2: Update Tool Definition
+
+Update the action enum in `handlers/server.go`:
+
+```go
+mcp.WithString("action",
+    mcp.Description("Action: list, info, install, uninstall, search, edit, create, usage, my_action"),
+    mcp.Required(),
+),
+```
+
+---
+
+## Adding a New Consolidated Tool
+
+If you need an entirely new tool category (rare), follow this pattern:
 
 ### Step 1: Define the Handler
 
-Add to `handlers/handlers.go`:
+Add to `handlers/consolidated.go`:
 
 ```go
-// MyNewTool handles the my_new_tool command
-func (h *Handler) MyNewTool(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+// MyCategory handles jarvis_mycategory actions
+func (h *Handler) MyCategory(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
     args, ok := request.Params.Arguments.(map[string]interface{})
     if !ok {
         return mcp.NewToolResultError("invalid arguments"), nil
     }
 
-    // Get required parameter
-    name, ok := args["name"].(string)
-    if !ok || strings.TrimSpace(name) == "" {
-        return mcp.NewToolResultError("name is required"), nil
+    action, _ := args["action"].(string)
+    if action == "" {
+        return mcp.NewToolResultError("action is required"), nil
     }
 
-    // Implement tool logic
-    result := fmt.Sprintf("Processing: %s", name)
-
-    return mcp.NewToolResultText(result), nil
+    switch action {
+    case "action1":
+        // Implementation
+        return mcp.NewToolResultText("Result"), nil
+    case "action2":
+        // Implementation
+        return mcp.NewToolResultText("Result"), nil
+    default:
+        return mcp.NewToolResultError("unknown action: " + action), nil
+    }
 }
 ```
 
@@ -196,17 +252,17 @@ Add to `handlers/server.go` in `GetToolDefinitions()`:
 
 ```go
 {
-    Tool: mcp.NewTool("my_new_tool",
-        mcp.WithDescription("Does something useful with the given name"),
-        mcp.WithString("name",
-            mcp.Description("The name to process"),
+    Tool: mcp.NewTool("jarvis_mycategory",
+        mcp.WithDescription("Manage my category with actions: action1, action2"),
+        mcp.WithString("action",
+            mcp.Description("Action: action1, action2"),
             mcp.Required(),
         ),
-        mcp.WithBoolean("verbose",
-            mcp.Description("Enable verbose output"),
+        mcp.WithString("name",
+            mcp.Description("Name parameter for actions"),
         ),
     ),
-    Handler: h.MyNewTool,
+    Handler: h.MyCategory,
 },
 ```
 
@@ -215,8 +271,8 @@ Add to `handlers/server.go` in `GetToolDefinitions()`:
 Add to `handlers/registry.go` in `RegisterAllHandlers()`:
 
 ```go
-reg.Register("my_new_tool", func(h *Handler) ToolHandler {
-    return h.MyNewTool
+reg.Register("jarvis_mycategory", func(h *Handler) ToolHandler {
+    return h.MyCategory
 })
 ```
 
@@ -225,7 +281,23 @@ reg.Register("my_new_tool", func(h *Handler) ToolHandler {
 Create test in `handlers/handlers_test.go`:
 
 ```go
-func TestMyNewTool_Success(t *testing.T) {
+func TestMyCategory_Action1_Success(t *testing.T) {
+    h := setupTestHandler()
+
+    request := mcp.CallToolRequest{}
+    request.Params.Arguments = map[string]interface{}{
+        "action": "action1",
+        "name":   "test-value",
+    }
+
+    result, err := h.MyCategory(context.Background(), request)
+
+    require.NoError(t, err)
+    require.NotNil(t, result)
+    assert.Contains(t, getResultText(result), "test-value")
+}
+
+func TestMyCategory_RequiresAction(t *testing.T) {
     h := setupTestHandler()
 
     request := mcp.CallToolRequest{}
@@ -233,23 +305,26 @@ func TestMyNewTool_Success(t *testing.T) {
         "name": "test-value",
     }
 
-    result, err := h.MyNewTool(context.Background(), request)
-
-    require.NoError(t, err)
-    require.NotNil(t, result)
-    assert.Contains(t, getResultText(result), "test-value")
-}
-
-func TestMyNewTool_RequiresName(t *testing.T) {
-    h := setupTestHandler()
-
-    request := mcp.CallToolRequest{}
-    request.Params.Arguments = map[string]interface{}{}
-
-    result, err := h.MyNewTool(context.Background(), request)
+    result, err := h.MyCategory(context.Background(), request)
 
     require.NoError(t, err)
     assert.True(t, result.IsError)
+    assert.Contains(t, getResultText(result), "action is required")
+}
+
+func TestMyCategory_UnknownAction(t *testing.T) {
+    h := setupTestHandler()
+
+    request := mcp.CallToolRequest{}
+    request.Params.Arguments = map[string]interface{}{
+        "action": "invalid",
+    }
+
+    result, err := h.MyCategory(context.Background(), request)
+
+    require.NoError(t, err)
+    assert.True(t, result.IsError)
+    assert.Contains(t, getResultText(result), "unknown action")
 }
 ```
 
@@ -323,11 +398,30 @@ func TestWithMocks(t *testing.T) {
         &mocks.MockFileSystem{},
     )
 
-    // Test
+    // Test jarvis_check_status (v3.0 consolidated tool)
     result, err := h.CheckStatus(context.Background(), mcp.CallToolRequest{})
 
     // Assert mock was called
     mockMcpm.AssertCalled(t, "doctor")
+}
+
+// Example: Testing jarvis_server consolidated handler
+func TestServer_Install(t *testing.T) {
+    mockMcpm := mocks.NewMockMcpmClient()
+    mockMcpm.SetInstallResult("context7", "Installed successfully", nil)
+
+    h := handlers.NewHandler(mockMcpm, nil, nil, nil)
+
+    request := mcp.CallToolRequest{}
+    request.Params.Arguments = map[string]interface{}{
+        "action": "install",
+        "name":   "context7",
+    }
+
+    result, err := h.Server(context.Background(), request)
+
+    require.NoError(t, err)
+    assert.Contains(t, getResultText(result), "Installed successfully")
 }
 ```
 
