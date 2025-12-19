@@ -189,7 +189,7 @@ golangci-lint run
 
 ## Jarvis Tool Reference
 
-Jarvis exposes **8 consolidated MCP tools** (v3.0) for context token efficiency. All handlers are defined in `handlers/server.go` with implementations in `handlers/consolidated.go`.
+Jarvis exposes **9 consolidated MCP tools** (v3.1) for context token efficiency. All handlers are defined in `handlers/server.go` with implementations in `handlers/consolidated.go`.
 
 ### Complete Tool Reference Table
 
@@ -203,6 +203,7 @@ Jarvis exposes **8 consolidated MCP tools** (v3.0) for context token efficiency.
 | `jarvis_project` | analyze, diff, devops | `action` (required), `staged`, `project_type`, `force`, `enable_ai_review` |
 | `jarvis_system` | bootstrap, restart, restart_infra | `action` (required) |
 | `jarvis_share` | start, stop, list | `action` (required), `name`, `port`, `no_auth` |
+| `jarvis_diagnose` | profile_health, test_endpoint, logs, full | `action` (required), `profile`, `endpoint` |
 
 ### Usage Examples
 
@@ -221,6 +222,10 @@ jarvis_system({ action: "bootstrap" })
 
 // Analyze current project
 jarvis_project({ action: "analyze" })
+
+// Debug MCP profile issues
+jarvis_diagnose({ action: "profile_health" })
+jarvis_diagnose({ action: "logs", profile: "qdrant" })
 ```
 
 > See full API documentation: `docs/API_REFERENCE.md`

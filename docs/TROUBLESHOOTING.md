@@ -1,4 +1,4 @@
-# Jarvis Troubleshooting Guide (v3.0)
+# Jarvis Troubleshooting Guide (v3.1)
 
 This guide covers common issues and their solutions when using Jarvis.
 
@@ -6,7 +6,23 @@ This guide covers common issues and their solutions when using Jarvis.
 
 ## Quick Diagnostics
 
-Always start with the `jarvis_check_status()` tool:
+**NEW in v3.1:** Use the `jarvis_diagnose` tool for comprehensive debugging:
+
+```javascript
+// Step 1: Check overall profile health
+jarvis_diagnose({ action: "profile_health" })
+
+// Step 2: If a specific profile is failing, get its logs
+jarvis_diagnose({ action: "logs", profile: "qdrant" })
+
+// Step 3: Test if MCP endpoint is responding correctly
+jarvis_diagnose({ action: "test_endpoint", endpoint: "http://localhost:6279/mcp" })
+
+// Step 4: Get comprehensive diagnostic report
+jarvis_diagnose({ action: "full" })
+```
+
+**Legacy diagnostic (still works):**
 
 ```javascript
 jarvis_check_status()  // Returns comprehensive system health report

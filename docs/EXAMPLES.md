@@ -16,6 +16,7 @@ Concrete examples of how an AI Agent uses Jarvis v3.0 to solve real-world proble
 | [Security](#4-security-guardrails) | Pre-commit hooks via devops | Block secrets |
 | [Context Switching](#5-context-switching) | `jarvis_profile(action="suggest")` | Smart profile selection |
 | [Refactoring](#6-intelligent-refactoring) | `morph-fast-apply` | Semantic code transforms |
+| [MCP Debugging](#9-mcp-profile-debugging) | `jarvis_diagnose(action="...")` | Debug profile issues |
 
 ---
 
@@ -371,6 +372,56 @@ jarvis_client({ action: "list" })                  // List clients
 jarvis_client({ action: "import", client_name: "..." })
 jarvis_client({ action: "edit", client_name: "...", add_profile: "..." })
 ```
+
+---
+
+## 9. MCP Profile Debugging
+
+**Problem:** A profile shows "failed to get tools" or tools aren't appearing in your client.
+
+### Conversation
+
+**You:** *"The qdrant tools aren't showing up in OpenCode"*
+
+**Agent:** *"Let me diagnose the MCP profile..."*
+
+**Agent:** *"Found it: The qdrant profile is running but the QDRANT_URL environment variable was set to localhost instead of the Docker network address. I've fixed the config and restarted the profile."*
+
+### How Jarvis Enables This
+
+1. **Health Check:** Jarvis checks supervisor status for all profiles
+2. **Log Analysis:** Retrieves stderr from failed subprocesses
+3. **Endpoint Test:** Tests MCP protocol handshake and tool listing
+4. **Fix Suggestion:** Provides actionable remediation steps
+
+### Tool Calls
+
+```javascript
+// Step 1: Check overall profile health
+jarvis_diagnose({ action: "profile_health" })
+// Returns: { "qdrant": "running", "memory": "running", "p-pokeedge": "running" }
+
+// Step 2: If running but no tools, test the endpoint
+jarvis_diagnose({ action: "test_endpoint", endpoint: "http://localhost:6279/mcp" })
+// Returns: { "success": false, "error": "Connection refused" }
+
+// Step 3: Get subprocess logs for clues
+jarvis_diagnose({ action: "logs", profile: "qdrant" })
+// Returns: "Error: QDRANT_URL must point to qdrant:6333 inside Docker network"
+
+// Step 4: Full diagnostic for support
+jarvis_diagnose({ action: "full" })
+// Returns: Comprehensive report with all checks and recommendations
+```
+
+### Common Issues Detected
+
+| Symptom | Diagnosis Action | Typical Cause |
+|---------|------------------|---------------|
+| "failed to get tools" | `profile_health` | Profile not running in supervisor |
+| "Connection refused" | `test_endpoint` | Wrong port or daemon not started |
+| "No tools returned" | `logs` | Environment variable misconfiguration |
+| "Profile crashes on start" | `logs` | Missing dependencies or bad config |
 
 ---
 

@@ -47,18 +47,18 @@ graph TD
 
 ### Jarvis (`./Jarvis/`)
 *   **Purpose:** The **intelligent presentation layer** and primary interface for AI agents to control the system.
-*   **Version:** 3.0 (Consolidated Tools)
+*   **Version:** 3.1 (Consolidated Tools + Diagnostics)
 *   **Key Files:** `main.go`, `handlers/consolidated.go`, `handlers/server.go`, `Dockerfile`.
 *   **Responsibility:**
     *   **Presentation Layer:** Wraps raw MCPM CLI/API output with clean formatting, stripping ANSI codes and terminal noise.
     *   **Smart Error Handling:** Provides actionable error messages with suggestions for next steps.
     *   **Input Validation:** Prevents common mistakes before execution (invalid server names, empty queries, etc.).
     *   **Context Awareness:** Suggests appropriate actions based on project state and configuration.
-    *   **Tool Exposure:** Exposes `mcpm` functionality as **8 consolidated MCP tools** (reduced from 24 for context efficiency).
+    *   **Tool Exposure:** Exposes `mcpm` functionality as **9 consolidated MCP tools** (reduced from 24 for context efficiency).
     *   **Batch Operations:** Enables complex workflows in single commands vs. multiple CLI invocations.
     *   **Relationship:** Jarvis *uses* MCPM (via HTTP API or CLI fallback). It does not contain MCPM logic.
 
-*   **v3.0 Tool Consolidation:**
+*   **v3.1 Tool Consolidation:**
     | Tool | Actions |
     |:-----|:--------|
     | `jarvis_check_status` | (single purpose) |
@@ -69,6 +69,7 @@ graph TD
     | `jarvis_project` | analyze, diff, devops |
     | `jarvis_system` | bootstrap, restart, restart_infra |
     | `jarvis_share` | start, stop, list |
+    | `jarvis_diagnose` | profile_health, test_endpoint, logs, full |
 
 *   **Benefits:** 52% payload reduction (~5.3KB vs ~11KB), ~1,400 tokens saved per connection
 
@@ -102,6 +103,13 @@ Jarvis implements a **presentation layer pattern** that sits between AI agents a
 *   [x] 52% context token reduction (~1,400 tokens saved per connection).
 *   [x] Standardized `jarvis_` prefix for all tools.
 *   [x] Updated all documentation to v3.0 syntax.
+
+### Phase 2.5: Diagnostics (✅ Complete - v3.1)
+*   [x] Added `jarvis_diagnose` tool for MCP profile debugging.
+*   [x] Profile health checks via supervisor status.
+*   [x] MCP endpoint testing with tool listing.
+*   [x] Subprocess log retrieval for debugging.
+*   [x] Comprehensive full diagnostic reports.
 
 ### Phase 3: Enhanced Integration (In Progress)
 *   **Dynamic Config Loading:** Ensure `mcpm` can dynamically load configuration from the repository structure regardless of execution context.

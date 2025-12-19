@@ -52,9 +52,10 @@ OpenCode looks for configuration in this order:
 The fastest way to get started:
 
 ```javascript
-use_tool("manage_client", {
-  "action": "import",
-  "client_name": "opencode"
+// v3.1 syntax
+jarvis_client({
+  action: "import",
+  client_name: "opencode"
 })
 ```
 
@@ -69,18 +70,18 @@ This creates a configuration with:
 Add profiles one at a time:
 
 ```javascript
-// First, add Jarvis
-use_tool("manage_client", {
-  "action": "edit",
-  "client_name": "opencode",
-  "add_profile": "jarvis"
+// First, add Jarvis (v3.1 syntax)
+jarvis_client({
+  action: "edit",
+  client_name: "opencode",
+  add_profile: "jarvis"
 })
 
 // Then add HTTP profiles
-use_tool("manage_client", {
-  "action": "edit",
-  "client_name": "opencode",
-  "add_profile": "memory,p-pokeedge"
+jarvis_client({
+  action: "edit",
+  client_name: "opencode",
+  add_profile: "memory,p-pokeedge"
 })
 ```
 
@@ -153,9 +154,9 @@ Before using the MCP servers:
 
 1. Check if config exists:
    ```javascript
-   use_tool("manage_client", {
-     "action": "config",
-     "client_name": "opencode"
+   jarvis_client({
+     action: "config",
+     client_name: "opencode"
    })
    ```
 
@@ -190,12 +191,26 @@ Before using the MCP servers:
 
 Use explicit path:
 ```javascript
-use_tool("manage_client", {
-  "action": "edit",
-  "client_name": "opencode",
-  "config_path": "/custom/path/opencode.json",
-  "add_profile": "memory"
+jarvis_client({
+  action: "edit",
+  client_name: "opencode",
+  config_path: "/custom/path/opencode.json",
+  add_profile: "memory"
 })
+```
+
+### Profile tools not loading
+
+Use the new diagnostic tool (v3.1):
+```javascript
+// Check profile health
+jarvis_diagnose({ action: "profile_health" })
+
+// Get logs from failing profile
+jarvis_diagnose({ action: "logs", profile: "memory" })
+
+// Test endpoint connectivity
+jarvis_diagnose({ action: "test_endpoint", endpoint: "http://localhost:6277/mcp" })
 ```
 
 ## Comparison with Claude Desktop

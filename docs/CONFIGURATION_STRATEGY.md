@@ -46,6 +46,41 @@ Jarvis itself (the gateway) remains a local **stdio** command because it needs t
 ### 3. Short Names
 Continue using short profile names (`p-pokeedge` not `project-pokeedge`) to keep tool names within API limits.
 
+### 4. Timeouts for Remote MCP Servers
+Remote MCP servers (HTTP endpoints) should have explicit timeouts configured to handle slow startup or network issues:
+
+```json
+{
+  "p-pokeedge": {
+    "type": "remote",
+    "url": "http://localhost:6276/mcp",
+    "timeout": 30000,
+    "enabled": true
+  }
+}
+```
+
+**Recommended timeouts:**
+| Profile Type | Timeout | Reason |
+|--------------|---------|--------|
+| Simple tools (fetch, time) | 10000ms | Fast response expected |
+| AI-powered (qdrant, memory) | 30000ms | May need model warm-up |
+| Heavy processing (morph) | 60000ms | Complex code operations |
+
+### 5. Debugging Failed Profiles
+Use `jarvis_diagnose` to debug profiles that fail to load:
+
+```javascript
+// Check if supervisor is running the profile
+jarvis_diagnose({ action: "profile_health" })
+
+// Get stderr logs from the subprocess
+jarvis_diagnose({ action: "logs", profile: "qdrant" })
+
+// Test MCP endpoint connectivity
+jarvis_diagnose({ action: "test_endpoint", endpoint: "http://localhost:6279/mcp" })
+```
+
 ## Current Port Map
 
 | Profile | Port | URL | Servers |

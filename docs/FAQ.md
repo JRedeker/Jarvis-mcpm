@@ -249,12 +249,28 @@ jarvis_client({
    jarvis_check_status()
    ```
 
-2. **Common fixes:**
+2. **Debug MCP profile issues (NEW in v3.1):**
+   ```javascript
+   // Check if profiles are running
+   jarvis_diagnose({ action: "profile_health" })
+
+   // Get logs from a failing profile
+   jarvis_diagnose({ action: "logs", profile: "qdrant" })
+
+   // Test MCP endpoint connectivity
+   jarvis_diagnose({ action: "test_endpoint", endpoint: "http://localhost:6279/mcp" })
+
+   // Full diagnostic report
+   jarvis_diagnose({ action: "full" })
+   ```
+
+3. **Common fixes:**
    - Docker not running: `sudo systemctl start docker`
    - MCPM not found: `jarvis_system({ action: "bootstrap" })`
    - Port conflicts: Check `docker compose ps`
+   - Profile not loading tools: Check `jarvis_diagnose({ action: "logs", profile: "..." })`
 
-3. **Self-healing:**
+4. **Self-healing:**
    ```javascript
    jarvis_system({ action: "restart_infra" })
    ```
