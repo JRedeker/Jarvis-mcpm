@@ -141,7 +141,7 @@ flowchart TB
 
 ## Tool Reference
 
-8 tools, action-based routing:
+9 tools, action-based routing:
 
 | Tool | What It Does |
 |:-----|:-------------|
@@ -153,6 +153,7 @@ flowchart TB
 | `jarvis_project` | Analyze projects, apply DevOps stacks |
 | `jarvis_config` | Manage global settings |
 | `jarvis_share` | Share servers via tunnels |
+| `jarvis_diagnose` | Debug MCP profile issues (NEW) |
 
 <details>
 <summary><b>Example Commands</b></summary>
@@ -172,6 +173,10 @@ jarvis_check_status()
 
 // Bootstrap everything
 jarvis_system({ action: "bootstrap" })
+
+// Debug when tools fail to load
+jarvis_diagnose({ action: "profile_health" })
+jarvis_diagnose({ action: "logs", profile: "qdrant" })
 ```
 </details>
 

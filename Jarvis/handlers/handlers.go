@@ -1485,3 +1485,326 @@ func (h *Handler) ListSharedServers(ctx context.Context, request mcp.CallToolReq
 
 	return mcp.NewToolResultText(builder.String()), nil
 }
+
+// =============================================================================
+// Diagnostic Handlers - Essential for AI agents debugging MCP issues
+// =============================================================================
+
+// DiagnoseProfileHealth checks if MCP profiles are healthy and serving tools
+func (h *Handler) DiagnoseProfileHealth(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	args, _ := request.Params.Arguments.(map[string]interface{})
+	profileName, _ := args["profile"].(string)
+
+	var builder strings.Builder
+	builder.WriteString("## MCP Profile Health Report\n\n")
+
+	// Get supervisor status from mcp-daemon
+	output, err := h.Docker.ExecSupervisorctl(ctx, "status", "all")
+	if err != nil {
+		builder.WriteString("### ⚠️ Daemon Status: Error\n")
+		builder.WriteString(fmt.Sprintf("Could not reach mcp-daemon: %v\n", err))
+		builder.WriteString("\n**Suggestion:** Run `docker ps` to check if mcp-daemon is running.\n")
+		return mcp.NewToolResultText(builder.String()), nil
+	}
+
+	builder.WriteString("### Supervisor Status\n```\n")
+	builder.WriteString(output)
+	builder.WriteString("```\n\n")
+
+	// Parse supervisor output to identify issues
+	lines := strings.Split(output, "\n")
+	var runningProfiles []string
+	var failedProfiles []string
+
+	for _, line := range lines {
+		if strings.Contains(line, "mcpm-") {
+			if strings.Contains(line, "RUNNING") {
+				parts := strings.Fields(line)
+				if len(parts) > 0 {
+					name := strings.TrimPrefix(parts[0], "mcpm-")
+					runningProfiles = append(runningProfiles, name)
+				}
+			} else if strings.Contains(line, "FATAL") || strings.Contains(line, "STOPPED") || strings.Contains(line, "EXITED") {
+				parts := strings.Fields(line)
+				if len(parts) > 0 {
+					name := strings.TrimPrefix(parts[0], "mcpm-")
+					failedProfiles = append(failedProfiles, name)
+				}
+			}
+		}
+	}
+
+	builder.WriteString("### Summary\n")
+	builder.WriteString(fmt.Sprintf("- ✅ Running profiles: %d (%s)\n", len(runningProfiles), strings.Join(runningProfiles, ", ")))
+	if len(failedProfiles) > 0 {
+		builder.WriteString(fmt.Sprintf("- ❌ Failed profiles: %d (%s)\n", len(failedProfiles), strings.Join(failedProfiles, ", ")))
+		builder.WriteString("\n**Next step:** Use `jarvis_diagnose(action=\"logs\", profile=\"<name>\")` to see error details.\n")
+	}
+
+	// If specific profile requested, check its endpoint
+	if profileName != "" {
+		builder.WriteString(fmt.Sprintf("\n### Profile '%s' Details\n", profileName))
+
+		// Get port mapping
+		portMap := map[string]string{
+			"p-pokeedge": "6276",
+			"memory":     "6277",
+			"morph":      "6278",
+			"qdrant":     "6279",
+		}
+
+		if port, ok := portMap[profileName]; ok {
+			endpoint := fmt.Sprintf("http://localhost:%s/mcp", port)
+			builder.WriteString(fmt.Sprintf("- Endpoint: %s\n", endpoint))
+			builder.WriteString(fmt.Sprintf("- Port: %s\n", port))
+			builder.WriteString(fmt.Sprintf("\n**Test with:** `jarvis_diagnose(action=\"test_endpoint\", endpoint=\"%s\")`\n", endpoint))
+		}
+	}
+
+	return mcp.NewToolResultText(builder.String()), nil
+}
+
+// DiagnoseTestEndpoint tests an MCP endpoint and reports tool availability
+func (h *Handler) DiagnoseTestEndpoint(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	args, _ := request.Params.Arguments.(map[string]interface{})
+	endpoint, _ := args["endpoint"].(string)
+
+	if endpoint == "" {
+		return mcp.NewToolResultError("endpoint is required. Example: 'http://localhost:6276/mcp'"), nil
+	}
+
+	var builder strings.Builder
+	builder.WriteString(fmt.Sprintf("## MCP Endpoint Test: %s\n\n", endpoint))
+
+	// Test HTTP connectivity first
+	client := &http.Client{Timeout: 10 * time.Second}
+
+	// Check health endpoint
+	healthURL := strings.Replace(endpoint, "/mcp", "/health", 1)
+	resp, err := client.Get(healthURL)
+	if err != nil {
+		builder.WriteString("### ❌ Connection Failed\n")
+		builder.WriteString(fmt.Sprintf("Error: %v\n", err))
+		builder.WriteString("\n**Suggestions:**\n")
+		builder.WriteString("1. Check if mcp-daemon container is running\n")
+		builder.WriteString("2. Verify port is not blocked\n")
+		builder.WriteString("3. Run `jarvis_diagnose(action=\"profile_health\")` for supervisor status\n")
+		return mcp.NewToolResultText(builder.String()), nil
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == 200 {
+		builder.WriteString("### ✅ Health Check Passed\n")
+		body, _ := io.ReadAll(resp.Body)
+		builder.WriteString(fmt.Sprintf("Response: %s\n\n", string(body)))
+	} else {
+		builder.WriteString(fmt.Sprintf("### ⚠️ Health Check: HTTP %d\n\n", resp.StatusCode))
+	}
+
+	// Test MCP initialize
+	builder.WriteString("### MCP Protocol Test\n")
+	initReq := `{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"jarvis-diagnose","version":"1.0"}}}`
+
+	req, _ := http.NewRequest("POST", endpoint, strings.NewReader(initReq))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Accept", "application/json, text/event-stream")
+
+	resp2, err := client.Do(req)
+	if err != nil {
+		builder.WriteString(fmt.Sprintf("❌ MCP initialize failed: %v\n", err))
+		return mcp.NewToolResultText(builder.String()), nil
+	}
+	defer resp2.Body.Close()
+
+	sessionID := resp2.Header.Get("mcp-session-id")
+	if sessionID != "" {
+		builder.WriteString(fmt.Sprintf("✅ Session established: %s\n", sessionID))
+	}
+
+	body, _ := io.ReadAll(resp2.Body)
+	bodyStr := string(body)
+
+	if strings.Contains(bodyStr, "serverInfo") {
+		builder.WriteString("✅ MCP initialize successful\n")
+
+		// Extract server info
+		if strings.Contains(bodyStr, "profile-") {
+			start := strings.Index(bodyStr, "profile-")
+			if start != -1 {
+				end := start + 30
+				if end > len(bodyStr) {
+					end = len(bodyStr)
+				}
+				builder.WriteString(fmt.Sprintf("Server: %s...\n", bodyStr[start:end]))
+			}
+		}
+	} else if strings.Contains(bodyStr, "error") {
+		builder.WriteString("❌ MCP initialize returned error\n")
+		builder.WriteString(fmt.Sprintf("Response: %s\n", bodyStr))
+	}
+
+	// Now test tools/list
+	if sessionID != "" {
+		builder.WriteString("\n### Tools Available\n")
+		toolsReq := `{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}`
+
+		req2, _ := http.NewRequest("POST", endpoint, strings.NewReader(toolsReq))
+		req2.Header.Set("Content-Type", "application/json")
+		req2.Header.Set("Accept", "application/json, text/event-stream")
+		req2.Header.Set("mcp-session-id", sessionID)
+
+		resp3, err := client.Do(req2)
+		if err != nil {
+			builder.WriteString(fmt.Sprintf("❌ tools/list failed: %v\n", err))
+		} else {
+			defer resp3.Body.Close()
+			body3, _ := io.ReadAll(resp3.Body)
+			bodyStr3 := string(body3)
+
+			// Count tools
+			toolCount := strings.Count(bodyStr3, `"name":`) - 1 // -1 for the method name
+			if toolCount > 0 {
+				builder.WriteString(fmt.Sprintf("✅ Found %d tools\n", toolCount))
+			} else if strings.Contains(bodyStr3, "error") {
+				builder.WriteString("❌ tools/list returned error\n")
+				builder.WriteString(fmt.Sprintf("Error: %s\n", bodyStr3))
+				builder.WriteString("\n**This usually means a subprocess failed.**\n")
+				builder.WriteString("Run `jarvis_diagnose(action=\"logs\")` to see subprocess errors.\n")
+			}
+		}
+	}
+
+	return mcp.NewToolResultText(builder.String()), nil
+}
+
+// DiagnoseLogs retrieves subprocess logs from the mcp-daemon
+func (h *Handler) DiagnoseLogs(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	args, _ := request.Params.Arguments.(map[string]interface{})
+	profileName, _ := args["profile"].(string)
+	lines := 50
+	if l, ok := args["lines"].(float64); ok && l > 0 {
+		lines = int(l)
+	}
+
+	var builder strings.Builder
+	builder.WriteString("## MCP Subprocess Logs\n\n")
+
+	if profileName == "" {
+		// List available profiles
+		builder.WriteString("**Available profiles:** p-pokeedge, memory, morph, qdrant\n\n")
+		builder.WriteString("Specify a profile with `jarvis_diagnose(action=\"logs\", profile=\"<name>\")`\n")
+		return mcp.NewToolResultText(builder.String()), nil
+	}
+
+	// Get stderr logs (where errors appear)
+	target := fmt.Sprintf("mcpm-%s", profileName)
+	output, err := h.Docker.ExecSupervisorctl(ctx, "tail", fmt.Sprintf("-f %s stderr", target))
+
+	// ExecSupervisorctl doesn't support tail -f well, use docker exec directly
+	cmd := fmt.Sprintf("docker exec mcp-daemon tail -%d /var/log/mcpm/%s.err.log 2>/dev/null || docker exec mcp-daemon supervisorctl tail %s stderr", lines, profileName, target)
+	output2, _ := exec.CommandContext(ctx, "sh", "-c", cmd).CombinedOutput()
+
+	if len(output2) > 0 {
+		output = string(output2)
+	}
+
+	builder.WriteString(fmt.Sprintf("### Profile: %s (stderr)\n", profileName))
+	builder.WriteString("```\n")
+	if err != nil && len(output) == 0 {
+		builder.WriteString(fmt.Sprintf("Error retrieving logs: %v\n", err))
+	} else if len(output) == 0 {
+		builder.WriteString("(no stderr output)\n")
+	} else {
+		// Limit output to last N lines
+		logLines := strings.Split(strings.TrimSpace(output), "\n")
+		if len(logLines) > lines {
+			logLines = logLines[len(logLines)-lines:]
+		}
+		builder.WriteString(strings.Join(logLines, "\n"))
+	}
+	builder.WriteString("\n```\n")
+
+	// Look for common error patterns and provide suggestions
+	if strings.Contains(output, "ValueError") || strings.Contains(output, "ImportError") {
+		builder.WriteString("\n### ⚠️ Python Error Detected\n")
+		builder.WriteString("The subprocess crashed due to a Python error.\n")
+		builder.WriteString("**Common causes:**\n")
+		builder.WriteString("- Missing environment variables\n")
+		builder.WriteString("- Incorrect configuration in servers.json\n")
+		builder.WriteString("- Incompatible package versions\n")
+	}
+
+	if strings.Contains(output, "Connection refused") || strings.Contains(output, "ECONNREFUSED") {
+		builder.WriteString("\n### ⚠️ Connection Error Detected\n")
+		builder.WriteString("A subprocess couldn't connect to a dependency.\n")
+		builder.WriteString("**Check:**\n")
+		builder.WriteString("- Is the target service running? (qdrant, postgres, etc.)\n")
+		builder.WriteString("- Is the URL correct in servers.json?\n")
+	}
+
+	if strings.Contains(output, "Multiple location") || strings.Contains(output, "Only one of") {
+		builder.WriteString("\n### ⚠️ Configuration Conflict Detected\n")
+		builder.WriteString("Multiple conflicting options were specified.\n")
+		builder.WriteString("**Fix:** Edit ~/.config/mcpm/servers.json and remove conflicting options.\n")
+	}
+
+	return mcp.NewToolResultText(builder.String()), nil
+}
+
+// DiagnoseFull runs all diagnostics and provides a comprehensive report
+func (h *Handler) DiagnoseFull(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	var builder strings.Builder
+	builder.WriteString("# Full MCP Diagnostic Report\n\n")
+	builder.WriteString("Generated by Jarvis at " + time.Now().Format(time.RFC3339) + "\n\n")
+
+	// 1. Profile Health
+	builder.WriteString("---\n")
+	healthResult, _ := h.DiagnoseProfileHealth(ctx, request)
+	if healthResult != nil {
+		for _, content := range healthResult.Content {
+			if textContent, ok := content.(mcp.TextContent); ok {
+				builder.WriteString(textContent.Text)
+			}
+		}
+	}
+
+	// 2. Test each standard endpoint
+	builder.WriteString("\n---\n")
+	builder.WriteString("## Endpoint Tests\n\n")
+
+	endpoints := map[string]string{
+		"p-pokeedge": "http://localhost:6276/mcp",
+		"memory":     "http://localhost:6277/mcp",
+		"morph":      "http://localhost:6278/mcp",
+		"qdrant":     "http://localhost:6279/mcp",
+	}
+
+	for name, url := range endpoints {
+		builder.WriteString(fmt.Sprintf("### %s\n", name))
+
+		// Quick health check
+		client := &http.Client{Timeout: 5 * time.Second}
+		healthURL := strings.Replace(url, "/mcp", "/health", 1)
+		resp, err := client.Get(healthURL)
+		if err != nil {
+			builder.WriteString(fmt.Sprintf("❌ Unreachable: %v\n\n", err))
+		} else {
+			resp.Body.Close()
+			if resp.StatusCode == 200 {
+				builder.WriteString("✅ Healthy\n\n")
+			} else {
+				builder.WriteString(fmt.Sprintf("⚠️ HTTP %d\n\n", resp.StatusCode))
+			}
+		}
+	}
+
+	// 3. Configuration check
+	builder.WriteString("---\n")
+	builder.WriteString("## Configuration\n\n")
+	builder.WriteString("- MCPM config: ~/.config/mcpm/servers.json\n")
+	builder.WriteString("- OpenCode config: ~/.config/opencode/opencode.json\n")
+	builder.WriteString("\n**To update configs after changes:**\n")
+	builder.WriteString("```\njarvis_profile(action=\"restart\", profile=\"<name>\")\n```\n")
+
+	return mcp.NewToolResultText(builder.String()), nil
+}

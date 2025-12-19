@@ -206,6 +206,28 @@ func GetToolDefinitions(h *Handler) []ToolDefinition {
 			),
 			Handler: h.Share,
 		},
+
+		// 9. jarvis_diagnose - Debug MCP profile/server issues (AI agent essential)
+		{
+			Tool: mcp.NewTool("jarvis_diagnose",
+				mcp.WithDescription("Diagnose MCP profile issues: check profile health, test endpoints, view subprocess logs. Essential for debugging when tools fail to load."),
+				mcp.WithString("action",
+					mcp.Description("Operation to perform"),
+					mcp.Required(),
+					mcp.Enum("profile_health", "test_endpoint", "logs", "full"),
+				),
+				mcp.WithString("profile",
+					mcp.Description("Profile name to diagnose (e.g., 'p-pokeedge', 'qdrant')"),
+				),
+				mcp.WithString("endpoint",
+					mcp.Description("MCP endpoint URL to test (e.g., 'http://localhost:6276/mcp')"),
+				),
+				mcp.WithNumber("lines",
+					mcp.Description("Number of log lines to retrieve (default: 50)"),
+				),
+			),
+			Handler: h.Diagnose,
+		},
 	}
 }
 

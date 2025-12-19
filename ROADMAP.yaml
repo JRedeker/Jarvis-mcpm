@@ -1,0 +1,383 @@
+# Jarvis & MCPM Development Roadmap
+#
+# This document tracks features and enhancements organized by implementation phase.
+# Items here represent future work for the Jarvis MCP server and MCPM ecosystem.
+#
+# Phases:
+#   now   - Currently implementing OR recently completed
+#   next  - High priority, ready for implementation
+#   later - Backlog items for future consideration
+#
+# Priority: critical, high, medium, low
+# Complexity: low, medium, high, very_high
+# Status: proposed, approved, in_progress, completed, deferred, archived
+
+metadata:
+  version: "1.0"
+  last_updated: "2025-12-19"
+  project: "Jarvis & MCPM"
+  description: |
+    Agentic MCP server for dynamic tool management. Enables AI agents to
+    install, configure, and manage their own MCP tools through natural language.
+
+# =============================================================================
+# COMPLETED - Recently Archived (for reference)
+# =============================================================================
+
+completed:
+  jarvis_v3_consolidation:
+    title: "Jarvis v3.0 - Tool Consolidation"
+    status: completed
+    archived: "2025-12-17"
+    summary: |
+      Consolidated 24 tools into 8 action-based tools for 52% context token
+      reduction (~1,400 tokens saved per connection). All tools now prefixed
+      with jarvis_ namespace.
+
+  http_api_transport:
+    title: "HTTP API Transport for MCPM"
+    status: completed
+    archived: "2025-12-17"
+    summary: |
+      Added HTTPMcpmRunner that calls MCPM REST API instead of spawning CLI
+      processes. Auto-fallback to CLI if API unavailable. Faster and more
+      reliable for production use.
+
+  jarvis_diagnose_tool:
+    title: "jarvis_diagnose Tool"
+    status: completed
+    archived: "2025-12-19"
+    summary: |
+      Added jarvis_diagnose tool with 4 actions for debugging MCP profile issues:
+      - profile_health: Check supervisor status
+      - test_endpoint: Test MCP protocol and tool availability
+      - logs: Retrieve subprocess error logs
+      - full: Comprehensive diagnostic report
+      Essential for AI agents to self-diagnose when tools fail to load.
+
+  production_handler_fix:
+    title: "Fix Production Handler Transport"
+    status: completed
+    archived: "2025-12-19"
+    summary: |
+      Changed main.go to use NewDefaultHandler() instead of CreateProductionHandler().
+      This enables automatic HTTP transport detection with CLI fallback, improving
+      reliability and performance in production.
+
+# =============================================================================
+# NOW - Currently Implementing (Active Work)
+# =============================================================================
+
+features:
+  # ─────────────────────────────────────────────────────────────────────────
+  # INFRASTRUCTURE IMPROVEMENTS
+  # ─────────────────────────────────────────────────────────────────────────
+  mcpm_daemon_stability:
+    title: "MCPM Daemon Stability Improvements"
+    sequence: 1
+    priority: high
+    complexity: medium
+    status: in_progress
+    category: infrastructure
+    phase: now
+    estimated_days: 3-5
+    description: |
+      Improve reliability of the mcp-daemon container and profile management:
+      - Better error handling when subprocess servers crash
+      - Auto-restart failed servers with backoff
+      - Clearer error messages propagated to clients
+    key_deliverables:
+      - "Supervisor auto-restart with exponential backoff"
+      - "Health check endpoints per profile"
+      - "Error log aggregation in API"
+      - "Profile status in jarvis_check_status output"
+
+  config_hot_reload:
+    title: "Configuration Hot Reload"
+    sequence: 2
+    priority: high
+    complexity: medium
+    status: proposed
+    category: infrastructure
+    phase: now
+    estimated_days: 3-4
+    description: |
+      Automatically detect and apply configuration changes without manual restarts:
+      - Watch ~/.config/mcpm/servers.json for changes
+      - Auto-restart affected profiles
+      - Validate tools are available after reload
+    key_deliverables:
+      - "File watcher in mcp-daemon"
+      - "jarvis_config(action='watch') to enable/disable"
+      - "Config change notification in logs"
+      - "Validation endpoint for tool availability"
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # AGENT EXPERIENCE IMPROVEMENTS
+  # ─────────────────────────────────────────────────────────────────────────
+  smart_error_recovery:
+    title: "Smart Error Recovery"
+    sequence: 3
+    priority: high
+    complexity: medium
+    status: proposed
+    category: agent_experience
+    phase: now
+    estimated_days: 4-5
+    description: |
+      When tool calls fail, provide actionable recovery suggestions:
+      - Detect common failure patterns
+      - Suggest specific jarvis_diagnose actions
+      - Auto-retry transient failures
+      - Chain recovery actions when safe
+    key_deliverables:
+      - "Error pattern detection in all handlers"
+      - "Structured error responses with next_steps field"
+      - "Auto-retry with exponential backoff for network errors"
+      - "Documentation of recovery workflows"
+
+  tool_validation:
+    title: "Pre-flight Tool Validation"
+    sequence: 4
+    priority: medium
+    complexity: low
+    status: proposed
+    category: agent_experience
+    phase: now
+    estimated_days: 2-3
+    description: |
+      Verify specific tools are available before operations that depend on them:
+      - jarvis_profile(action="validate", profile="p-pokeedge", tools="qdrant-find")
+      - Returns success/failure with diagnostics
+    key_deliverables:
+      - "Add 'validate' action to jarvis_profile"
+      - "Tool availability check via MCP tools/list"
+      - "Integration with jarvis_diagnose for failures"
+
+# =============================================================================
+# NEXT - High Priority, Ready for Implementation
+# =============================================================================
+
+  opencode_native_integration:
+    title: "OpenCode Native Integration"
+    priority: high
+    complexity: medium
+    status: proposed
+    category: integration
+    phase: next
+    description: |
+      Deeper integration with OpenCode for seamless tool management:
+      - Auto-configure OpenCode on first run
+      - Sync profiles between Jarvis and OpenCode
+      - OpenCode-specific optimizations
+    proposed_features:
+      - "jarvis_client(action='sync', client_name='opencode')"
+      - "Bi-directional profile sync"
+      - "OpenCode plugin for Jarvis status"
+
+  profile_templates:
+    title: "Profile Templates"
+    priority: high
+    complexity: low
+    status: proposed
+    category: feature
+    phase: next
+    description: |
+      Pre-built profile templates for common use cases:
+      - research: Context7 + Brave + Firecrawl
+      - coding: GitHub + Morph + Memory
+      - data: Qdrant + PostgreSQL + Jupyter
+    proposed_features:
+      - "jarvis_profile(action='template', name='research')"
+      - "Community template repository"
+      - "Custom template creation"
+
+  multi_model_optimization:
+    title: "Multi-Model Optimization"
+    priority: medium
+    complexity: medium
+    status: proposed
+    category: optimization
+    phase: next
+    description: |
+      Optimize tool descriptions and context for different LLM providers:
+      - Model-specific tool descriptions
+      - Context window awareness
+      - Automatic tool pruning for small context models
+    proposed_features:
+      - "Model detection from client info"
+      - "Dynamic tool set based on context budget"
+      - "Compressed tool descriptions for limited models"
+
+  usage_analytics:
+    title: "Usage Analytics Dashboard"
+    priority: medium
+    complexity: medium
+    status: proposed
+    category: observability
+    phase: next
+    description: |
+      Track and visualize tool usage patterns:
+      - Most used tools
+      - Error rates by tool
+      - Response time percentiles
+      - Cost estimation for paid APIs
+    proposed_features:
+      - "jarvis_server(action='analytics')"
+      - "Web dashboard via MCPM API"
+      - "Export to Prometheus/Grafana"
+
+  server_marketplace:
+    title: "MCP Server Marketplace"
+    priority: medium
+    complexity: high
+    status: proposed
+    category: ecosystem
+    phase: next
+    description: |
+      Curated marketplace for discovering and rating MCP servers:
+      - Quality scores based on reliability
+      - Community reviews
+      - Verified publisher badges
+    proposed_features:
+      - "jarvis_server(action='marketplace')"
+      - "Rating and review system"
+      - "Automated quality testing"
+
+# =============================================================================
+# LATER - Backlog
+# =============================================================================
+
+  jarvis_cloud:
+    title: "Jarvis Cloud (SaaS)"
+    priority: low
+    complexity: very_high
+    status: proposed
+    category: platform
+    phase: later
+    description: |
+      Hosted Jarvis service for teams without local infrastructure:
+      - Managed MCP server hosting
+      - Team collaboration features
+      - Usage-based billing
+    notes: "Requires significant infrastructure investment"
+
+  visual_profile_builder:
+    title: "Visual Profile Builder"
+    priority: low
+    complexity: high
+    status: proposed
+    category: feature
+    phase: later
+    description: |
+      Web-based drag-and-drop interface for building profiles:
+      - Server dependency visualization
+      - Conflict detection
+      - One-click deployment
+    notes: "Nice-to-have for non-technical users"
+
+  ai_profile_recommendation:
+    title: "AI-Powered Profile Recommendations"
+    priority: low
+    complexity: high
+    status: proposed
+    category: ai
+    phase: later
+    description: |
+      Use conversation context to suggest optimal tool profiles:
+      - Analyze user intent
+      - Recommend missing tools
+      - Auto-suggest profile switches
+    notes: "Requires training data from usage patterns"
+
+  multi_tenant_support:
+    title: "Multi-Tenant Support"
+    priority: low
+    complexity: very_high
+    status: proposed
+    category: platform
+    phase: later
+    description: |
+      Support multiple users/organizations on single Jarvis instance:
+      - User authentication
+      - Profile isolation
+      - Resource quotas
+    notes: "Prerequisite for enterprise deployment"
+
+  plugin_system:
+    title: "Jarvis Plugin System"
+    priority: low
+    complexity: high
+    status: proposed
+    category: architecture
+    phase: later
+    description: |
+      Allow third-party extensions to Jarvis functionality:
+      - Plugin API
+      - Sandboxed execution
+      - Plugin marketplace
+    notes: "Would enable community-contributed features"
+
+  offline_mode:
+    title: "Offline Mode"
+    priority: low
+    complexity: medium
+    status: proposed
+    category: reliability
+    phase: later
+    description: |
+      Cache server registry and profiles for offline operation:
+      - Local server cache
+      - Offline profile management
+      - Sync on reconnect
+    proposed_features:
+      - "SQLite local cache"
+      - "Offline indicator"
+      - "Background sync"
+
+  cross_platform_desktop:
+    title: "Cross-Platform Desktop App"
+    priority: low
+    complexity: very_high
+    status: proposed
+    category: platform
+    phase: later
+    description: |
+      Native desktop application for Jarvis management:
+      - System tray integration
+      - Profile quick-switch
+      - Visual server status
+    notes: "Electron or Tauri-based"
+
+# =============================================================================
+# TECHNICAL DEBT
+# =============================================================================
+
+technical_debt:
+  test_coverage:
+    title: "Increase Test Coverage"
+    priority: medium
+    description: |
+      Current coverage is around 60%. Target 80%+ for critical paths:
+      - HTTP transport handlers
+      - Profile management
+      - Error recovery logic
+
+  documentation:
+    title: "Comprehensive Documentation"
+    priority: medium
+    description: |
+      Improve documentation for:
+      - API reference
+      - Architecture decisions
+      - Troubleshooting guides
+      - Migration guides
+
+  logging_standardization:
+    title: "Standardize Logging"
+    priority: low
+    description: |
+      Implement structured logging across all components:
+      - Request ID propagation
+      - Log level configuration
+      - Log aggregation support

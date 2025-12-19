@@ -204,3 +204,30 @@ func (h *Handler) Share(ctx context.Context, req mcp.CallToolRequest) (*mcp.Call
 		return mcp.NewToolResultError(fmt.Sprintf("invalid action '%s'. Valid: start|stop|list", action)), nil
 	}
 }
+
+// Diagnose handles the jarvis_diagnose tool for debugging MCP profile issues
+// Actions: profile_health, test_endpoint, logs, full
+func (h *Handler) Diagnose(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	args, ok := req.Params.Arguments.(map[string]interface{})
+	if !ok {
+		return mcp.NewToolResultError("invalid arguments"), nil
+	}
+
+	action, ok := args["action"].(string)
+	if !ok || action == "" {
+		return mcp.NewToolResultError("action is required. Valid: profile_health|test_endpoint|logs|full"), nil
+	}
+
+	switch action {
+	case "profile_health":
+		return h.DiagnoseProfileHealth(ctx, req)
+	case "test_endpoint":
+		return h.DiagnoseTestEndpoint(ctx, req)
+	case "logs":
+		return h.DiagnoseLogs(ctx, req)
+	case "full":
+		return h.DiagnoseFull(ctx, req)
+	default:
+		return mcp.NewToolResultError(fmt.Sprintf("invalid action '%s'. Valid: profile_health|test_endpoint|logs|full", action)), nil
+	}
+}

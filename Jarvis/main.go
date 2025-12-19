@@ -87,7 +87,8 @@ func main() {
 	)
 
 	// Register all core tools from handlers package (TDD-tested)
-	h := handlers.CreateProductionHandler()
+	// Use NewDefaultHandler which auto-detects HTTP API and falls back to CLI
+	h := handlers.NewDefaultHandler()
 	handlers.RegisterToolsWithMCPServer(s, h)
 
 	// Start the server based on transport mode

@@ -19,8 +19,8 @@ Keep this managed block so 'openspec update' can refresh the instructions.
 
 # Jarvis & MCPM Agent Instructions
 
-**Current Date:** December 17, 2025
-**Version:** 3.0 (The "Context Efficiency" Edition)
+**Current Date:** December 19, 2025
+**Version:** 3.1 (The "Diagnostic" Edition)
 
 ## 🚨 Core Mandate: Use Jarvis Tools, Not Shell
 
@@ -38,6 +38,7 @@ You are an advanced AI agent. You must **NOT** use `run_shell_command` to execut
 | `jarvis_project` | analyze, diff, devops | `jarvis_project(action="analyze")` |
 | `jarvis_system` | bootstrap, restart, restart_infra | `jarvis_system(action="bootstrap")` |
 | `jarvis_share` | start, stop, list | `jarvis_share(action="list")` |
+| `jarvis_diagnose` | profile_health, test_endpoint, logs, full | `jarvis_diagnose(action="profile_health")` |
 
 ## 🧠 The 3-Layer Stack Philosophy
 
@@ -163,7 +164,23 @@ docker compose up mcpm-daemon
 
 ## 🚑 Debugging
 
-If tools fail:
+If tools fail, use the `jarvis_diagnose` tool (NEW in v3.1):
+
+```javascript
+// Step 1: Check overall profile health
+jarvis_diagnose({ action: "profile_health" })
+
+// Step 2: If a specific profile is failing, get its logs
+jarvis_diagnose({ action: "logs", profile: "qdrant" })
+
+// Step 3: Test if MCP endpoint is responding correctly
+jarvis_diagnose({ action: "test_endpoint", endpoint: "http://localhost:6279/mcp" })
+
+// Step 4: Get comprehensive diagnostic report
+jarvis_diagnose({ action: "full" })
+```
+
+### Legacy Debugging (if jarvis_diagnose unavailable)
 1.  Run `jarvis_check_status()` for diagnostics (now includes API server health).
 2.  Check API server: `curl http://localhost:6275/api/v1/health`
 3.  If you must use shell: `export MCPM_NON_INTERACTIVE=true` and `export MCPM_FORCE=true`.
@@ -205,3 +222,35 @@ If tools fail:
 - **52% payload reduction**: ~5.3KB vs ~11KB (saves ~1,400 tokens per connection)
 - **Cleaner namespace**: All tools prefixed with `jarvis_`
 - **Action-based routing**: Easier to discover related operations
+
+## 🆕 New in v3.1: Diagnostic Tools
+
+The `jarvis_diagnose` tool enables AI agents to self-debug when MCP tools fail:
+
+| Action | Purpose |
+|:-------|:--------|
+| `profile_health` | Check supervisor status for all MCP profiles |
+| `test_endpoint` | Test MCP protocol on a specific endpoint |
+| `logs` | Retrieve subprocess stderr logs for a profile |
+| `full` | Comprehensive diagnostic report |
+
+### Common Diagnostic Workflows
+
+**Profile won't start:**
+```javascript
+jarvis_diagnose({ action: "logs", profile: "qdrant", lines: 100 })
+// Look for Python errors, connection refused, config issues
+```
+
+**Tools missing from profile:**
+```javascript
+jarvis_diagnose({ action: "test_endpoint", endpoint: "http://localhost:6276/mcp" })
+// Shows tool count and any errors from tools/list
+```
+
+**After config changes:**
+```javascript
+jarvis_profile({ action: "restart", profile: "p-pokeedge" })
+jarvis_diagnose({ action: "profile_health" })
+// Verify profile restarted successfully
+```
