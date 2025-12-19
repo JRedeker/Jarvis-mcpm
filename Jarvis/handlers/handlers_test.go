@@ -1692,9 +1692,9 @@ func TestToolDefinitions_CountAndSize(t *testing.T) {
 	h := NewHandler(nil, nil, nil, nil)
 	defs := GetToolDefinitions(h)
 
-	// Verify we have exactly 8 tools
-	if len(defs) != 8 {
-		t.Errorf("Expected 8 consolidated tools, got %d", len(defs))
+	// Verify we have exactly 9 tools (v3.1 added jarvis_diagnose)
+	if len(defs) != 9 {
+		t.Errorf("Expected 9 consolidated tools, got %d", len(defs))
 	}
 
 	// Verify tool names follow jarvis_ prefix convention
@@ -1707,6 +1707,7 @@ func TestToolDefinitions_CountAndSize(t *testing.T) {
 		"jarvis_project":      true,
 		"jarvis_system":       true,
 		"jarvis_share":        true,
+		"jarvis_diagnose":     true,
 	}
 
 	for _, def := range defs {
@@ -1725,8 +1726,8 @@ func TestToolDefinitions_DescriptionLengths(t *testing.T) {
 	h := NewHandler(nil, nil, nil, nil)
 	defs := GetToolDefinitions(h)
 
-	// Descriptions should be concise (aim for <80 chars)
-	const maxDescriptionLength = 80
+	// Descriptions should be concise (aim for <150 chars for diagnostic tools)
+	const maxDescriptionLength = 150
 
 	for _, def := range defs {
 		desc := def.Tool.Description
@@ -1755,8 +1756,8 @@ func TestToolDefinitions_PayloadSize(t *testing.T) {
 	totalSize += 20
 
 	// Target: significant reduction from original ~11KB
-	// With 8 tools instead of 24, and shorter descriptions, we expect ~4-5KB
-	const maxPayloadSize = 6000 // Conservative target
+	// With 9 tools instead of 24, and shorter descriptions, we expect ~5-6KB
+	const maxPayloadSize = 7000 // Conservative target (v3.1 added jarvis_diagnose)
 	if totalSize > maxPayloadSize {
 		t.Errorf("Actual payload size %d exceeds target %d bytes", totalSize, maxPayloadSize)
 	}

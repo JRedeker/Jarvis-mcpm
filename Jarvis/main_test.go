@@ -66,7 +66,7 @@ func TestCreateServer_RegistersAllTools(t *testing.T) {
 	// When: We get tool definitions
 	defs := handlers.GetToolDefinitions(h)
 
-	// Then: All 8 consolidated tools should be registered (v3.0)
+	// Then: All 9 consolidated tools should be registered (v3.1)
 	expectedTools := []string{
 		"jarvis_check_status",
 		"jarvis_server",
@@ -76,6 +76,7 @@ func TestCreateServer_RegistersAllTools(t *testing.T) {
 		"jarvis_project",
 		"jarvis_system",
 		"jarvis_share",
+		"jarvis_diagnose",
 	}
 
 	// Build map of registered tools
@@ -84,9 +85,9 @@ func TestCreateServer_RegistersAllTools(t *testing.T) {
 		registered[def.Tool.Name] = true
 	}
 
-	// Verify exactly 8 tools
-	if len(defs) != 8 {
-		t.Errorf("Expected 8 consolidated tools, got %d", len(defs))
+	// Verify exactly 9 tools (v3.1 added jarvis_diagnose)
+	if len(defs) != 9 {
+		t.Errorf("Expected 9 consolidated tools, got %d", len(defs))
 	}
 
 	for _, name := range expectedTools {
