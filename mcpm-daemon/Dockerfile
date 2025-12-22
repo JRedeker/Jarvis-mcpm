@@ -15,7 +15,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     npm \
     supervisor \
     && rm -rf /var/lib/apt/lists/* \
-    && curl -LsSf https://astral.sh/uv/install.sh | sh \
+    && (curl -LsSf https://astral.sh/uv/install.sh | sh \
+        || (sleep 5 && curl -LsSf https://astral.sh/uv/install.sh | sh) \
+        || (sleep 10 && curl -LsSf https://astral.sh/uv/install.sh | sh)) \
     && pip install --no-cache-dir "pydantic>=2.11" "fastmcp>=2.14" "mcp>=1.24" mcpm \
     && mkdir -p /var/log/mcpm /etc/supervisor/conf.d /opt/mcpm-cli
 
