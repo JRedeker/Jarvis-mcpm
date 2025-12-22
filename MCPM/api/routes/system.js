@@ -17,7 +17,8 @@ const {
     getClientsConfigPath,
     getAllServers,
     readProfilesConfig,
-    readClientsConfig
+    readClientsConfig,
+    auditProfileSync
 } = require('../helpers');
 
 const router = express.Router();
@@ -184,6 +185,38 @@ router.get('/search', (req, res) => {
         }));
     } catch (err) {
         res.status(500).json(errorResponse('SEARCH_ERROR', err.message));
+    }
+});
+
+/**
+ * GET /audit
+ * Audit profile_tags in servers.json against profiles.json
+ * Returns mismatches between server tags and actual profile membership
+ */
+router.get('/audit', (req, res) => {
+    try {
+        const report = auditProfileSync(false);
+        res.json(successResponse(report));
+    } catch (err) {
+        res.status(500).json(errorResponse('AUDIT_ERROR', err.message));
+    }
+});
+
+/**
+ * POST /audit/fix
+ * Audit and automatically fix mismatches between servers.json and profiles.json
+ */
+router.post('/audit/fix', (req, res) => {
+    try {
+        const report = auditProfileSync(true);
+        res.json(successResponse({
+            ...report,
+            message: report.fixes.length > 0
+                ? `Applied ${report.fixes.length} fixes to synchronize configurations`
+                : 'No fixes needed - configurations are in sync'
+        }));
+    } catch (err) {
+        res.status(500).json(errorResponse('AUDIT_FIX_ERROR', err.message));
     }
 });
 

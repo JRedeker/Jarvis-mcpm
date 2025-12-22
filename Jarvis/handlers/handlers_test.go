@@ -1686,6 +1686,90 @@ func TestShare_InvalidAction(t *testing.T) {
 	}
 }
 
+// ==================== Diagnose Handler Tests ====================
+
+func TestDiagnose_InvalidAction(t *testing.T) {
+	h := NewHandler(nil, nil, nil, nil)
+	ctx := context.Background()
+
+	req := newRequest(map[string]interface{}{"action": "invalid_action"})
+	result, _ := h.Diagnose(ctx, req)
+
+	if result == nil || !result.IsError {
+		t.Error("Expected error result for invalid action")
+	}
+
+	text := getResultText(result)
+	if !strings.Contains(text, "config_sync") {
+		t.Error("Error message should list config_sync as a valid action")
+	}
+}
+
+func TestDiagnose_MissingAction(t *testing.T) {
+	h := NewHandler(nil, nil, nil, nil)
+	ctx := context.Background()
+
+	req := newRequest(map[string]interface{}{})
+	result, _ := h.Diagnose(ctx, req)
+
+	if result == nil || !result.IsError {
+		t.Error("Expected error result for missing action")
+	}
+}
+
+func TestDiagnose_ConfigSync_Format(t *testing.T) {
+	h := NewHandler(nil, nil, nil, nil)
+	ctx := context.Background()
+
+	// Test config_sync action - should attempt to call MCPM API
+	// In test environment without MCPM, it should handle gracefully
+	req := newRequest(map[string]interface{}{
+		"action":   "config_sync",
+		"auto_fix": false,
+	})
+	result, err := h.DiagnoseConfigSync(ctx, req)
+
+	if err != nil {
+		t.Fatalf("DiagnoseConfigSync() returned error: %v", err)
+	}
+
+	if result == nil {
+		t.Fatal("DiagnoseConfigSync() returned nil result")
+	}
+
+	text := getResultText(result)
+	// Should contain the audit header
+	if !strings.Contains(text, "Configuration Sync Audit") {
+		t.Errorf("Expected audit header in output, got: %s", text)
+	}
+}
+
+func TestDiagnose_ConfigSync_WithMockDocker(t *testing.T) {
+	mockDocker := &MockDockerRunner{}
+	h := NewHandler(nil, mockDocker, nil, nil)
+	ctx := context.Background()
+
+	// Test that config_sync action routes correctly
+	req := newRequest(map[string]interface{}{
+		"action": "config_sync",
+	})
+	result, err := h.Diagnose(ctx, req)
+
+	if err != nil {
+		t.Fatalf("Diagnose(config_sync) returned error: %v", err)
+	}
+
+	if result == nil {
+		t.Fatal("Diagnose(config_sync) returned nil result")
+	}
+
+	// Result should contain audit output or error about MCPM API
+	text := getResultText(result)
+	if !strings.Contains(text, "Configuration Sync Audit") {
+		t.Errorf("Expected Configuration Sync Audit header, got: %s", text)
+	}
+}
+
 // ==================== Payload Size Verification ====================
 
 func TestToolDefinitions_CountAndSize(t *testing.T) {

@@ -1843,3 +1843,125 @@ func (h *Handler) DiagnoseFull(ctx context.Context, request mcp.CallToolRequest)
 
 	return mcp.NewToolResultText(builder.String()), nil
 }
+
+// DiagnoseConfigSync audits and optionally fixes mismatches between
+// servers.json profile_tags and profiles.json server lists
+func (h *Handler) DiagnoseConfigSync(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	args := request.Params.Arguments.(map[string]interface{})
+
+	// Check if auto_fix is requested
+	autoFix := false
+	if fix, ok := args["auto_fix"].(bool); ok {
+		autoFix = fix
+	}
+
+	var builder strings.Builder
+	builder.WriteString("## Configuration Sync Audit\n\n")
+
+	// Call the MCPM API audit endpoint
+	var endpoint string
+	if autoFix {
+		endpoint = "/api/v1/audit/fix"
+	} else {
+		endpoint = "/api/v1/audit"
+	}
+
+	mcpmURL := os.Getenv("MCPM_API_URL")
+	if mcpmURL == "" {
+		mcpmURL = "http://localhost:6275"
+	}
+
+	client := &http.Client{Timeout: 10 * time.Second}
+
+	var resp *http.Response
+	var err error
+
+	if autoFix {
+		resp, err = client.Post(mcpmURL+endpoint, "application/json", nil)
+	} else {
+		resp, err = client.Get(mcpmURL + endpoint)
+	}
+
+	if err != nil {
+		builder.WriteString(fmt.Sprintf("❌ Failed to reach MCPM API: %v\n", err))
+		builder.WriteString("\n**Fallback:** Check if mcp-daemon is running with `docker ps`\n")
+		return mcp.NewToolResultText(builder.String()), nil
+	}
+	defer resp.Body.Close()
+
+	var result struct {
+		Success bool `json:"success"`
+		Data    struct {
+			Mismatches               []map[string]interface{} `json:"mismatches"`
+			Fixes                    []string                 `json:"fixes"`
+			ServerTagsNotInProfile   []map[string]interface{} `json:"serverTagsNotInProfile"`
+			ProfileServersWithoutTag []map[string]interface{} `json:"profileServersWithoutTag"`
+			Summary                  struct {
+				TotalMismatches int  `json:"totalMismatches"`
+				FixesApplied    int  `json:"fixesApplied"`
+				IsInSync        bool `json:"isInSync"`
+			} `json:"summary"`
+			Message string `json:"message"`
+		} `json:"data"`
+		Error interface{} `json:"error"`
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		builder.WriteString(fmt.Sprintf("❌ Failed to parse API response: %v\n", err))
+		return mcp.NewToolResultText(builder.String()), nil
+	}
+
+	if !result.Success {
+		builder.WriteString(fmt.Sprintf("❌ API Error: %v\n", result.Error))
+		return mcp.NewToolResultText(builder.String()), nil
+	}
+
+	// Report summary
+	if result.Data.Summary.IsInSync {
+		builder.WriteString("✅ **Configurations are in sync!**\n\n")
+		builder.WriteString("All server `profile_tags` match their profile memberships.\n")
+	} else {
+		builder.WriteString(fmt.Sprintf("⚠️ **Found %d mismatches**\n\n", result.Data.Summary.TotalMismatches))
+
+		// Report server tags not in profiles
+		if len(result.Data.ServerTagsNotInProfile) > 0 {
+			builder.WriteString("### Servers with tags but not in profile\n")
+			builder.WriteString("These servers have profile tags but aren't in the profile's server list:\n\n")
+			for _, item := range result.Data.ServerTagsNotInProfile {
+				builder.WriteString(fmt.Sprintf("- **%s**: has tag `%s` but not in profile\n",
+					item["server"], item["tag"]))
+			}
+			builder.WriteString("\n")
+		}
+
+		// Report profile servers without tags
+		if len(result.Data.ProfileServersWithoutTag) > 0 {
+			builder.WriteString("### Profile servers missing tags\n")
+			builder.WriteString("These servers are in profiles but missing the profile tag:\n\n")
+			for _, item := range result.Data.ProfileServersWithoutTag {
+				builder.WriteString(fmt.Sprintf("- **%s**: in profile `%s` but missing tag\n",
+					item["server"], item["profile"]))
+			}
+			builder.WriteString("\n")
+		}
+
+		// Report fixes if auto_fix was enabled
+		if autoFix && len(result.Data.Fixes) > 0 {
+			builder.WriteString("### Fixes Applied\n")
+			for _, fix := range result.Data.Fixes {
+				builder.WriteString(fmt.Sprintf("- %s\n", fix))
+			}
+			builder.WriteString("\n")
+		} else if !autoFix && result.Data.Summary.TotalMismatches > 0 {
+			builder.WriteString("### To Fix\n")
+			builder.WriteString("Run with `auto_fix: true` to automatically synchronize:\n")
+			builder.WriteString("```\njarvis_diagnose(action=\"config_sync\", auto_fix=true)\n```\n")
+		}
+	}
+
+	if result.Data.Message != "" {
+		builder.WriteString(fmt.Sprintf("\n%s\n", result.Data.Message))
+	}
+
+	return mcp.NewToolResultText(builder.String()), nil
+}

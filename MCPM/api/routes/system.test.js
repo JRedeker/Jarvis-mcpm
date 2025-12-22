@@ -74,6 +74,45 @@ describe('System Routes', () => {
         });
     });
 
+    describe('GET /api/v1/audit', () => {
+        it('should return audit report', async () => {
+            const res = await request(app)
+                .get('/api/v1/audit')
+                .expect(200);
+
+            expect(res.body.success).toBe(true);
+            expect(res.body.data).toBeDefined();
+            expect(res.body.data.summary).toBeDefined();
+            expect(typeof res.body.data.summary.totalMismatches).toBe('number');
+            expect(typeof res.body.data.summary.isInSync).toBe('boolean');
+            expect(Array.isArray(res.body.data.mismatches)).toBe(true);
+            expect(Array.isArray(res.body.data.fixes)).toBe(true);
+        });
+
+        it('should include mismatch details', async () => {
+            const res = await request(app)
+                .get('/api/v1/audit')
+                .expect(200);
+
+            expect(Array.isArray(res.body.data.serverTagsNotInProfile)).toBe(true);
+            expect(Array.isArray(res.body.data.profileServersWithoutTag)).toBe(true);
+        });
+    });
+
+    describe('POST /api/v1/audit/fix', () => {
+        it('should perform audit and fix', async () => {
+            const res = await request(app)
+                .post('/api/v1/audit/fix')
+                .expect(200);
+
+            expect(res.body.success).toBe(true);
+            expect(res.body.data).toBeDefined();
+            expect(res.body.data.summary).toBeDefined();
+            expect(res.body.data.message).toBeDefined();
+            expect(Array.isArray(res.body.data.fixes)).toBe(true);
+        });
+    });
+
     describe('404 Handler', () => {
         it('should return 404 for unknown endpoints', async () => {
             const res = await request(app)

@@ -13,7 +13,8 @@ const {
     successResponse,
     errorResponse,
     readProfilesConfig,
-    saveProfilesConfig
+    saveProfilesConfig,
+    syncServerProfileTags
 } = require('../helpers');
 
 const router = express.Router();
@@ -133,17 +134,19 @@ router.put('/:name', (req, res) => {
         }
 
         let profile = profiles[name];
+        let serversAdded = [];
+        let serversRemoved = [];
 
         // Add servers
         if (add_servers) {
-            const serversToAdd = Array.isArray(add_servers) ? add_servers : add_servers.split(',').map(s => s.trim());
-            profile.servers = [...new Set([...(profile.servers || []), ...serversToAdd])];
+            serversAdded = Array.isArray(add_servers) ? add_servers : add_servers.split(',').map(s => s.trim());
+            profile.servers = [...new Set([...(profile.servers || []), ...serversAdded])];
         }
 
         // Remove servers
         if (remove_servers) {
-            const serversToRemove = Array.isArray(remove_servers) ? remove_servers : remove_servers.split(',').map(s => s.trim());
-            profile.servers = (profile.servers || []).filter(s => !serversToRemove.includes(s));
+            serversRemoved = Array.isArray(remove_servers) ? remove_servers : remove_servers.split(',').map(s => s.trim());
+            profile.servers = (profile.servers || []).filter(s => !serversRemoved.includes(s));
         }
 
         // Update description
@@ -173,6 +176,9 @@ router.put('/:name', (req, res) => {
         }
 
         saveProfilesConfig(profiles);
+
+        // Sync server profile_tags with the profile changes
+        syncServerProfileTags(finalName, serversAdded, serversRemoved);
 
         res.json(successResponse({
             name: finalName,

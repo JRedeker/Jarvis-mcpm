@@ -206,7 +206,7 @@ func (h *Handler) Share(ctx context.Context, req mcp.CallToolRequest) (*mcp.Call
 }
 
 // Diagnose handles the jarvis_diagnose tool for debugging MCP profile issues
-// Actions: profile_health, test_endpoint, logs, full
+// Actions: profile_health, test_endpoint, logs, full, config_sync
 func (h *Handler) Diagnose(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	args, ok := req.Params.Arguments.(map[string]interface{})
 	if !ok {
@@ -215,7 +215,7 @@ func (h *Handler) Diagnose(ctx context.Context, req mcp.CallToolRequest) (*mcp.C
 
 	action, ok := args["action"].(string)
 	if !ok || action == "" {
-		return mcp.NewToolResultError("action is required. Valid: profile_health|test_endpoint|logs|full"), nil
+		return mcp.NewToolResultError("action is required. Valid: profile_health|test_endpoint|logs|full|config_sync"), nil
 	}
 
 	switch action {
@@ -227,7 +227,9 @@ func (h *Handler) Diagnose(ctx context.Context, req mcp.CallToolRequest) (*mcp.C
 		return h.DiagnoseLogs(ctx, req)
 	case "full":
 		return h.DiagnoseFull(ctx, req)
+	case "config_sync":
+		return h.DiagnoseConfigSync(ctx, req)
 	default:
-		return mcp.NewToolResultError(fmt.Sprintf("invalid action '%s'. Valid: profile_health|test_endpoint|logs|full", action)), nil
+		return mcp.NewToolResultError(fmt.Sprintf("invalid action '%s'. Valid: profile_health|test_endpoint|logs|full|config_sync", action)), nil
 	}
 }

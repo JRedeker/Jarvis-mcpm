@@ -219,6 +219,128 @@ function errorResponse(code, message, details = null) {
     };
 }
 
+/**
+ * Synchronize server profile_tags with profiles.json
+ * When a server is added/removed from a profile, update the server's profile_tags
+ * @param {string} profileName - Profile name
+ * @param {string[]} serversToAdd - Servers being added to the profile
+ * @param {string[]} serversToRemove - Servers being removed from the profile
+ */
+function syncServerProfileTags(profileName, serversToAdd = [], serversToRemove = []) {
+    const servers = readUserConfig();
+    let modified = false;
+
+    // Add profile tag to servers being added
+    for (const serverName of serversToAdd) {
+        if (servers[serverName]) {
+            const tags = servers[serverName].profile_tags || [];
+            if (!tags.includes(profileName)) {
+                servers[serverName].profile_tags = [...tags, profileName];
+                modified = true;
+            }
+        }
+    }
+
+    // Remove profile tag from servers being removed
+    for (const serverName of serversToRemove) {
+        if (servers[serverName]) {
+            const tags = servers[serverName].profile_tags || [];
+            if (tags.includes(profileName)) {
+                servers[serverName].profile_tags = tags.filter(t => t !== profileName);
+                modified = true;
+            }
+        }
+    }
+
+    if (modified) {
+        saveUserConfig(servers);
+    }
+
+    return modified;
+}
+
+/**
+ * Audit and reconcile profile_tags in servers.json with profiles.json
+ * Returns a report of mismatches and optionally fixes them
+ * @param {boolean} autoFix - If true, automatically fix mismatches
+ * @returns {Object} Audit report with mismatches and actions taken
+ */
+function auditProfileSync(autoFix = false) {
+    const servers = readUserConfig();
+    const profiles = readProfilesConfig();
+    const report = {
+        mismatches: [],
+        fixes: [],
+        serverTagsNotInProfile: [],
+        profileServersWithoutTag: []
+    };
+
+    // Build a map of profile -> servers from profiles.json
+    const profileServerMap = {};
+    for (const profileName in profiles) {
+        profileServerMap[profileName] = new Set(profiles[profileName].servers || []);
+    }
+
+    // Check each server's profile_tags against actual profile membership
+    for (const serverName in servers) {
+        const serverTags = new Set(servers[serverName].profile_tags || []);
+
+        // Check if server claims to be in profiles it's not actually in
+        for (const tag of serverTags) {
+            if (profileServerMap[tag] && !profileServerMap[tag].has(serverName)) {
+                report.serverTagsNotInProfile.push({
+                    server: serverName,
+                    tag: tag,
+                    issue: `Server has tag '${tag}' but is not in profile's server list`
+                });
+                report.mismatches.push({ type: 'tag_without_membership', server: serverName, profile: tag });
+
+                if (autoFix) {
+                    // Remove the tag from the server since it's not in the profile
+                    servers[serverName].profile_tags = servers[serverName].profile_tags.filter(t => t !== tag);
+                    report.fixes.push(`Removed tag '${tag}' from server '${serverName}'`);
+                }
+            }
+        }
+    }
+
+    // Check each profile's servers have the corresponding tag
+    for (const profileName in profiles) {
+        const profileServers = profiles[profileName].servers || [];
+        for (const serverName of profileServers) {
+            if (servers[serverName]) {
+                const serverTags = servers[serverName].profile_tags || [];
+                if (!serverTags.includes(profileName)) {
+                    report.profileServersWithoutTag.push({
+                        server: serverName,
+                        profile: profileName,
+                        issue: `Server in profile '${profileName}' but missing the profile tag`
+                    });
+                    report.mismatches.push({ type: 'membership_without_tag', server: serverName, profile: profileName });
+
+                    if (autoFix) {
+                        // Add the tag to the server
+                        servers[serverName].profile_tags = [...serverTags, profileName];
+                        report.fixes.push(`Added tag '${profileName}' to server '${serverName}'`);
+                    }
+                }
+            }
+        }
+    }
+
+    if (autoFix && report.fixes.length > 0) {
+        saveUserConfig(servers);
+    }
+
+    report.summary = {
+        totalMismatches: report.mismatches.length,
+        fixesApplied: report.fixes.length,
+        isInSync: report.mismatches.length === 0
+    };
+
+    return report;
+}
+
 module.exports = {
     getConfigDir,
     getUserConfigPath,
@@ -238,6 +360,8 @@ module.exports = {
     isDockerAvailable,
     successResponse,
     errorResponse,
+    syncServerProfileTags,
+    auditProfileSync,
     MCPM_DIR,
     REGISTRY_CONFIG_PATH
 };

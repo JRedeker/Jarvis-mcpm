@@ -18,9 +18,9 @@ Instead of loading a single monolithic "toolbox" profile, agents load a *stack* 
 |:---|:---|:---|:---|:---|
 | **`essentials`** | 6276 | `http://localhost:6276/mcp` | High-availability local tools. | `time`, `fetch-mcp` |
 | **`memory`** | 6277 | `http://localhost:6277/mcp` | State persistence. | `basic-memory`, `mem0-mcp` |
-| **`dev-core`** | 6278 | `http://localhost:6278/mcp` | Coding intelligence. | `context7`, `morph-fast-apply` |
-| **`data`** | 6279 | `http://localhost:6279/mcp` | Heavy storage/Vector DB. | `mcp-server-qdrant`, `postgres` |
-| **`research`** | 6281 | `http://localhost:6281/mcp` | **High Risk** network/web tools. | `brave-search`, `firecrawl`, `arxiv-mcp` |
+| **`dev-core`** | 6278 | `http://localhost:6278/mcp` | Coding intelligence. | `context7` |
+| **`data`** | 6279 | `http://localhost:6279/mcp` | Heavy storage/Vector DB. | `mcp-server-qdrant` |
+| **`research`** | 6281 | `http://localhost:6281/mcp` | **High Risk** network/web tools. | `kagimcp`, `firecrawl`, `arxiv-mcp` |
 
 *Note: `p-new` (Port 6280) is reserved for experimental/newly installed tools.*
 
@@ -74,3 +74,35 @@ Remote MCP servers (HTTP endpoints) should have explicit timeouts configured to 
 - **Essentials/Dev-Core:** 10s
 - **Memory/Data:** 30s
 - **Research:** 60s (Heavy network usage)
+
+## Configuration Synchronization
+
+Jarvis maintains two configuration files that must stay in sync:
+
+| File | Purpose | Used By |
+|:-----|:--------|:--------|
+| `~/.config/mcpm/servers.json` | Server definitions with `profile_tags` | Metadata/display |
+| `~/.config/mcpm/profiles.json` | Profile → Server mappings | **Daemon (source of truth)** |
+
+### Automatic Synchronization
+
+As of v3.2, when you edit a profile via `jarvis_profile(action="edit")`, the server's `profile_tags` are automatically updated to stay in sync.
+
+### Manual Audit & Fix
+
+If configurations become out of sync (e.g., after manual edits), use the config_sync diagnostic:
+
+```javascript
+// Audit for mismatches
+jarvis_diagnose({ action: "config_sync" })
+
+// Auto-fix mismatches (updates servers.json to match profiles.json)
+jarvis_diagnose({ action: "config_sync", auto_fix: true })
+```
+
+### API Endpoints
+
+The MCPM API also exposes these endpoints:
+
+- `GET /api/v1/audit` - Returns mismatch report
+- `POST /api/v1/audit/fix` - Auto-fixes mismatches

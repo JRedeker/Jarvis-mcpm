@@ -38,7 +38,7 @@ You are an advanced AI agent. You must **NOT** use `run_shell_command` to execut
 | `jarvis_project` | analyze, diff, devops | `jarvis_project(action="analyze")` |
 | `jarvis_system` | bootstrap, restart, restart_infra | `jarvis_system(action="bootstrap")` |
 | `jarvis_share` | start, stop, list | `jarvis_share(action="list")` |
-| `jarvis_diagnose` | profile_health, test_endpoint, logs, full | `jarvis_diagnose(action="profile_health")` |
+| `jarvis_diagnose` | profile_health, test_endpoint, logs, full, config_sync | `jarvis_diagnose(action="profile_health")` |
 
 ## 🧠 The Micro-Profile Stack Philosophy
 
@@ -57,7 +57,7 @@ Instead of a single `toolbox` profile, we have domain-specific profiles that run
 
 ### 3. Developer Core (`dev-core`) - Port 6278
 *   **What:** Coding intelligence.
-*   **Tools:** `context7`, `morph-fast-apply`.
+*   **Tools:** `context7`.
 
 ### 4. Data (`data`) - Port 6279
 *   **What:** Heavy databases.
@@ -65,7 +65,7 @@ Instead of a single `toolbox` profile, we have domain-specific profiles that run
 
 ### 5. Research (`research`) - Port 6281
 *   **What:** High-risk network tools (Docker/Web).
-*   **Tools:** `brave-search`, `firecrawl`, `arxiv-mcp`.
+*   **Tools:** `kagimcp`, `firecrawl`, `arxiv-mcp`.
 
 ## 🛠️ Key Operational Workflows
 
@@ -88,13 +88,12 @@ jarvis_client({
 })
 ```
 
-### B. Intelligent Refactoring (`morph-fast-apply`)
-The `morph-fast-apply` server is now part of the `dev-core` profile.
-This tool allows you to make semantic edits without worrying about exact line numbers.
+### B. Using Context7 for Documentation
+The `context7` server in `dev-core` provides library documentation lookup.
 
 **Usage Pattern:**
 1.  Check if available: `jarvis_server(action="list")`
-2.  Use it: When the user asks for a complex refactor, prefer `morph-fast-apply` tools over raw file overwrites if safe to do so.
+2.  Use it: When working with libraries, use context7 to fetch documentation.
 
 ### C. Handling Output (The Presentation Layer)
 Jarvis now returns formatted Markdown with emojis (✅/❌) and code blocks.
@@ -205,6 +204,7 @@ The `jarvis_diagnose` tool enables AI agents to self-debug when MCP tools fail:
 | `test_endpoint` | Test MCP protocol on a specific endpoint |
 | `logs` | Retrieve subprocess stderr logs for a profile |
 | `full` | Comprehensive diagnostic report |
+| `config_sync` | Audit/fix mismatches between servers.json and profiles.json |
 
 ### Common Diagnostic Workflows
 
@@ -225,4 +225,13 @@ jarvis_diagnose({ action: "test_endpoint", endpoint: "http://localhost:6276/mcp"
 jarvis_profile({ action: "restart", profile: "research" })
 jarvis_diagnose({ action: "profile_health" })
 // Verify profile restarted successfully
+```
+
+**Config out of sync (profile_tags vs profiles.json):**
+```javascript
+// Audit for mismatches
+jarvis_diagnose({ action: "config_sync" })
+
+// Auto-fix mismatches
+jarvis_diagnose({ action: "config_sync", auto_fix: true })
 ```
