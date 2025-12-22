@@ -235,6 +235,44 @@ That's it. Jarvis manages everything else.
 
 ---
 
+## Roadmap
+
+See [ROADMAP.yaml](ROADMAP.yaml) for the full development plan.
+
+### Now
+
+| Feature | Description |
+|:--------|:------------|
+| **Daemon Stability** | Auto-restart failed servers with backoff, health checks per profile |
+| **Config Hot Reload** | Watch config files and apply changes without manual restarts |
+| **Smart Error Recovery** | Actionable recovery suggestions when tool calls fail |
+
+### Next
+
+| Feature | Description |
+|:--------|:------------|
+| **Profile Templates** | Pre-built profiles for research, coding, data workflows |
+| **Multi-Model Optimization** | Context-aware tool pruning for different LLM providers |
+| **Usage Analytics** | Track tool usage patterns, error rates, response times |
+
+### Proposed
+
+| Feature | Description |
+|:--------|:------------|
+| **Granular Client Editing** | Fine-grained server config (env vars, headers, enable/disable) via `jarvis_client` |
+
+<details>
+<summary><b>Recently Completed</b></summary>
+
+- **v5.1** — Docker operations, test runner, config backup/restore
+- **v3.1** — `jarvis_diagnose` tool for self-debugging
+- **v3.0** — Tool consolidation (24 → 9 tools, 52% token reduction)
+- **HTTP API Transport** — MCPM REST API with CLI fallback
+
+</details>
+
+---
+
 ## Documentation
 
 | Doc | Description |
@@ -244,6 +282,7 @@ That's it. Jarvis manages everything else.
 | [Architecture](docs/TECHNICAL_ARCHITECTURE.md) | Technical deep dive |
 | [Configuration](docs/CONFIGURATION_STRATEGY.md) | Micro-Profile Strategy |
 | [Troubleshooting](docs/TROUBLESHOOTING.md) | Issue resolution |
+| [API Reference](docs/API_REFERENCE.md) | Complete tool reference |
 
 ---
 
