@@ -283,8 +283,8 @@ func TestAddProfileToOpenCode(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:    "add toolbox profile",
-			profile: "toolbox",
+			name:    "add essentials profile",
+			profile: "essentials",
 			wantErr: false,
 		},
 		{
@@ -411,11 +411,20 @@ func TestGenerateOpenCodeTemplate(t *testing.T) {
 	if !strings.Contains(template, "/path/to/jarvis") {
 		t.Error("Template should contain jarvis path")
 	}
-	if !strings.Contains(template, "toolbox") {
-		t.Error("Template should contain toolbox")
+	if !strings.Contains(template, "essentials") {
+		t.Error("Template should contain essentials")
 	}
 	if !strings.Contains(template, "memory") {
 		t.Error("Template should contain memory")
+	}
+	if !strings.Contains(template, "dev-core") {
+		t.Error("Template should contain dev-core")
+	}
+	if !strings.Contains(template, "research") {
+		t.Error("Template should contain research")
+	}
+	if !strings.Contains(template, "data") {
+		t.Error("Template should contain data")
 	}
 	if !strings.Contains(template, "6276") {
 		t.Error("Template should contain port 6276")
@@ -447,10 +456,12 @@ func TestKnownClients(t *testing.T) {
 
 func TestProfilePorts(t *testing.T) {
 	expectedPorts := map[string]int{
-		"toolbox": 6276,
-		"memory":  6277,
-		"morph":   6278,
-		"qdrant":  6279,
+		"essentials": 6276,
+		"memory":     6277,
+		"dev-core":   6278,
+		"data":       6279,
+		"p-new":      6280,
+		"research":   6281,
 	}
 
 	for profile, expectedPort := range expectedPorts {

@@ -359,7 +359,7 @@ func GenerateOpenCodeTemplate(jarvisPath string) string {
 				Command: []string{jarvisPath},
 				Enabled: &enabled,
 			},
-			"toolbox": {
+			"essentials": {
 				Type:    "remote",
 				URL:     "http://localhost:6276/mcp",
 				Enabled: &enabled,
@@ -369,9 +369,19 @@ func GenerateOpenCodeTemplate(jarvisPath string) string {
 				URL:     "http://localhost:6277/mcp",
 				Enabled: &enabled,
 			},
-			"morph": {
+			"dev-core": {
 				Type:    "remote",
 				URL:     "http://localhost:6278/mcp",
+				Enabled: &enabled,
+			},
+			"research": {
+				Type:    "remote",
+				URL:     "http://localhost:6281/mcp",
+				Enabled: &enabled,
+			},
+			"data": {
+				Type:    "remote",
+				URL:     "http://localhost:6279/mcp",
 				Enabled: &enabled,
 			},
 		},
