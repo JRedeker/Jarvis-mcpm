@@ -46,7 +46,7 @@ OpenCode format:
 
 Jarvis profile mapping:
 - `jarvis` (stdio) -> `type: "local"`, `command: ["/path/to/jarvis"]`
-- `p-pokeedge`, `memory`, etc. (HTTP) -> `type: "remote"`, `url: "http://localhost:PORT/mcp"`
+- `toolbox`, `memory`, etc. (HTTP) -> `type: "remote"`, `url: "http://localhost:PORT/mcp"`
 
 **Rationale**: Direct mapping preserves OpenCode's native format while enabling Jarvis to manage configurations programmatically.
 

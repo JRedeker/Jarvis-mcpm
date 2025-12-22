@@ -143,7 +143,7 @@ fi
 # 5. Also show profile configurations for daemon
 echo ""
 echo -e "${CYAN}📦 Profile endpoints (from mcpm-daemon):${NC}"
-echo "  p-pokeedge:  http://localhost:6276/mcp"
+echo "  toolbox:  http://localhost:6276/mcp"
 echo "  memory:      http://localhost:6277/mcp"
 echo "  morph:       http://localhost:6278/mcp"
 echo "  qdrant:      http://localhost:6279/mcp"

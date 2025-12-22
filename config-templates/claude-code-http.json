@@ -4,7 +4,7 @@
       "command": "/home/jrede/dev/MCP/Jarvis/jarvis",
       "args": []
     },
-    "p-pokeedge": {
+    "toolbox": {
       "url": "http://localhost:6276/mcp",
       "transport": "streamable-http",
       "alwaysAllow": [

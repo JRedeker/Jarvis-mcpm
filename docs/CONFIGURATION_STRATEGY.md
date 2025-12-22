@@ -1,73 +1,60 @@
-# MCPM & Jarvis Configuration Strategy: The Streamable HTTP Daemon Architecture
+# Configuration Strategy
 
-**Version:** 4.1 (March 2025)
+**Version:** 5.0 (December 2025)
 **Status:** Active Standard
-**Core Change:** Shift from "SSE" to "Streamable HTTP" (MCP 2025-03-26 Spec).
+**Core Change:** Transition to Composable Micro-Profiles.
 
 ## Overview
 
-We have moved to a **Single Daemon Architecture**. Instead of every AI client spawning its own duplicate `mcpm` processes (wasteful, hard to manage), Jarvis orchestrates a single Docker container (`mcpm-daemon`) that hosts all tool profiles as **Streamable HTTP endpoints**.
+Jarvis manages a set of "Composable Micro-Profiles" to provide a stable, scalable, and fault-tolerant environment for AI agents. Instead of every AI client spawning its own duplicate processes, Jarvis orchestrates a single Docker container (`mcpm-daemon`) that hosts all tool profiles as **Streamable HTTP endpoints**.
 
-Clients simply connect to these running HTTP endpoints.
+## Architectural Philosophy
 
-## The 3-Layer Port Mapping
+Instead of loading a single monolithic "toolbox" profile, agents load a *stack* of specialized profiles. Each profile runs in its own process/container failure domain. If one profile crashes (e.g., due to a network timeout or Docker issue), the others remain available.
 
-We still use the 3-Layer logic, but now layers map to **Ports**, not just profile names.
+### The Standard Stack
 
-### Layer 1: PROJECT (Port 6276)
-*   **Profile Name:** `p-<name>` (e.g., `p-pokeedge`)
-*   **Port:** `6276` (Default Project Port)
-*   **URL:** `http://localhost:6276/mcp`
-*   **Purpose:** Workspace-specific tools (Search, Dev Tools).
-*   **Switching:** To switch projects, you change which profile is running on port 6276 (or Jarvis creates a new port mapping). Currently, `p-pokeedge` is the primary active project.
+| Profile | Port | URL | Purpose | Contents |
+|:---|:---|:---|:---|:---|
+| **`essentials`** | 6276 | `http://localhost:6276/mcp` | High-availability local tools. | `time`, `fetch-mcp` |
+| **`memory`** | 6277 | `http://localhost:6277/mcp` | State persistence. | `basic-memory`, `mem0-mcp` |
+| **`dev-core`** | 6278 | `http://localhost:6278/mcp` | Coding intelligence. | `context7`, `morph-fast-apply` |
+| **`data`** | 6279 | `http://localhost:6279/mcp` | Heavy storage/Vector DB. | `mcp-server-qdrant`, `postgres` |
+| **`research`** | 6281 | `http://localhost:6281/mcp` | **High Risk** network/web tools. | `brave-search`, `firecrawl`, `arxiv-mcp` |
 
-### Layer 2: CAPABILITY (Ports 6278, 6279, ...)
-*   **Profile Names:** `morph`, `qdrant`
-*   **Ports:**
-    *   `morph`: `6278` (`http://localhost:6278/mcp`)
-    *   `qdrant`: `6279` (`http://localhost:6279/mcp`)
-*   **Purpose:** Specialized, heavy capabilities (AI Refactoring, Vector DB).
-*   **Opt-In:** Clients configure these URLs if they need the capability.
+*Note: `p-new` (Port 6280) is reserved for experimental/newly installed tools.*
 
-### Layer 3: ENVIRONMENT (Port 6277)
-*   **Profile Name:** `memory`
-*   **Port:** `6277` (`http://localhost:6277/mcp`)
-*   **Purpose:** Persistent Memory (User preferences, historical context).
-*   **Global:** Always active, always on this port.
+## Configuring Clients
 
-## Configuration Rules
+To configure an AI client (like OpenCode) to use this stack, add all profiles to its configuration.
 
-### 1. Use Streamable HTTP, Not Stdio or SSE
-Clients **MUST** be configured to use `transport: streamable-http` (or rely on default HTTP detection) and the `url` field. Do not use `command: mcpm` for profiles anymore.
-
-### 2. Jarvis is Stdio
-Jarvis itself (the gateway) remains a local **stdio** command because it needs to manage the local Docker daemon and file system directly.
-
-### 3. Short Names
-Continue using short profile names (`p-pokeedge` not `project-pokeedge`) to keep tool names within API limits.
-
-### 4. Timeouts for Remote MCP Servers
-Remote MCP servers (HTTP endpoints) should have explicit timeouts configured to handle slow startup or network issues:
-
-```json
-{
-  "p-pokeedge": {
-    "type": "remote",
-    "url": "http://localhost:6276/mcp",
-    "timeout": 30000,
-    "enabled": true
-  }
-}
+**Via Jarvis:**
+```javascript
+jarvis_client({
+  action: "edit",
+  client_name: "opencode",
+  add_profile: "essentials,memory,dev-core,research,data"
+})
 ```
 
-**Recommended timeouts:**
-| Profile Type | Timeout | Reason |
-|--------------|---------|--------|
-| Simple tools (fetch, time) | 10000ms | Fast response expected |
-| AI-powered (qdrant, memory) | 30000ms | May need model warm-up |
-| Heavy processing (morph) | 60000ms | Complex code operations |
+## Adding New Tools
 
-### 5. Debugging Failed Profiles
+When installing a new tool, assign it to the appropriate profile based on its characteristics:
+
+1.  **Fast & Local?** -> `essentials`
+2.  **Web/Network/Docker?** -> `research`
+3.  **Coding Logic?** -> `dev-core`
+4.  **Database?** -> `data`
+
+```javascript
+// Example: Adding a new web tool
+jarvis_server({ action: "install", name: "google-maps" })
+jarvis_profile({ action: "edit", name: "research", add_servers: "google-maps" })
+```
+
+## Troubleshooting
+
+### Debugging Failed Profiles
 Use `jarvis_diagnose` to debug profiles that fail to load:
 
 ```javascript
@@ -75,118 +62,15 @@ Use `jarvis_diagnose` to debug profiles that fail to load:
 jarvis_diagnose({ action: "profile_health" })
 
 // Get stderr logs from the subprocess
-jarvis_diagnose({ action: "logs", profile: "qdrant" })
+jarvis_diagnose({ action: "logs", profile: "research" })
 
 // Test MCP endpoint connectivity
-jarvis_diagnose({ action: "test_endpoint", endpoint: "http://localhost:6279/mcp" })
+jarvis_diagnose({ action: "test_endpoint", endpoint: "http://localhost:6281/mcp" })
 ```
 
-## Current Port Map
+### Timeouts
+Remote MCP servers (HTTP endpoints) should have explicit timeouts configured to handle slow startup or network issues:
 
-| Profile | Port | URL | Servers |
-| :--- | :--- | :--- | :--- |
-| `p-pokeedge` | 6276 | `http://localhost:6276/mcp` | `brave-search`, `context7`, `firecrawl`, `time`, `fetch-mcp` |
-| `memory` | 6277 | `http://localhost:6277/mcp` | `basic-memory`, `mem0-mcp` |
-| `morph` | 6278 | `http://localhost:6278/mcp` | `morph-fast-apply` |
-| `qdrant` | 6279 | `http://localhost:6279/mcp` | `mcp-server-qdrant` |
-
-## Example Client Configurations
-
-### OpenCode
-OpenCode uses a different configuration format with native Jarvis support. See [docs/tech/opencode-integration.md](tech/opencode-integration.md) for full details.
-
-```json
-{
-  "$schema": "https://opencode.ai/config.json",
-  "mcp": {
-    "jarvis": {
-      "type": "local",
-      "command": ["/home/user/dev/MCP/Jarvis/jarvis"],
-      "enabled": true
-    },
-    "p-pokeedge": {
-      "type": "remote",
-      "url": "http://localhost:6276/mcp",
-      "enabled": true
-    },
-    "memory": {
-      "type": "remote",
-      "url": "http://localhost:6277/mcp",
-      "enabled": true
-    },
-    "morph": {
-      "type": "remote",
-      "url": "http://localhost:6278/mcp",
-      "enabled": true
-    }
-  }
-}
-```
-
-**Quick Setup:**
-```javascript
-// Use Jarvis to import starter config (v3.0 syntax)
-jarvis_client({
-  action: "import",
-  client_name: "opencode"
-})
-```
-
-### Claude Desktop / Claude Code / Gemini CLI
-```json
-{
-  "mcpServers": {
-    "jarvis": {
-      "command": "/home/user/dev/MCP/Jarvis/jarvis",
-      "args": []
-    },
-    "p-pokeedge": {
-      "url": "http://localhost:6276/mcp",
-      "transport": "streamable-http"
-    },
-    "memory": {
-      "url": "http://localhost:6277/mcp",
-      "transport": "streamable-http"
-    },
-    "morph": {
-      "url": "http://localhost:6278/mcp",
-      "transport": "streamable-http"
-    },
-    "qdrant": {
-      "url": "http://localhost:6279/mcp",
-      "transport": "streamable-http"
-    }
-  }
-}
-```
-
-### Kilo Code
-```json
-{
-  "mcpServers": {
-    "p-pokeedge": {
-      "url": "http://localhost:6276/mcp",
-      "transport": "streamable-http"
-    },
-    "memory": {
-      "url": "http://localhost:6277/mcp",
-      "transport": "streamable-http"
-    },
-    "morph": {
-      "url": "http://localhost:6278/mcp",
-      "transport": "streamable-http"
-    }
-  }
-}
-```
-**Note:** Kilo Code doesn't strictly need Jarvis if it just wants tools, but Jarvis provides the system management capabilities.
-
-## Migration Guide
-
-**Note:** SSE transport has been fully removed as of v4.2 (MCP 2025-03-26 spec compliance). All profiles now use Streamable HTTP transport exclusively.
-
-### If upgrading from SSE-based configuration:
-1.  **Update Docker:** Ensure `mcpm-daemon` is running in `docker-compose.yml` (latest image).
-2.  **Update Configs:** Replace `transport: sse` with `transport: streamable-http` and change `/sse` to `/mcp` in all endpoint URLs.
-3.  **Restart:** Restart clients.
-4.  **Verify:** Use `jarvis_check_status()` to confirm the daemon is healthy.
+- **Essentials/Dev-Core:** 10s
+- **Memory/Data:** 30s
+- **Research:** 60s (Heavy network usage)

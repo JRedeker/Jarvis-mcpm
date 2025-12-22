@@ -217,7 +217,7 @@ func GetToolDefinitions(h *Handler) []ToolDefinition {
 					mcp.Enum("profile_health", "test_endpoint", "logs", "full"),
 				),
 				mcp.WithString("profile",
-					mcp.Description("Profile name to diagnose (e.g., 'p-pokeedge', 'qdrant')"),
+					mcp.Description("Profile name to diagnose (e.g., 'toolbox', 'qdrant')"),
 				),
 				mcp.WithString("endpoint",
 					mcp.Description("MCP endpoint URL to test (e.g., 'http://localhost:6276/mcp')"),

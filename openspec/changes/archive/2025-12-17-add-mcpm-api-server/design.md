@@ -146,7 +146,7 @@ mcpm serve --port 6275 --host 0.0.0.0 &
 
 ### Port Allocation
 - 6275: MCPM API Server (new)
-- 6276: p-pokeedge profile
+- 6276: toolbox profile
 - 6277: memory profile
 - 6278: morph profile
 - 6279: qdrant profile

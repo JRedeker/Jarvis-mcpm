@@ -260,7 +260,7 @@ func TestHTTPMcpmRunner_ListProfiles(t *testing.T) {
 			"data": map[string]interface{}{
 				"count": 2,
 				"profiles": []map[string]interface{}{
-					{"name": "p-pokeedge", "servers": []string{"context7", "brave-search"}},
+					{"name": "toolbox", "servers": []string{"context7", "brave-search"}},
 					{"name": "memory", "servers": []string{"basic-memory"}},
 				},
 			},
@@ -281,8 +281,8 @@ func TestHTTPMcpmRunner_ListProfiles(t *testing.T) {
 	if !strings.Contains(output, "Profiles") {
 		t.Errorf("Expected profiles header, got: %s", output)
 	}
-	if !strings.Contains(output, "p-pokeedge") {
-		t.Errorf("Expected p-pokeedge in output, got: %s", output)
+	if !strings.Contains(output, "toolbox") {
+		t.Errorf("Expected toolbox in output, got: %s", output)
 	}
 }
 
@@ -331,7 +331,7 @@ func TestHTTPMcpmRunner_Usage(t *testing.T) {
 				},
 				"profiles": map[string]interface{}{
 					"total": 2,
-					"list":  []string{"p-pokeedge", "memory"},
+					"list":  []string{"toolbox", "memory"},
 				},
 				"clients": map[string]interface{}{
 					"configured": 1,

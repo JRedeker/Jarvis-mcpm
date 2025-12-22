@@ -259,7 +259,7 @@ func TestMockMcpmClient_ProfileOperations(t *testing.T) {
 
 	t.Run("ProfileList returns configured profiles", func(t *testing.T) {
 		mock := NewMockMcpmClient().WithProfiles(
-			ProfileInfo{Name: "p-pokeedge", Servers: []string{"context7", "brave-search"}},
+			ProfileInfo{Name: "toolbox", Servers: []string{"context7", "brave-search"}},
 			ProfileInfo{Name: "memory", Servers: []string{"basic-memory", "mem0-mcp"}},
 		)
 
@@ -293,7 +293,7 @@ func TestMockMcpmClient_ProfileOperations(t *testing.T) {
 			RemoveServers: []string{"old-server"},
 		}
 
-		err := mock.ProfileEdit(ctx, "p-pokeedge", opts)
+		err := mock.ProfileEdit(ctx, "toolbox", opts)
 
 		if err != nil {
 			t.Errorf("ProfileEdit() returned error: %v", err)

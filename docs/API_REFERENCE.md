@@ -263,7 +263,7 @@ jarvis_profile({ action: "suggest", testing: true })
 jarvis_profile({ action: "restart" })
 
 // Restart specific profile
-jarvis_profile({ action: "restart", profile: "p-pokeedge" })
+jarvis_profile({ action: "restart", profile: "toolbox" })
 ```
 
 ---
@@ -294,7 +294,7 @@ jarvis_client({ action: "list" })
 jarvis_client({
   action: "edit",
   client_name: "opencode",
-  add_profile: "jarvis,memory,p-pokeedge"
+  add_profile: "jarvis,memory,toolbox"
 })
 
 // Remove a profile from client

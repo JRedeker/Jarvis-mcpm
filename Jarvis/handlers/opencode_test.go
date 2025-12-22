@@ -283,8 +283,8 @@ func TestAddProfileToOpenCode(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:    "add p-pokeedge profile",
-			profile: "p-pokeedge",
+			name:    "add toolbox profile",
+			profile: "toolbox",
 			wantErr: false,
 		},
 		{
@@ -411,8 +411,8 @@ func TestGenerateOpenCodeTemplate(t *testing.T) {
 	if !strings.Contains(template, "/path/to/jarvis") {
 		t.Error("Template should contain jarvis path")
 	}
-	if !strings.Contains(template, "p-pokeedge") {
-		t.Error("Template should contain p-pokeedge")
+	if !strings.Contains(template, "toolbox") {
+		t.Error("Template should contain toolbox")
 	}
 	if !strings.Contains(template, "memory") {
 		t.Error("Template should contain memory")
@@ -447,10 +447,10 @@ func TestKnownClients(t *testing.T) {
 
 func TestProfilePorts(t *testing.T) {
 	expectedPorts := map[string]int{
-		"p-pokeedge": 6276,
-		"memory":     6277,
-		"morph":      6278,
-		"qdrant":     6279,
+		"toolbox": 6276,
+		"memory":  6277,
+		"morph":   6278,
+		"qdrant":  6279,
 	}
 
 	for profile, expectedPort := range expectedPorts {

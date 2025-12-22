@@ -738,7 +738,7 @@ func getActiveServers() []string {
 
     servers := []string{}
 
-    // Check p-pokeedge profile (example)
+    // Check toolbox profile (example)
     profileServers := []string{
         "firecrawl",
         "context7",

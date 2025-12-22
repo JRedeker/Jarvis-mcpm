@@ -15,15 +15,15 @@ Both Claude CLI and VSCode Extension have been wired successfully.
 
 *   **Claude CLI (`~/.claude.json`)**:
     *   Connected to `jarvis` (Native).
-    *   Connected to `project-pokeedge` (Profile).
+    *   Connected to `toolbox` (Profile).
     *   Connected to `memory` (Profile).
 
 *   **VSCode / Desktop (`~/.config/Claude/claude_desktop_config.json`)**:
     *   Connected to `jarvis` (Native).
-    *   Connected to `project-pokeedge` (Profile).
+    *   Connected to `toolbox` (Profile).
     *   Connected to `memory` (Profile).
 
-### 3. Profile: `project-pokeedge`
+### 3. Profile: `toolbox`
 The profile has been updated to include the high-performance refactoring tool.
 
 *   **Tools:** `brave-search`, `context7`, `firecrawl`, `fetch-mcp`, `time`, `morph-fast-apply`.

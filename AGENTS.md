@@ -19,8 +19,8 @@ Keep this managed block so 'openspec update' can refresh the instructions.
 
 # Jarvis & MCPM Agent Instructions
 
-**Current Date:** December 19, 2025
-**Version:** 3.1 (The "Diagnostic" Edition)
+**Current Date:** December 22, 2025
+**Version:** 5.0 (Micro-Profiles Edition)
 
 ## 🚨 Core Mandate: Use Jarvis Tools, Not Shell
 
@@ -40,23 +40,32 @@ You are an advanced AI agent. You must **NOT** use `run_shell_command` to execut
 | `jarvis_share` | start, stop, list | `jarvis_share(action="list")` |
 | `jarvis_diagnose` | profile_health, test_endpoint, logs, full | `jarvis_diagnose(action="profile_health")` |
 
-## 🧠 The 3-Layer Stack Philosophy
+## 🧠 The Micro-Profile Stack Philosophy
 
-We do not manage monolithic configurations. We manage **Composable Profiles**.
+We do not manage monolithic configurations. We manage **Composable Micro-Profiles**.
 See `docs/CONFIGURATION_STRATEGY.md` for the full architectural standard.
 
-### 1. Layer 1: Environment (`project-<name>`)
-*   **What:** The workspace context.
-*   **Tools:** Domain-specific (Database, API, Search, Fetch).
-*   **Example:** `project-pokeedge` contains `context7`, `fetch`, `morph-fast-apply`.
+Instead of a single `toolbox` profile, we have domain-specific profiles that run in separate failure domains.
 
-### 2. Layer 2: Client Adapter (`client-<name>`)
-*   **What:** Capabilities specific to the AI Client (VS Code vs. Terminal).
-*   **Tools:** Rendering aids, specific diff applicators (if not in Layer 1).
+### 1. Essentials (`essentials`) - Port 6276
+*   **What:** Fast, local utilities. Always on.
+*   **Tools:** `time`, `fetch-mcp`.
 
-### 3. Layer 3: Global (`memory`, `testing`)
-*   **What:** Always-on capabilities.
-*   **Tools:** `basic-memory`, `mem0`, `qdrant`.
+### 2. Memory (`memory`) - Port 6277
+*   **What:** Persistent storage.
+*   **Tools:** `basic-memory`, `mem0-mcp`.
+
+### 3. Developer Core (`dev-core`) - Port 6278
+*   **What:** Coding intelligence.
+*   **Tools:** `context7`, `morph-fast-apply`.
+
+### 4. Data (`data`) - Port 6279
+*   **What:** Heavy databases.
+*   **Tools:** `mcp-server-qdrant`, `postgres`.
+
+### 5. Research (`research`) - Port 6281
+*   **What:** High-risk network tools (Docker/Web).
+*   **Tools:** `brave-search`, `firecrawl`, `arxiv-mcp`.
 
 ## 🛠️ Key Operational Workflows
 
@@ -75,12 +84,12 @@ jarvis_client({
 jarvis_client({
   action: "edit",
   client_name: "cline",
-  add_profile: "project-pokeedge,memory" // Stack Layer 1 + Layer 3
+  add_profile: "essentials,memory,dev-core,research,data"
 })
 ```
 
 ### B. Intelligent Refactoring (`morph-fast-apply`)
-The `morph-fast-apply` server is now a standard part of the `project-pokeedge` profile (Layer 1).
+The `morph-fast-apply` server is now part of the `dev-core` profile.
 This tool allows you to make semantic edits without worrying about exact line numbers.
 
 **Usage Pattern:**
@@ -113,7 +122,7 @@ jarvis_client({
 jarvis_client({
   action: "edit",
   client_name: "opencode",
-  add_profile: "jarvis,memory,p-pokeedge"
+  add_profile: "essentials,memory,dev-core,research,data"
 })
 ```
 
@@ -146,11 +155,12 @@ The HTTP transport is preferred as it:
 | Port | Service |
 |:-----|:--------|
 | 6275 | MCPM API Server |
-| 6276 | p-pokeedge profile |
-| 6277 | memory profile |
-| 6278 | morph profile |
-| 6279 | qdrant profile |
-| 6280 | p-new profile |
+| 6276 | essentials |
+| 6277 | memory |
+| 6278 | dev-core |
+| 6279 | data |
+| 6280 | p-new |
+| 6281 | research |
 
 ### Starting the API Server
 
@@ -171,10 +181,10 @@ If tools fail, use the `jarvis_diagnose` tool (NEW in v3.1):
 jarvis_diagnose({ action: "profile_health" })
 
 // Step 2: If a specific profile is failing, get its logs
-jarvis_diagnose({ action: "logs", profile: "qdrant" })
+jarvis_diagnose({ action: "logs", profile: "research" })
 
 // Step 3: Test if MCP endpoint is responding correctly
-jarvis_diagnose({ action: "test_endpoint", endpoint: "http://localhost:6279/mcp" })
+jarvis_diagnose({ action: "test_endpoint", endpoint: "http://localhost:6281/mcp" })
 
 // Step 4: Get comprehensive diagnostic report
 jarvis_diagnose({ action: "full" })
@@ -184,44 +194,6 @@ jarvis_diagnose({ action: "full" })
 1.  Run `jarvis_check_status()` for diagnostics (now includes API server health).
 2.  Check API server: `curl http://localhost:6275/api/v1/health`
 3.  If you must use shell: `export MCPM_NON_INTERACTIVE=true` and `export MCPM_FORCE=true`.
-
-## 📋 Migration Guide (v2.x → v3.0)
-
-**Breaking Change:** Tool names have been consolidated for context token efficiency.
-
-### Old → New Tool Mapping
-
-| Old Tool | New Tool + Action |
-|:---------|:------------------|
-| `check_status` | `jarvis_check_status` |
-| `list_servers` | `jarvis_server(action="list")` |
-| `server_info` | `jarvis_server(action="info")` |
-| `install_server` | `jarvis_server(action="install")` |
-| `uninstall_server` | `jarvis_server(action="uninstall")` |
-| `search_servers` | `jarvis_server(action="search")` |
-| `edit_server` | `jarvis_server(action="edit")` |
-| `create_server` | `jarvis_server(action="create")` |
-| `usage_stats` | `jarvis_server(action="usage")` |
-| `manage_profile` | `jarvis_profile(action="list\|create\|edit\|delete")` |
-| `suggest_profile` | `jarvis_profile(action="suggest")` |
-| `restart_profiles` | `jarvis_profile(action="restart")` |
-| `manage_client` | `jarvis_client(action="list\|edit\|import\|config")` |
-| `manage_config` | `jarvis_config(action="get\|set\|list")` |
-| `migrate_config` | `jarvis_config(action="migrate")` |
-| `analyze_project` | `jarvis_project(action="analyze")` |
-| `fetch_diff_context` | `jarvis_project(action="diff")` |
-| `apply_devops_stack` | `jarvis_project(action="devops")` |
-| `bootstrap_system` | `jarvis_system(action="bootstrap")` |
-| `restart_service` | `jarvis_system(action="restart")` |
-| `restart_infrastructure` | `jarvis_system(action="restart_infra")` |
-| `share_server` | `jarvis_share(action="start")` |
-| `stop_sharing_server` | `jarvis_share(action="stop")` |
-| `list_shared_servers` | `jarvis_share(action="list")` |
-
-### Benefits
-- **52% payload reduction**: ~5.3KB vs ~11KB (saves ~1,400 tokens per connection)
-- **Cleaner namespace**: All tools prefixed with `jarvis_`
-- **Action-based routing**: Easier to discover related operations
 
 ## 🆕 New in v3.1: Diagnostic Tools
 
@@ -238,7 +210,7 @@ The `jarvis_diagnose` tool enables AI agents to self-debug when MCP tools fail:
 
 **Profile won't start:**
 ```javascript
-jarvis_diagnose({ action: "logs", profile: "qdrant", lines: 100 })
+jarvis_diagnose({ action: "logs", profile: "research", lines: 100 })
 // Look for Python errors, connection refused, config issues
 ```
 
@@ -250,7 +222,7 @@ jarvis_diagnose({ action: "test_endpoint", endpoint: "http://localhost:6276/mcp"
 
 **After config changes:**
 ```javascript
-jarvis_profile({ action: "restart", profile: "p-pokeedge" })
+jarvis_profile({ action: "restart", profile: "research" })
 jarvis_diagnose({ action: "profile_health" })
 // Verify profile restarted successfully
 ```

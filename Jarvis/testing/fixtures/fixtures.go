@@ -10,7 +10,7 @@ var Context7Server = mocks.ServerInfo{
 	Name:        "context7",
 	Description: "Documentation lookup for libraries and frameworks",
 	Installed:   true,
-	Profiles:    []string{"p-pokeedge", "p-new", "testing-all-tools"},
+	Profiles:    []string{"toolbox", "p-new", "testing-all-tools"},
 	Command:     "npx",
 	Args:        []string{"-y", "@anthropic-ai/context7"},
 	Transport:   "stdio",
@@ -55,7 +55,7 @@ var FirecrawlServer = mocks.ServerInfo{
 	Name:        "firecrawl",
 	Description: "Web scraping and content extraction",
 	Installed:   true,
-	Profiles:    []string{"p-pokeedge", "p-new", "testing-all-tools"},
+	Profiles:    []string{"toolbox", "p-new", "testing-all-tools"},
 	Env:         map[string]string{"FIRECRAWL_API_KEY": "test-key"},
 	Transport:   "stdio",
 }
@@ -92,7 +92,7 @@ var AllInstalledServers = []mocks.ServerInfo{
 
 // PokeedgeProfile is the pokeedge project profile
 var PokeedgeProfile = mocks.ProfileInfo{
-	Name:    "p-pokeedge",
+	Name:    "toolbox",
 	Servers: []string{"context7", "kagimcp", "time", "firecrawl", "fetch-mcp"},
 }
 
@@ -133,7 +133,7 @@ var OpenCodeClient = mocks.ClientInfo{
 	ConfigPath: "/home/test/.config/opencode/opencode.json",
 	Installed:  true,
 	Servers:    []string{"jarvis"},
-	Profiles:   []string{"p-pokeedge", "memory", "morph"},
+	Profiles:   []string{"toolbox", "memory", "morph"},
 }
 
 // ClaudeCodeClient is the Claude Code CLI client
@@ -142,7 +142,7 @@ var ClaudeCodeClient = mocks.ClientInfo{
 	ConfigPath: "/home/test/.claude.json",
 	Installed:  true,
 	Servers:    []string{"jarvis"},
-	Profiles:   []string{"p-pokeedge", "memory"},
+	Profiles:   []string{"toolbox", "memory"},
 }
 
 // ClaudeDesktopClient is the Claude Desktop client
@@ -151,7 +151,7 @@ var ClaudeDesktopClient = mocks.ClientInfo{
 	ConfigPath: "/home/test/.config/Claude/claude_desktop_config.json",
 	Installed:  true,
 	Servers:    []string{"jarvis"},
-	Profiles:   []string{"p-pokeedge", "memory"},
+	Profiles:   []string{"toolbox", "memory"},
 }
 
 // CodexClient is the Codex CLI client

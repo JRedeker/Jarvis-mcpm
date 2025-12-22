@@ -48,14 +48,15 @@ services:
     # MCPM API Server: http://localhost:6275/api/v1
     ports:
       - "6275:6275"  # MCPM API Server
-      - "6276:6276"  # p-pokeedge
+      - "6276:6276"  # essentials
       - "6277:6277"  # memory
-      - "6278:6278"  # morph
-      - "6279:6279"  # qdrant
+      - "6278:6278"  # dev-core
+      - "6279:6279"  # data
       - "6280:6280"  # p-new
+      - "6281:6281"  # research
     volumes:
-      # Mount MCPM config (read-only for safety)
-      - ${HOME}/.config/mcpm:/root/.config/mcpm:ro
+      # Mount MCPM config (read-write for profile management)
+      - ${HOME}/.config/mcpm:/root/.config/mcpm
       # Mount basic-memory data directory
       - ${HOME}/.basic-memory:/root/.basic-memory
       # Mount source code for dev mode
@@ -66,7 +67,7 @@ services:
       - mcpm_logs:/var/log/mcpm
     environment:
       # Profiles to run (comma-separated)
-      MCPM_PROFILES: "p-pokeedge,memory,morph,qdrant"
+      MCPM_PROFILES: "essentials,memory,dev-core,research,data"
       # API Keys (passed through from .env file)
       FIRECRAWL_API_KEY: ${FIRECRAWL_API_KEY:-}
       KAGI_API_KEY: ${KAGI_API_KEY:-}

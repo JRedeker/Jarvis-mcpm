@@ -67,11 +67,12 @@ var KnownClients = map[string]ClientConfig{
 
 // ProfilePorts maps profile names to their HTTP endpoints
 var ProfilePorts = map[string]int{
-	"p-pokeedge": 6276,
-	"p-new":      6280,
+	"essentials": 6276,
 	"memory":     6277,
-	"morph":      6278,
-	"qdrant":     6279,
+	"dev-core":   6278,
+	"data":       6279,
+	"p-new":      6280,
+	"research":   6281,
 }
 
 // DetectOpenCodeConfig finds the OpenCode configuration file
@@ -358,7 +359,7 @@ func GenerateOpenCodeTemplate(jarvisPath string) string {
 				Command: []string{jarvisPath},
 				Enabled: &enabled,
 			},
-			"p-pokeedge": {
+			"toolbox": {
 				Type:    "remote",
 				URL:     "http://localhost:6276/mcp",
 				Enabled: &enabled,

@@ -29,7 +29,7 @@ COPY --chmod=755 entrypoint.sh /entrypoint.sh
 
 # Expose ports for API and profiles
 # 6275: MCPM API Server (NEW)
-# p-pokeedge: 6276, memory: 6277, morph: 6278, qdrant: 6279, p-new: 6280
+# toolbox: 6276, memory: 6277, morph: 6278, qdrant: 6279, p-new: 6280
 EXPOSE 6275 6276 6277 6278 6279 6280
 
 # Health check - check API server first, then profile

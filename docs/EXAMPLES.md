@@ -302,7 +302,7 @@ context7.get_library_docs({
 
 **Agent:** *"Importing starter config for OpenCode..."*
 
-**Agent:** *"Added p-pokeedge and memory profiles. Config saved to ~/.config/opencode/opencode.json"*
+**Agent:** *"Added toolbox and memory profiles. Config saved to ~/.config/opencode/opencode.json"*
 
 ### Tool Calls
 
@@ -317,7 +317,7 @@ jarvis_client({
 jarvis_client({
   action: "edit",
   client_name: "opencode",
-  add_profile: "p-pokeedge,memory"
+  add_profile: "toolbox,memory"
 })
 
 // Step 3: Verify
@@ -399,7 +399,7 @@ jarvis_client({ action: "edit", client_name: "...", add_profile: "..." })
 ```javascript
 // Step 1: Check overall profile health
 jarvis_diagnose({ action: "profile_health" })
-// Returns: { "qdrant": "running", "memory": "running", "p-pokeedge": "running" }
+// Returns: { "qdrant": "running", "memory": "running", "toolbox": "running" }
 
 // Step 2: If running but no tools, test the endpoint
 jarvis_diagnose({ action: "test_endpoint", endpoint: "http://localhost:6279/mcp" })

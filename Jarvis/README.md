@@ -112,7 +112,7 @@ Manages the `mcpm-daemon` container, allowing hot-reloads of MCP servers.
 Jarvis implements a "3-Layer Stacking" logic to determine the active toolset dynamically.
 *   **Input:** `testing` (bool).
 *   **Logic:**
-    1.  **Base:** Detects project context (e.g., `p-pokeedge`) from CWD. Defaults to `p-new`.
+    1.  **Base:** Detects project context (e.g., `toolbox`) from CWD. Defaults to `p-new`.
     2.  **Global:** Appends `memory`. Appends `testing-all-tools` if `testing=true`.
 *   **Output:** JSON array of profile names (which correspond to HTTP ports).
 

@@ -31,7 +31,7 @@ function start() {
     docker compose ps
     echo ""
     echo -e "${CYAN}📦 Streamable HTTP endpoints available:${NC}"
-    echo "  p-pokeedge:  http://localhost:6276/mcp"
+    echo "  toolbox:  http://localhost:6276/mcp"
     echo "  memory:      http://localhost:6277/mcp"
     echo "  morph:       http://localhost:6278/mcp"
 }
@@ -90,7 +90,7 @@ function health() {
     echo -e "${CYAN}Profile Endpoints (Streamable HTTP):${NC}"
 
     declare -A PROFILES
-    PROFILES["p-pokeedge"]=6276
+    PROFILES["toolbox"]=6276
     PROFILES["memory"]=6277
     PROFILES["morph"]=6278
 

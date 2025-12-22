@@ -147,7 +147,7 @@ features:
     estimated_days: 2-3
     description: |
       Verify specific tools are available before operations that depend on them:
-      - jarvis_profile(action="validate", profile="p-pokeedge", tools="qdrant-find")
+      - jarvis_profile(action="validate", profile="toolbox", tools="qdrant-find")
       - Returns success/failure with diagnostics
     key_deliverables:
       - "Add 'validate' action to jarvis_profile"

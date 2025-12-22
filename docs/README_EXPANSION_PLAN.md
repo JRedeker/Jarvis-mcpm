@@ -855,7 +855,7 @@ Jarvis analyzes system state to provide intelligent guidance:
 ✅ Server installed successfully
 ⚠️ Server not in any active profiles
 💡 Suggestion: Add to profile with:
-   manage_profile("edit", "project-pokeedge", add_servers="new-server")
+   manage_profile("edit", "toolbox", add_servers="new-server")
 
 // Scenario: Infrastructure is down
 // (During check_status)
@@ -951,7 +951,7 @@ graph TD
     subgraph "Layer 1: Environment"
         ProjFrontend[project-frontend]
         ProjBackend[project-backend]
-        ProjPokeedge[project-pokeedge]
+        ProjPokeedge[toolbox]
     end
 
     Agent --> Layer1[Layer 1: Environment]
@@ -967,7 +967,7 @@ graph TD
 **How It Works:**
 
 **Layer 1 (Environment):** Workspace-specific tools
-- `project-pokeedge`: Web research (Brave, Firecrawl, Context7)
+- `toolbox`: Web research (Brave, Firecrawl, Context7)
 - `project-frontend`: React tools (Prettier, ESLint)
 - `project-backend`: Go tools (GoFmt, golangci-lint)
 

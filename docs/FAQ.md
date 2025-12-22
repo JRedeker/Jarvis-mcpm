@@ -233,7 +233,7 @@ jarvis_client({
 | 6333 | Qdrant HTTP |
 | 6334 | Qdrant gRPC |
 | 6275 | MCPM API Server |
-| 6276 | p-pokeedge profile |
+| 6276 | toolbox profile |
 | 6277 | memory profile |
 | 6278 | morph profile |
 | 6279 | qdrant profile |

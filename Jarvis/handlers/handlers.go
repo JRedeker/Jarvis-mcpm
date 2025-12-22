@@ -687,7 +687,7 @@ func (h *Handler) openCodeEdit(ctx context.Context, args map[string]interface{})
 	}
 
 	if len(results) == 0 {
-		return mcp.NewToolResultError("❌ No changes specified. Use add_profile or remove_profile.\n\n💡 Example: manage_client(\"edit\", client_name=\"opencode\", add_profile=\"jarvis,memory,p-pokeedge\")"), nil
+		return mcp.NewToolResultError("❌ No changes specified. Use add_profile or remove_profile.\n\n💡 Example: manage_client(\"edit\", client_name=\"opencode\", add_profile=\"jarvis,memory,toolbox\")"), nil
 	}
 
 	output := fmt.Sprintf("## OpenCode Configuration Updated\n\nConfig: `%s`\n\n%s\n\n💡 Restart OpenCode to apply changes.", configPath, strings.Join(results, "\n"))
@@ -744,7 +744,7 @@ func (h *Handler) openCodeImport(ctx context.Context, args map[string]interface{
 		return mcp.NewToolResultError(fmt.Sprintf("❌ Failed to write config: %v", err)), nil
 	}
 
-	return mcp.NewToolResultText(fmt.Sprintf("✅ OpenCode configuration imported!\n\nConfig: `%s`\n\nConfigured servers:\n- jarvis (local)\n- p-pokeedge (http://localhost:6276/mcp)\n- memory (http://localhost:6277/mcp)\n- morph (http://localhost:6278/mcp)\n\n💡 Make sure Docker infrastructure is running: `./scripts/manage-mcp.sh start`", configPath)), nil
+	return mcp.NewToolResultText(fmt.Sprintf("✅ OpenCode configuration imported!\n\nConfig: `%s`\n\nConfigured servers:\n- jarvis (local)\n- toolbox (http://localhost:6276/mcp)\n- memory (http://localhost:6277/mcp)\n- morph (http://localhost:6278/mcp)\n\n💡 Make sure Docker infrastructure is running: `./scripts/manage-mcp.sh start`", configPath)), nil
 }
 
 // ManageConfig handles the manage_config tool
@@ -896,7 +896,7 @@ func (h *Handler) SuggestProfile(ctx context.Context, request mcp.CallToolReques
 
 	// LAYER 1: PROJECT (Auto-detected)
 	if strings.Contains(path, "pokeedge") {
-		profiles = append(profiles, "p-pokeedge")
+		profiles = append(profiles, "toolbox")
 	} else if strings.Contains(path, "codex") {
 		profiles = append(profiles, "p-codex")
 	} else {
@@ -1547,10 +1547,12 @@ func (h *Handler) DiagnoseProfileHealth(ctx context.Context, request mcp.CallToo
 
 		// Get port mapping
 		portMap := map[string]string{
-			"p-pokeedge": "6276",
+			"essentials": "6276",
 			"memory":     "6277",
-			"morph":      "6278",
-			"qdrant":     "6279",
+			"dev-core":   "6278",
+			"data":       "6279",
+			"p-new":      "6280",
+			"research":   "6281",
 		}
 
 		if port, ok := portMap[profileName]; ok {
@@ -1624,21 +1626,27 @@ func (h *Handler) DiagnoseTestEndpoint(ctx context.Context, request mcp.CallTool
 	body, _ := io.ReadAll(resp2.Body)
 	bodyStr := string(body)
 
-	if strings.Contains(bodyStr, "serverInfo") {
-		builder.WriteString("✅ MCP initialize successful\n")
+	type initResult struct {
+		Result struct {
+			ServerInfo struct {
+				Name    string `json:"name"`
+				Version string `json:"version"`
+			} `json:"serverInfo"`
+		} `json:"result"`
+		Error interface{} `json:"error"`
+	}
 
-		// Extract server info
-		if strings.Contains(bodyStr, "profile-") {
-			start := strings.Index(bodyStr, "profile-")
-			if start != -1 {
-				end := start + 30
-				if end > len(bodyStr) {
-					end = len(bodyStr)
-				}
-				builder.WriteString(fmt.Sprintf("Server: %s...\n", bodyStr[start:end]))
-			}
+	var initResp initResult
+	if err := json.Unmarshal(body, &initResp); err == nil && initResp.Result.ServerInfo.Name != "" {
+		builder.WriteString("✅ MCP initialize successful\n")
+		serverName := initResp.Result.ServerInfo.Name
+		if strings.HasPrefix(serverName, "profile-") {
+			serverName = strings.TrimPrefix(serverName, "profile-")
 		}
-	} else if strings.Contains(bodyStr, "error") {
+		builder.WriteString(fmt.Sprintf("Server: %s\n", serverName))
+	} else if strings.Contains(bodyStr, "serverInfo") {
+		builder.WriteString("✅ MCP initialize successful\n")
+	} else if strings.Contains(bodyStr, "error") || initResp.Error != nil {
 		builder.WriteString("❌ MCP initialize returned error\n")
 		builder.WriteString(fmt.Sprintf("Response: %s\n", bodyStr))
 	}
@@ -1661,15 +1669,41 @@ func (h *Handler) DiagnoseTestEndpoint(ctx context.Context, request mcp.CallTool
 			body3, _ := io.ReadAll(resp3.Body)
 			bodyStr3 := string(body3)
 
-			// Count tools
-			toolCount := strings.Count(bodyStr3, `"name":`) - 1 // -1 for the method name
-			if toolCount > 0 {
-				builder.WriteString(fmt.Sprintf("✅ Found %d tools\n", toolCount))
-			} else if strings.Contains(bodyStr3, "error") {
+			type toolsResult struct {
+				Result struct {
+					Tools []struct {
+						Name string `json:"name"`
+					} `json:"tools"`
+				} `json:"result"`
+				Error interface{} `json:"error"`
+			}
+
+			var toolsResp toolsResult
+			if err := json.Unmarshal(body3, &toolsResp); err == nil && len(toolsResp.Result.Tools) > 0 {
+				builder.WriteString(fmt.Sprintf("✅ Found %d tools\n", len(toolsResp.Result.Tools)))
+				builder.WriteString("\nTools:\n")
+				const maxTools = 25
+				for i, tool := range toolsResp.Result.Tools {
+					if i >= maxTools {
+						remaining := len(toolsResp.Result.Tools) - maxTools
+						builder.WriteString(fmt.Sprintf("- ...and %d more\n", remaining))
+						break
+					}
+					builder.WriteString(fmt.Sprintf("- %s\n", tool.Name))
+				}
+			} else if strings.Contains(bodyStr3, "error") || toolsResp.Error != nil {
 				builder.WriteString("❌ tools/list returned error\n")
 				builder.WriteString(fmt.Sprintf("Error: %s\n", bodyStr3))
 				builder.WriteString("\n**This usually means a subprocess failed.**\n")
 				builder.WriteString("Run `jarvis_diagnose(action=\"logs\")` to see subprocess errors.\n")
+			} else {
+				toolCount := strings.Count(bodyStr3, `"name":`) - 1 // -1 for the method name
+				if toolCount < 0 {
+					toolCount = 0
+				}
+				if toolCount > 0 {
+					builder.WriteString(fmt.Sprintf("✅ Found %d tools\n", toolCount))
+				}
 			}
 		}
 	}
@@ -1691,7 +1725,7 @@ func (h *Handler) DiagnoseLogs(ctx context.Context, request mcp.CallToolRequest)
 
 	if profileName == "" {
 		// List available profiles
-		builder.WriteString("**Available profiles:** p-pokeedge, memory, morph, qdrant\n\n")
+		builder.WriteString("**Available profiles:** essentials, memory, dev-core, research, data, p-new\n\n")
 		builder.WriteString("Specify a profile with `jarvis_diagnose(action=\"logs\", profile=\"<name>\")`\n")
 		return mcp.NewToolResultText(builder.String()), nil
 	}
@@ -1773,10 +1807,11 @@ func (h *Handler) DiagnoseFull(ctx context.Context, request mcp.CallToolRequest)
 	builder.WriteString("## Endpoint Tests\n\n")
 
 	endpoints := map[string]string{
-		"p-pokeedge": "http://localhost:6276/mcp",
+		"essentials": "http://localhost:6276/mcp",
 		"memory":     "http://localhost:6277/mcp",
-		"morph":      "http://localhost:6278/mcp",
-		"qdrant":     "http://localhost:6279/mcp",
+		"dev-core":   "http://localhost:6278/mcp",
+		"data":       "http://localhost:6279/mcp",
+		"research":   "http://localhost:6281/mcp",
 	}
 
 	for name, url := range endpoints {

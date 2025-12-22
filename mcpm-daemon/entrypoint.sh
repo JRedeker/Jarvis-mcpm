@@ -36,11 +36,12 @@ echo "Environment configured with API keys"
 
 # Profile to port mapping
 declare -A PROFILE_PORTS=(
-    ["p-pokeedge"]=6276
+    ["essentials"]=6276
     ["memory"]=6277
-    ["morph"]=6278
-    ["qdrant"]=6279
+    ["dev-core"]=6278
+    ["data"]=6279
     ["p-new"]=6280
+    ["research"]=6281
 )
 
 # MCPM API Server port
@@ -71,7 +72,7 @@ SUPERVISOR_HEADER
     if [ -n "$MCPM_PROFILES" ]; then
         IFS=',' read -ra PROFILES <<< "$MCPM_PROFILES"
     else
-        PROFILES=("p-pokeedge" "memory" "morph")
+        PROFILES=("essentials" "memory" "dev-core" "research" "data")
     fi
 
     for profile in "${PROFILES[@]}"; do

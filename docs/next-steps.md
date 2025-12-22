@@ -738,8 +738,8 @@ func parseDiffOutput(statusOutput, diffOutput string) FetchDiffContextResponse {
 
 func TestParseServerList(t *testing.T) {
     input := `brave-search (profiles: testing-all-tools)
-context7 (profiles: testing-all-tools, p-new, p-pokeedge)
-kagimcp (profiles: testing-all-tools, p-new, p-pokeedge)`
+context7 (profiles: testing-all-tools, p-new, toolbox)
+kagimcp (profiles: testing-all-tools, p-new, toolbox)`
 
     result := parseServerList(input)
 
@@ -1968,7 +1968,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     },
     {
       "name": "context7",
-      "profiles": ["testing-all-tools", "p-new", "p-pokeedge"],
+      "profiles": ["testing-all-tools", "p-new", "toolbox"],
       "install_method": "uvx",
       "status": "active"
     }

@@ -61,7 +61,7 @@ jarvis_client({
 
 This creates a configuration with:
 - `jarvis` (local stdio) - Infrastructure management
-- `p-pokeedge` (remote HTTP) - Project tools
+- `toolbox` (remote HTTP) - Project tools
 - `memory` (remote HTTP) - Persistent memory
 - `morph` (remote HTTP) - AI refactoring
 
@@ -81,7 +81,7 @@ jarvis_client({
 jarvis_client({
   action: "edit",
   client_name: "opencode",
-  add_profile: "memory,p-pokeedge"
+  add_profile: "memory,toolbox"
 })
 ```
 
@@ -98,7 +98,7 @@ Copy the template from `config-templates/opencode.json`:
       "command": ["/path/to/MCP/Jarvis/jarvis"],
       "enabled": true
     },
-    "p-pokeedge": {
+    "toolbox": {
       "type": "remote",
       "url": "http://localhost:6276/mcp",
       "enabled": true
@@ -121,7 +121,7 @@ Copy the template from `config-templates/opencode.json`:
 
 | Profile | Port | URL | Description |
 |---------|------|-----|-------------|
-| `p-pokeedge` | 6276 | `http://localhost:6276/mcp` | Project tools (search, fetch, context) |
+| `toolbox` | 6276 | `http://localhost:6276/mcp` | Project tools (search, fetch, context) |
 | `memory` | 6277 | `http://localhost:6277/mcp` | Persistent memory |
 | `morph` | 6278 | `http://localhost:6278/mcp` | AI code refactoring |
 | `qdrant` | 6279 | `http://localhost:6279/mcp` | Vector database |

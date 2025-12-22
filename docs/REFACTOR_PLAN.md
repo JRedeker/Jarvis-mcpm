@@ -349,7 +349,7 @@ func TestUninstallServer_WarnsAboutProfileImpact(t *testing.T) {
     result, err := handler.Execute(context.Background(), args)
 
     assert.Contains(t, result.Text, "⚠️ Will be removed from profiles:")
-    assert.Contains(t, result.Text, "p-pokeedge, p-new")
+    assert.Contains(t, result.Text, "toolbox, p-new")
 }
 ```
 
@@ -376,7 +376,7 @@ func TestListServers_ShowsProfileAssociations(t *testing.T) {
     handler := NewListServersHandler(mock)
     result, err := handler.Execute(context.Background(), nil)
 
-    assert.Contains(t, result.Text, "context7 (profiles: p-pokeedge, p-new)")
+    assert.Contains(t, result.Text, "context7 (profiles: toolbox, p-new)")
 }
 ```
 
@@ -479,15 +479,15 @@ func TestCreateServer_CreatesStdioServer(t *testing.T) {
     assert.Contains(t, result.Text, "✅ Created my-server")
 }
 
-func TestCreateServer_CreatesSSEServer(t *testing.T) {
+func TestCreateServer_CreatesStreamableHTTPServer(t *testing.T) {
     mock := NewMcpmMock()
-    mock.On("new", "remote-server", "--url", "http://localhost:8080/sse").Return(Success)
+    mock.On("new", "remote-server", "--url", "http://localhost:8080/mcp").Return(Success)
 
     handler := NewCreateServerHandler(mock)
     args := map[string]interface{}{
         "name": "remote-server",
-        "type": "sse",
-        "url":  "http://localhost:8080/sse",
+        "type": "streamable-http",
+        "url":  "http://localhost:8080/mcp",
     }
     result, err := handler.Execute(context.Background(), args)
 
@@ -545,12 +545,12 @@ func TestManageProfile_CreateProfile(t *testing.T) {
 
 func TestManageProfile_AddServersToProfile(t *testing.T) {
     mock := NewMcpmMock()
-    mock.On("profile", "edit", "p-pokeedge", "--add", "new-server").Return(Success)
+    mock.On("profile", "edit", "toolbox", "--add", "new-server").Return(Success)
 
     handler := NewManageProfileHandler(mock)
     args := map[string]interface{}{
         "action":      "edit",
-        "name":        "p-pokeedge",
+        "name":        "toolbox",
         "add_servers": "new-server",
     }
     result, err := handler.Execute(context.Background(), args)
@@ -560,12 +560,12 @@ func TestManageProfile_AddServersToProfile(t *testing.T) {
 
 func TestManageProfile_RemoveServersFromProfile(t *testing.T) {
     mock := NewMcpmMock()
-    mock.On("profile", "edit", "p-pokeedge", "--remove", "old-server").Return(Success)
+    mock.On("profile", "edit", "toolbox", "--remove", "old-server").Return(Success)
 
     handler := NewManageProfileHandler(mock)
     args := map[string]interface{}{
         "action":         "edit",
-        "name":           "p-pokeedge",
+        "name":           "toolbox",
         "remove_servers": "old-server",
     }
     result, err := handler.Execute(context.Background(), args)
@@ -614,7 +614,7 @@ func TestManageProfile_ListProfiles(t *testing.T) {
     result, err := handler.Execute(context.Background(), args)
 
     require.NoError(t, err)
-    assert.Contains(t, result.Text, "p-pokeedge")
+    assert.Contains(t, result.Text, "toolbox")
     assert.Contains(t, result.Text, "memory")
 }
 ```
@@ -630,7 +630,7 @@ func TestSuggestProfile_DetectsProjectFromCwd(t *testing.T) {
     result, err := handler.Execute(context.Background(), nil)
 
     require.NoError(t, err)
-    assert.Contains(t, result.Text, "p-pokeedge")
+    assert.Contains(t, result.Text, "toolbox")
 }
 
 func TestSuggestProfile_ReturnsTestingProfileWhenFlagged(t *testing.T) {
@@ -1135,8 +1135,8 @@ migrate_config() {
     # Backup
     cp "$config_file" "${config_file}.backup.$(date +%s)"
 
-    # Transform SSE URLs to Streamable HTTP
-    # From: "url": "http://localhost:6277/sse/"
+    # Transform legacy SSE URLs to Streamable HTTP
+    # From: "url": "http://localhost:6277/sse/" (legacy)
     # To:   "url": "http://localhost:6277/mcp"
     jq '
         .mcpServers |= with_entries(
@@ -1420,14 +1420,14 @@ JARVIS_BIN="$PROJECT_ROOT/Jarvis/jarvis"
 
 # Configuration
 declare -A PROFILE_PORTS=(
-    ["p-pokeedge"]=6276
+    ["toolbox"]=6276
     ["memory"]=6277
     ["morph"]=6278
     ["qdrant"]=6279
     ["p-new"]=6280
 )
 
-TRANSPORT="${TRANSPORT:-sse}"  # or "streamable-http"
+TRANSPORT="${TRANSPORT:-streamable-http}"  # or "sse" (legacy)
 
 # Client config locations
 declare -A CLIENT_CONFIGS=(
@@ -1441,9 +1441,9 @@ generate_server_config() {
     local name=$1
     local port=$2
 
-    local endpoint="/sse/"
-    if [ "$TRANSPORT" = "streamable-http" ]; then
-        endpoint="/mcp"
+    local endpoint="/mcp"
+    if [ "$TRANSPORT" = "sse" ]; then
+        endpoint="/sse/"
     fi
 
     cat <<EOF
@@ -1536,7 +1536,7 @@ show_config() {
 cmd_apply() {
     local client=${1:-}
     shift || true
-    local profiles=("${@:-p-pokeedge memory}")
+    local profiles=("${@:-toolbox memory}")
 
     if [ -z "$client" ]; then
         echo "Usage: $0 apply <client> [profiles...]"
@@ -1550,7 +1550,7 @@ cmd_apply() {
 }
 
 cmd_apply_all() {
-    local profiles=("${@:-p-pokeedge memory}")
+    local profiles=("${@:-toolbox memory}")
 
     for client in "${!CLIENT_CONFIGS[@]}"; do
         local config_file=${CLIENT_CONFIGS[$client]}
@@ -1562,7 +1562,7 @@ cmd_apply_all() {
 }
 
 cmd_show() {
-    local profiles=("${@:-p-pokeedge memory}")
+    local profiles=("${@:-toolbox memory}")
     show_config "${profiles[@]}"
 }
 
@@ -1623,9 +1623,9 @@ case "${1:-help}" in
         echo "  TRANSPORT=sse|streamable-http (default: sse)"
         echo ""
         echo "Examples:"
-        echo "  $0 apply claude-code p-pokeedge memory"
-        echo "  $0 apply-all p-pokeedge memory morph"
-        echo "  TRANSPORT=streamable-http $0 apply-all p-pokeedge memory"
+        echo "  $0 apply claude-code toolbox memory"
+        echo "  $0 apply-all toolbox memory morph"
+        echo "  TRANSPORT=streamable-http $0 apply-all toolbox memory"
         ;;
 esac
 ```
@@ -1994,9 +1994,9 @@ type ServerConfig struct {
 func NewServerHealthSuite() *ServerHealthSuite {
     return &ServerHealthSuite{
         servers: []ServerConfig{
-            {"p-pokeedge", 6276, "/sse/", "endpoint"},
-            {"memory", 6277, "/sse/", "endpoint"},
-            {"morph", 6278, "/sse/", "endpoint"},
+            {"toolbox", 6276, "/mcp", "endpoint"},
+            {"memory", 6277, "/mcp", "endpoint"},
+            {"morph", 6278, "/mcp", "endpoint"},
         },
     }
 }

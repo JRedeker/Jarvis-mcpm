@@ -220,7 +220,7 @@ func createTestMCPServer(t *testing.T) *TestMCPServerWrapper {
 		WithResponse("search", "Found 2 servers:\n- basic-memory\n- mem0-mcp").
 		WithResponse("info", "Server: context7\nDescription: Documentation lookup").
 		WithResponse("install", "Successfully installed server").
-		WithResponse("profile", "Profiles:\n- p-pokeedge\n- memory")
+		WithResponse("profile", "Profiles:\n- toolbox\n- memory")
 
 	docker := NewMockDockerRunner().WithRunningContainers()
 

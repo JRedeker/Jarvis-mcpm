@@ -6,7 +6,7 @@
       "command": ["${JARVIS_PATH}"],
       "enabled": true
     },
-    "p-pokeedge": {
+    "toolbox": {
       "type": "remote",
       "url": "http://localhost:6276/mcp",
       "enabled": true

@@ -35,7 +35,7 @@ The repository contains three main components:
 ### 3-Layer Profile Stack
 The system uses a composable configuration architecture with three layers:
 
-1. **Layer 1 (Environment)**: `project-<name>` - Workspace-specific tools (e.g., `project-pokeedge`, `project-new`)
+1. **Layer 1 (Environment)**: `toolbox` - Workspace-specific tools (default project profile)
 2. **Layer 2 (Client Adapter)**: `client-<name>` - AI client-specific tools (e.g., `client-codex`)
 3. **Layer 3 (Global)**: `memory`, `testing-all-tools` - Cross-cutting capabilities
 
@@ -183,7 +183,7 @@ golangci-lint run
 |------|----------------|----------------|
 | Install MCP server | `jarvis_server(action="install", name="brave-search")` | ~~`mcpm install brave-search`~~ |
 | Check system health | `jarvis_check_status()` | ~~`mcpm doctor`~~ |
-| Add to profile | `jarvis_profile(action="edit", name="p-pokeedge", add_servers="...")` | ~~`mcpm profile edit`~~ |
+| Add to profile | `jarvis_profile(action="edit", name="toolbox", add_servers="...")` | ~~`mcpm profile edit`~~ |
 | Search available tools | `jarvis_server(action="search", query="documentation")` | ~~`mcpm search documentation`~~ |
 | Bootstrap environment | `jarvis_system(action="bootstrap")` | ~~Multiple manual steps~~ |
 
@@ -243,7 +243,7 @@ Jarvis must be configured directly in client config files pointing to the binary
       "command": "/path/to/Jarvis/jarvis",
       "args": []
     },
-    "p-pokeedge": {
+    "toolbox": {
       "url": "http://localhost:6276/mcp",
       "transport": "streamable-http"
     },

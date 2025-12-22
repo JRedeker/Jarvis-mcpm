@@ -441,7 +441,7 @@ func TestSearchServers_NoResults(t *testing.T) {
 
 func TestManageProfile_List(t *testing.T) {
 	mcpm := NewMockMcpmRunner().
-		WithResponse("profile", "Profiles:\n- p-pokeedge\n- memory\n- morph")
+		WithResponse("profile", "Profiles:\n- toolbox\n- memory\n- morph")
 
 	h := NewHandler(mcpm, nil, nil, nil)
 	ctx := context.Background()
@@ -454,8 +454,8 @@ func TestManageProfile_List(t *testing.T) {
 	}
 
 	text := getResultText(result)
-	if !strings.Contains(text, "p-pokeedge") {
-		t.Errorf("Expected p-pokeedge in list, got: %s", text)
+	if !strings.Contains(text, "toolbox") {
+		t.Errorf("Expected toolbox in list, got: %s", text)
 	}
 }
 
@@ -631,7 +631,7 @@ func TestManageClient_EditSuccess(t *testing.T) {
 
 func TestManageConfig_List(t *testing.T) {
 	mcpm := NewMockMcpmRunner().
-		WithResponse("config", "Configuration:\n  default_profile: p-pokeedge")
+		WithResponse("config", "Configuration:\n  default_profile: toolbox")
 
 	h := NewHandler(mcpm, nil, nil, nil)
 	ctx := context.Background()
@@ -761,8 +761,8 @@ func TestSuggestProfile_PokeedgeProject(t *testing.T) {
 	}
 
 	text := getResultText(result)
-	if !strings.Contains(text, "p-pokeedge") {
-		t.Errorf("Expected p-pokeedge profile, got: %s", text)
+	if !strings.Contains(text, "toolbox") {
+		t.Errorf("Expected toolbox profile, got: %s", text)
 	}
 	if !strings.Contains(text, "memory") {
 		t.Errorf("Expected memory profile, got: %s", text)
@@ -1481,8 +1481,8 @@ func TestProfile_SuggestAction(t *testing.T) {
 	}
 
 	text := getResultText(result)
-	if !strings.Contains(text, "p-pokeedge") {
-		t.Errorf("Expected p-pokeedge in suggest output, got: %s", text)
+	if !strings.Contains(text, "toolbox") {
+		t.Errorf("Expected toolbox in suggest output, got: %s", text)
 	}
 }
 
