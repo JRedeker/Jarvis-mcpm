@@ -1,6 +1,6 @@
-# Jarvis API Reference (v3.1)
+# Jarvis API Reference (v5.1)
 
-> Updated for consolidated tool architecture - 24 tools → 9 tools
+> Updated for enhanced operations - Docker control, test runner, config backup
 
 This document provides a complete reference for all Jarvis MCP tools and the MCPM REST API.
 
@@ -8,7 +8,7 @@ This document provides a complete reference for all Jarvis MCP tools and the MCP
 
 ## Overview
 
-Jarvis v3.1 consolidates 24 tools into 9 action-based tools for **52% context token reduction** (~1,400 tokens saved per connection).
+Jarvis v5.1 provides 9 action-based tools with enhanced Docker operations, integrated test runner, and config backup capabilities.
 
 ### Tool Summary
 
@@ -18,11 +18,11 @@ Jarvis v3.1 consolidates 24 tools into 9 action-based tools for **52% context to
 | `jarvis_server` | list, info, install, uninstall, search, edit, create, usage | Server management |
 | `jarvis_profile` | list, create, edit, delete, suggest, restart | Profile management |
 | `jarvis_client` | list, edit, import, config | AI client configuration |
-| `jarvis_config` | get, set, list, migrate | MCPM configuration |
-| `jarvis_project` | analyze, diff, devops | Project analysis & DevOps |
-| `jarvis_system` | bootstrap, restart, restart_infra | System operations |
+| `jarvis_config` | get, set, list, migrate, **export**, **import** | MCPM configuration |
+| `jarvis_project` | analyze, diff, devops, **test** | Project analysis & DevOps |
+| `jarvis_system` | bootstrap, restart, restart_infra, **rebuild**, **stop**, **start**, **docker_logs**, **docker_status**, **build** | System operations |
 | `jarvis_share` | start, stop, list | Server sharing |
-| `jarvis_diagnose` | profile_health, test_endpoint, logs, full | MCP profile debugging |
+| `jarvis_diagnose` | profile_health, test_endpoint, logs, full, **config_sync** | MCP profile debugging |
 
 ---
 
@@ -320,15 +320,17 @@ jarvis_client({
 
 ### `jarvis_config`
 
-Manage MCPM config: get, set, list, migrate.
+Manage MCPM config: get, set, list, migrate, export, import.
 
 **Parameters:**
 
 | Name | Type | Required | Description |
 |:-----|:-----|:---------|:------------|
-| `action` | string | Yes | Operation: `get`, `set`, `list`, `migrate` |
+| `action` | string | Yes | Operation: `get`, `set`, `list`, `migrate`, `export`, `import` |
 | `key` | string | For get/set | Config key |
 | `value` | string | For set | Value to set |
+| `path` | string | For export/import | File path for backup |
+| `include_secrets` | boolean | No | Include secrets in export (default: false, scrubs API keys) |
 
 **Examples:**
 
@@ -344,23 +346,39 @@ jarvis_config({ action: "set", key: "default_profile", value: "memory" })
 
 // Migrate config to latest format
 jarvis_config({ action: "migrate" })
+
+// Export configuration (secrets scrubbed by default)
+jarvis_config({ action: "export", path: "mcpm-backup.json" })
+
+// Export with secrets included
+jarvis_config({ action: "export", path: "mcpm-backup-full.json", include_secrets: true })
+
+// Import configuration (creates backup of existing config first)
+jarvis_config({ action: "import", path: "mcpm-backup.json" })
 ```
+
+**Export/Import Notes:**
+- Export scrubs sensitive values (API keys, tokens) by default for safe sharing
+- Import automatically backs up existing config before overwriting
+- Import warns if the backup contains scrubbed placeholder values
 
 ---
 
 ### `jarvis_project`
 
-Project tools: analyze, diff, devops.
+Project tools: analyze, diff, devops, test.
 
 **Parameters:**
 
 | Name | Type | Required | Description |
 |:-----|:-----|:---------|:------------|
-| `action` | string | Yes | Operation: `analyze`, `diff`, `devops` |
+| `action` | string | Yes | Operation: `analyze`, `diff`, `devops`, `test` |
 | `staged` | boolean | No | Show only staged changes (for diff) |
-| `project_type` | string | No | Override: `python`, `go`, `node`, `typescript` (for devops) |
+| `project_type` | string | No | Override: `python`, `go`, `node`, `typescript` (for devops/test) |
 | `force` | boolean | No | Overwrite existing configs (for devops) |
 | `enable_ai_review` | boolean | No | Add PR Agent workflow (for devops) |
+| `verbose` | boolean | No | Show detailed test output (for test) |
+| `package` | string | No | Specific package/path to test (for test) |
 
 **Examples:**
 
@@ -401,19 +419,42 @@ jarvis_project({ action: "devops", force: true })
 
 // Include AI review workflow
 jarvis_project({ action: "devops", enable_ai_review: true })
+
+// Run tests (auto-detects project type)
+jarvis_project({ action: "test" })
+
+// Run tests with verbose output
+jarvis_project({ action: "test", verbose: true })
+
+// Run tests for specific package
+jarvis_project({ action: "test", package: "./handlers/..." })
+
+// Run tests with explicit project type
+jarvis_project({ action: "test", project_type: "go" })
 ```
+
+**Test Runner:**
+- Auto-detects project type from `go.mod`, `package.json`, `pyproject.toml`, etc.
+- Go: `go test ./...` (or `go test -v ./...` with verbose)
+- Python: `pytest` (or `pytest -v` with verbose)
+- Node: `npm test`
+- TypeScript: `npm test`
 
 ---
 
 ### `jarvis_system`
 
-System ops: bootstrap, restart, restart_infra.
+System ops: bootstrap, restart, restart_infra, rebuild, stop, start, docker_logs, docker_status, build.
 
 **Parameters:**
 
 | Name | Type | Required | Description |
 |:-----|:-----|:---------|:------------|
-| `action` | string | Yes | Operation: `bootstrap`, `restart`, `restart_infra` |
+| `action` | string | Yes | Operation: `bootstrap`, `restart`, `restart_infra`, `rebuild`, `stop`, `start`, `docker_logs`, `docker_status`, `build` |
+| `service` | string | No | Specific service for stop/start/docker_logs (default: all) |
+| `lines` | number | No | Number of log lines to retrieve (for docker_logs, default: 100) |
+| `no_cache` | boolean | No | Build without cache (for rebuild) |
+| `component` | string | No | Component to build: `jarvis`, `mcpm-daemon`, `all` (for build) |
 
 **Examples:**
 
@@ -427,7 +468,42 @@ jarvis_system({ action: "restart" })
 
 // Restart Docker infrastructure (PostgreSQL, Qdrant)
 jarvis_system({ action: "restart_infra" })
+
+// Rebuild and restart Docker services
+jarvis_system({ action: "rebuild" })
+
+// Rebuild without cache
+jarvis_system({ action: "rebuild", no_cache: true })
+
+// Stop Docker services
+jarvis_system({ action: "stop" })
+
+// Stop specific service
+jarvis_system({ action: "stop", service: "mcp-daemon" })
+
+// Start Docker services
+jarvis_system({ action: "start" })
+
+// Get Docker container logs
+jarvis_system({ action: "docker_logs", service: "mcp-daemon", lines: 100 })
+
+// Get detailed Docker container status
+jarvis_system({ action: "docker_status" })
+
+// Build specific component
+jarvis_system({ action: "build", component: "jarvis" })
+
+// Build mcpm-daemon container
+jarvis_system({ action: "build", component: "mcpm-daemon" })
 ```
+
+**Docker Operations:**
+- `rebuild`: Runs `docker compose build` then `docker compose up -d`
+- `stop`: Runs `docker compose stop` (containers preserved)
+- `start`: Runs `docker compose up -d`
+- `docker_logs`: Retrieves logs from specified service or all services
+- `docker_status`: Shows container status, health, ports, and resource usage
+- `build`: Builds components selectively (jarvis binary or Docker images)
 
 ---
 
@@ -464,15 +540,17 @@ jarvis_share({ action: "stop", name: "context7" })
 
 ### `jarvis_diagnose`
 
-**NEW in v3.1:** Debug MCP profile issues: profile_health, test_endpoint, logs, full.
+Debug MCP profile issues: profile_health, test_endpoint, logs, full, config_sync.
 
 **Parameters:**
 
 | Name | Type | Required | Description |
 |:-----|:-----|:---------|:------------|
-| `action` | string | Yes | Operation: `profile_health`, `test_endpoint`, `logs`, `full` |
+| `action` | string | Yes | Operation: `profile_health`, `test_endpoint`, `logs`, `full`, `config_sync` |
 | `profile` | string | For logs | Profile name to get logs for |
 | `endpoint` | string | For test_endpoint | MCP endpoint URL to test |
+| `lines` | number | No | Number of log lines to retrieve (default: 50) |
+| `auto_fix` | boolean | No | Automatically fix config mismatches (for config_sync) |
 
 **Examples:**
 
@@ -485,13 +563,21 @@ jarvis_diagnose({ action: "profile_health" })
 jarvis_diagnose({ action: "test_endpoint", endpoint: "http://localhost:6279/mcp" })
 // Returns: MCP protocol test results including available tools
 
-// Get stderr logs from a profile's subprocess
-jarvis_diagnose({ action: "logs", profile: "qdrant" })
-// Returns: Recent stderr output for debugging startup failures
+// Get logs from Docker container (uses docker compose logs)
+jarvis_diagnose({ action: "logs", profile: "research", lines: 100 })
+// Returns: Recent logs for debugging startup failures
 
 // Comprehensive diagnostic report
 jarvis_diagnose({ action: "full" })
 // Returns: Combined profile health, endpoint tests, and recommendations
+
+// Audit config sync between servers.json and profiles.json
+jarvis_diagnose({ action: "config_sync" })
+// Returns: Report of any mismatches between server profile_tags and profile servers
+
+// Auto-fix config mismatches
+jarvis_diagnose({ action: "config_sync", auto_fix: true })
+// Automatically updates profiles.json to match server profile_tags
 ```
 
 **Use Cases:**
@@ -502,6 +588,7 @@ jarvis_diagnose({ action: "full" })
 | "Connection refused on port 6279" | `test_endpoint` | Tests MCP protocol handshake |
 | "Profile starts then crashes" | `logs` | Shows stderr from failed subprocess |
 | "Everything seems broken" | `full` | Complete diagnostic for support requests |
+| "Server not in expected profile" | `config_sync` | Detects profile_tags vs profiles.json mismatches |
 
 **Common Workflow:**
 
@@ -510,13 +597,16 @@ jarvis_diagnose({ action: "full" })
 jarvis_diagnose({ action: "profile_health" })
 
 // Step 2: If a profile is failing, get its logs
-jarvis_diagnose({ action: "logs", profile: "qdrant" })
+jarvis_diagnose({ action: "logs", profile: "research" })
 
 // Step 3: Test if the endpoint responds correctly
 jarvis_diagnose({ action: "test_endpoint", endpoint: "http://localhost:6279/mcp" })
 
 // Step 4: Get comprehensive report for debugging
 jarvis_diagnose({ action: "full" })
+
+// Step 5: Check if configs are in sync
+jarvis_diagnose({ action: "config_sync" })
 ```
 
 ---
@@ -570,12 +660,22 @@ jarvis_diagnose({ action: "full" })
 | Server Management | `jarvis_server` | list, info, install, uninstall, search, edit, create, usage |
 | Profile Management | `jarvis_profile` | list, create, edit, delete, suggest, restart |
 | Client Configuration | `jarvis_client` | list, edit, import, config |
-| MCPM Configuration | `jarvis_config` | get, set, list, migrate |
-| Project Tools | `jarvis_project` | analyze, diff, devops |
-| System Operations | `jarvis_system` | bootstrap, restart, restart_infra |
+| MCPM Configuration | `jarvis_config` | get, set, list, migrate, export, import |
+| Project Tools | `jarvis_project` | analyze, diff, devops, test |
+| System Operations | `jarvis_system` | bootstrap, restart, restart_infra, rebuild, stop, start, docker_logs, docker_status, build |
 | Server Sharing | `jarvis_share` | start, stop, list |
-| Diagnostics | `jarvis_diagnose` | profile_health, test_endpoint, logs, full |
+| Diagnostics | `jarvis_diagnose` | profile_health, test_endpoint, logs, full, config_sync |
 
 ---
 
-*Updated for Jarvis v3.1 - Diagnostics Edition*
+## Version History
+
+| Version | Date | Changes |
+|:--------|:-----|:--------|
+| v5.1 | 2025-12-22 | Docker operations, test runner, config backup, config_sync |
+| v3.1 | 2025-12-17 | Added jarvis_diagnose tool |
+| v3.0 | 2025-12-17 | Consolidated 24 tools → 9 action-based tools |
+
+---
+
+*Updated for Jarvis v5.1 - Enhanced Operations Edition*

@@ -1,6 +1,8 @@
 # OpenCode Integration Guide
 
-This guide explains how to integrate Jarvis and the MCP profile stack with OpenCode, the open-source AI coding agent.
+> Updated for Jarvis v5.1 and Micro-Profile Architecture
+
+This guide explains how to integrate Jarvis and the MCP micro-profile stack with OpenCode, the open-source AI coding agent.
 
 ## Overview
 
@@ -8,7 +10,8 @@ OpenCode is a modern AI coding agent developed by SST that supports the Model Co
 
 - Automatically detect OpenCode configuration files
 - Add/remove MCP profiles with a single command
-- Import a starter configuration with all common profiles
+- Import a starter configuration with the full micro-profile stack
+- Manage individual server configurations within profiles
 
 ## Configuration Format
 
@@ -52,36 +55,37 @@ OpenCode looks for configuration in this order:
 The fastest way to get started:
 
 ```javascript
-// v3.1 syntax
 jarvis_client({
   action: "import",
   client_name: "opencode"
 })
 ```
 
-This creates a configuration with:
-- `jarvis` (local stdio) - Infrastructure management
-- `toolbox` (remote HTTP) - Project tools
-- `memory` (remote HTTP) - Persistent memory
-- `morph` (remote HTTP) - AI refactoring
+This creates a configuration with the full micro-profile stack:
+- `jarvis` (local stdio) - Infrastructure management gateway
+- `essentials` (remote HTTP) - Fast, local utilities (time, fetch)
+- `memory` (remote HTTP) - Persistent memory (basic-memory, mem0)
+- `dev-core` (remote HTTP) - Coding intelligence (context7)
+- `research` (remote HTTP) - Web research tools (kagi, firecrawl)
+- `data` (remote HTTP) - Databases (qdrant, postgres)
 
 ### Option 2: Manual Configuration
 
 Add profiles one at a time:
 
 ```javascript
-// First, add Jarvis (v3.1 syntax)
+// First, add Jarvis
 jarvis_client({
   action: "edit",
   client_name: "opencode",
   add_profile: "jarvis"
 })
 
-// Then add HTTP profiles
+// Then add the micro-profile stack
 jarvis_client({
   action: "edit",
   client_name: "opencode",
-  add_profile: "memory,toolbox"
+  add_profile: "essentials,memory,dev-core,research,data"
 })
 ```
 
@@ -98,7 +102,7 @@ Copy the template from `config-templates/opencode.json`:
       "command": ["/path/to/MCP/Jarvis/jarvis"],
       "enabled": true
     },
-    "toolbox": {
+    "essentials": {
       "type": "remote",
       "url": "http://localhost:6276/mcp",
       "enabled": true
@@ -108,24 +112,46 @@ Copy the template from `config-templates/opencode.json`:
       "url": "http://localhost:6277/mcp",
       "enabled": true
     },
-    "morph": {
+    "dev-core": {
       "type": "remote",
       "url": "http://localhost:6278/mcp",
+      "enabled": true
+    },
+    "data": {
+      "type": "remote",
+      "url": "http://localhost:6279/mcp",
+      "enabled": true
+    },
+    "research": {
+      "type": "remote",
+      "url": "http://localhost:6281/mcp",
       "enabled": true
     }
   }
 }
 ```
 
-## Port Reference
+## Port Reference (Micro-Profile Stack)
 
-| Profile | Port | URL | Description |
-|---------|------|-----|-------------|
-| `toolbox` | 6276 | `http://localhost:6276/mcp` | Project tools (search, fetch, context) |
-| `memory` | 6277 | `http://localhost:6277/mcp` | Persistent memory |
-| `morph` | 6278 | `http://localhost:6278/mcp` | AI code refactoring |
-| `qdrant` | 6279 | `http://localhost:6279/mcp` | Vector database |
-| `p-new` | 6280 | `http://localhost:6280/mcp` | New project template |
+| Profile | Port | URL | Tools |
+|---------|------|-----|-------|
+| `essentials` | 6276 | `http://localhost:6276/mcp` | time, fetch-mcp |
+| `memory` | 6277 | `http://localhost:6277/mcp` | basic-memory, mem0-mcp |
+| `dev-core` | 6278 | `http://localhost:6278/mcp` | context7 |
+| `data` | 6279 | `http://localhost:6279/mcp` | mcp-server-qdrant, postgres |
+| `p-new` | 6280 | `http://localhost:6280/mcp` | Reserved for new profiles |
+| `research` | 6281 | `http://localhost:6281/mcp` | kagimcp, firecrawl, arxiv-mcp |
+
+### Why Micro-Profiles?
+
+Instead of a monolithic `toolbox` profile, the micro-profile architecture provides:
+
+1. **Failure Isolation**: A crash in `research` doesn't take down `memory`
+2. **Selective Loading**: Enable only what you need (e.g., disable `data` if not using databases)
+3. **Resource Control**: Heavy tools (qdrant) run in separate containers
+4. **Easier Debugging**: Issues are isolated to specific domains
+
+See [CONFIGURATION_STRATEGY.md](../CONFIGURATION_STRATEGY.md) for the full architectural philosophy.
 
 ## Prerequisites
 
@@ -201,7 +227,7 @@ jarvis_client({
 
 ### Profile tools not loading
 
-Use the new diagnostic tool (v3.1):
+Use the diagnostic tool:
 ```javascript
 // Check profile health
 jarvis_diagnose({ action: "profile_health" })
@@ -211,6 +237,9 @@ jarvis_diagnose({ action: "logs", profile: "memory" })
 
 // Test endpoint connectivity
 jarvis_diagnose({ action: "test_endpoint", endpoint: "http://localhost:6277/mcp" })
+
+// Check if configs are in sync
+jarvis_diagnose({ action: "config_sync" })
 ```
 
 ## Comparison with Claude Desktop
@@ -227,4 +256,9 @@ jarvis_diagnose({ action: "test_endpoint", endpoint: "http://localhost:6277/mcp"
 
 - [OpenCode Docs: MCP Servers](https://opencode.ai/docs/mcp-servers/)
 - [OpenCode Docs: Config](https://opencode.ai/docs/config/)
-- [CONFIGURATION_STRATEGY.md](../CONFIGURATION_STRATEGY.md) - 3-Layer Stack Philosophy
+- [CONFIGURATION_STRATEGY.md](../CONFIGURATION_STRATEGY.md) - Micro-Profile Stack Philosophy
+- [API_REFERENCE.md](../API_REFERENCE.md) - Complete Jarvis tool reference
+
+---
+
+*Updated for Jarvis v5.1 - December 2025*
