@@ -1,8 +1,8 @@
 # Configuration Strategy
 
-**Version:** 5.0 (December 2025)
+**Version:** 5.1 (December 2025)
 **Status:** Active Standard
-**Core Change:** Transition to Composable Micro-Profiles.
+**Core Change:** Composable Micro-Profiles with Enhanced Operations.
 
 ## Overview
 
@@ -106,3 +106,63 @@ The MCPM API also exposes these endpoints:
 
 - `GET /api/v1/audit` - Returns mismatch report
 - `POST /api/v1/audit/fix` - Auto-fixes mismatches
+
+## Configuration Backup & Restore (v5.1)
+
+Jarvis supports exporting and importing MCPM configurations for backup and disaster recovery.
+
+### Exporting Configuration
+
+```javascript
+// Export with secrets scrubbed (default)
+jarvis_config({ action: "export", path: "mcpm-backup.json" })
+
+// Export with secrets included (use with caution)
+jarvis_config({ action: "export", path: "mcpm-backup.json", include_secrets: true })
+```
+
+The export includes:
+- `servers.json` - All server definitions
+- `profiles.json` - Profile to server mappings
+- Version and timestamp metadata
+
+**Security:** By default, environment variables containing sensitive patterns (API_KEY, SECRET, PASSWORD, TOKEN, CREDENTIALS) are replaced with `[SCRUBBED]`.
+
+### Importing Configuration
+
+```javascript
+jarvis_config({ action: "import", path: "mcpm-backup.json" })
+```
+
+Import behavior:
+1. Creates `.bak` backups of existing configurations
+2. Warns if the backup contains scrubbed secrets
+3. Writes new configurations to `~/.config/mcpm/`
+
+**Note:** After importing, restart profiles to apply changes:
+```javascript
+jarvis_profile({ action: "restart" })
+```
+
+## Docker Operations (v5.1)
+
+AI agents can now manage Docker containers without shell access:
+
+```javascript
+// Rebuild and restart services
+jarvis_system({ action: "rebuild", no_cache: true })
+
+// Stop/start without removing
+jarvis_system({ action: "stop", service: "mcp-daemon" })
+jarvis_system({ action: "start" })
+
+// View container logs
+jarvis_system({ action: "docker_logs", service: "mcp-daemon", lines: 100 })
+
+// Check container status
+jarvis_system({ action: "docker_status" })
+
+// Build specific components
+jarvis_system({ action: "build", component: "jarvis" })  // Go binary
+jarvis_system({ action: "build", component: "mcpm-daemon" })  // Docker image
+```
