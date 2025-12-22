@@ -18,10 +18,17 @@ type MockDockerClient struct {
 	ComposePsError      error
 	SupervisorctlOutput map[string]string
 	SupervisorctlError  error
+	// Phase 1: Enhanced Docker Operations
+	ComposeBuildError error
+	ComposeStopError  error
+	ComposeStartError error
+	ComposeLogsOutput string
+	ComposeLogsError  error
 
 	// State tracking
 	ContainersRunning bool
 	RestartCount      int
+	BuildCount        int
 
 	// Call tracking
 	Calls []MockCall
@@ -240,5 +247,96 @@ func (m *MockDockerClient) WithComposeRestartError(err error) *MockDockerClient 
 func (m *MockDockerClient) WithSupervisorctlOutput(action, target, output string) *MockDockerClient {
 	key := fmt.Sprintf("%s:%s", action, target)
 	m.SupervisorctlOutput[key] = output
+	return m
+}
+
+// ComposeBuild implements DockerClient.ComposeBuild
+func (m *MockDockerClient) ComposeBuild(ctx context.Context, noCache bool, services ...string) error {
+	m.recordCall("ComposeBuild", noCache, services)
+
+	if m.ComposeBuildError != nil {
+		return m.ComposeBuildError
+	}
+
+	m.mu.Lock()
+	m.BuildCount++
+	m.mu.Unlock()
+
+	return nil
+}
+
+// ComposeStop implements DockerClient.ComposeStop
+func (m *MockDockerClient) ComposeStop(ctx context.Context, services ...string) error {
+	m.recordCall("ComposeStop", services)
+
+	if m.ComposeStopError != nil {
+		return m.ComposeStopError
+	}
+
+	m.mu.Lock()
+	m.ContainersRunning = false
+	m.mu.Unlock()
+
+	return nil
+}
+
+// ComposeStart implements DockerClient.ComposeStart
+func (m *MockDockerClient) ComposeStart(ctx context.Context, services ...string) error {
+	m.recordCall("ComposeStart", services)
+
+	if m.ComposeStartError != nil {
+		return m.ComposeStartError
+	}
+
+	m.mu.Lock()
+	m.ContainersRunning = true
+	m.mu.Unlock()
+
+	return nil
+}
+
+// ComposeLogs implements DockerClient.ComposeLogs
+func (m *MockDockerClient) ComposeLogs(ctx context.Context, service string, lines int) (string, error) {
+	m.recordCall("ComposeLogs", service, lines)
+
+	if m.ComposeLogsError != nil {
+		return "", m.ComposeLogsError
+	}
+
+	if m.ComposeLogsOutput != "" {
+		return m.ComposeLogsOutput, nil
+	}
+
+	// Default mock output
+	return fmt.Sprintf("[%s] Mock log output line 1\n[%s] Mock log output line 2\n", service, service), nil
+}
+
+// WithComposeBuildError configures ComposeBuild to return an error
+func (m *MockDockerClient) WithComposeBuildError(err error) *MockDockerClient {
+	m.ComposeBuildError = err
+	return m
+}
+
+// WithComposeStopError configures ComposeStop to return an error
+func (m *MockDockerClient) WithComposeStopError(err error) *MockDockerClient {
+	m.ComposeStopError = err
+	return m
+}
+
+// WithComposeStartError configures ComposeStart to return an error
+func (m *MockDockerClient) WithComposeStartError(err error) *MockDockerClient {
+	m.ComposeStartError = err
+	return m
+}
+
+// WithComposeLogsOutput configures ComposeLogs to return specific output
+func (m *MockDockerClient) WithComposeLogsOutput(output string) *MockDockerClient {
+	m.ComposeLogsOutput = output
+	return m
+}
+
+// WithComposeLogsError configures ComposeLogs to return an error
+func (m *MockDockerClient) WithComposeLogsError(err error) *MockDockerClient {
+	m.ComposeLogsError = err
 	return m
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
 	"strings"
 	"testing"
@@ -1580,6 +1581,208 @@ func TestConfig_InvalidAction(t *testing.T) {
 	}
 }
 
+// ==================== Phase 5: Config Backup Tests ====================
+
+func TestConfigExport_Success(t *testing.T) {
+	mockFS := NewMockFileSystem().
+		WithCwd("/home/test/project").
+		WithFile("/home/test/.config/mcpm/servers.json", []byte(`{"test-server": {"command": "test"}}`)).
+		WithFile("/home/test/.config/mcpm/profiles.json", []byte(`{"memory": {"servers": ["basic-memory"]}}`))
+
+	// Override home for testing
+	originalHome := os.Getenv("HOME")
+	os.Setenv("HOME", "/home/test")
+	defer os.Setenv("HOME", originalHome)
+
+	h := NewHandler(nil, nil, nil, mockFS)
+	ctx := context.Background()
+
+	req := newRequest(map[string]interface{}{
+		"action": "export",
+		"path":   "/home/test/backup.json",
+	})
+	result, err := h.ConfigExport(ctx, req)
+
+	if err != nil {
+		t.Fatalf("ConfigExport() returned error: %v", err)
+	}
+	if result.IsError {
+		t.Errorf("Expected success, got error: %s", getResultText(result))
+	}
+
+	text := getResultText(result)
+	if !strings.Contains(text, "Configuration exported") {
+		t.Errorf("Expected export success message, got: %s", text)
+	}
+}
+
+func TestConfigExport_ScrubsSecrets(t *testing.T) {
+	serverConfig := `{
+		"test-server": {
+			"command": "test",
+			"env": {
+				"OPENAI_API_KEY": "sk-secret-key",
+				"NORMAL_VAR": "value"
+			}
+		}
+	}`
+	mockFS := NewMockFileSystem().
+		WithCwd("/home/test/project").
+		WithFile("/home/test/.config/mcpm/servers.json", []byte(serverConfig)).
+		WithFile("/home/test/.config/mcpm/profiles.json", []byte(`{}`))
+
+	originalHome := os.Getenv("HOME")
+	os.Setenv("HOME", "/home/test")
+	defer os.Setenv("HOME", originalHome)
+
+	h := NewHandler(nil, nil, nil, mockFS)
+	ctx := context.Background()
+
+	req := newRequest(map[string]interface{}{
+		"action":          "export",
+		"path":            "/home/test/backup.json",
+		"include_secrets": false,
+	})
+	result, _ := h.ConfigExport(ctx, req)
+
+	text := getResultText(result)
+	if !strings.Contains(text, "Secrets excluded") {
+		t.Errorf("Expected secrets excluded message, got: %s", text)
+	}
+}
+
+func TestConfigImport_Success(t *testing.T) {
+	backupData := `{
+		"version": "1.0",
+		"exportedAt": "2025-12-22T12:00:00Z",
+		"servers": {"test-server": {}},
+		"profiles": {"memory": {}}
+	}`
+	mockFS := NewMockFileSystem().
+		WithCwd("/home/test/project").
+		WithFile("/home/test/backup.json", []byte(backupData))
+
+	originalHome := os.Getenv("HOME")
+	os.Setenv("HOME", "/home/test")
+	defer os.Setenv("HOME", originalHome)
+
+	h := NewHandler(nil, nil, nil, mockFS)
+	ctx := context.Background()
+
+	req := newRequest(map[string]interface{}{
+		"action": "import",
+		"path":   "/home/test/backup.json",
+	})
+	result, err := h.ConfigImport(ctx, req)
+
+	if err != nil {
+		t.Fatalf("ConfigImport() returned error: %v", err)
+	}
+	if result.IsError {
+		t.Errorf("Expected success, got error: %s", getResultText(result))
+	}
+
+	text := getResultText(result)
+	if !strings.Contains(text, "Imported") {
+		t.Errorf("Expected import success message, got: %s", text)
+	}
+}
+
+func TestConfigImport_MissingPath(t *testing.T) {
+	h := NewHandler(nil, nil, nil, nil)
+	ctx := context.Background()
+
+	req := newRequest(map[string]interface{}{
+		"action": "import",
+	})
+	result, _ := h.ConfigImport(ctx, req)
+
+	if !result.IsError {
+		t.Error("Expected error for missing path")
+	}
+	text := getResultText(result)
+	if !strings.Contains(text, "path is required") {
+		t.Errorf("Expected path required error, got: %s", text)
+	}
+}
+
+func TestConfigImport_DetectsScrubbedSecrets(t *testing.T) {
+	backupData := `{
+		"version": "1.0",
+		"exportedAt": "2025-12-22T12:00:00Z",
+		"servers": {"test-server": {"env": {"API_KEY": "[SCRUBBED]"}}},
+		"profiles": {}
+	}`
+	mockFS := NewMockFileSystem().
+		WithCwd("/home/test/project").
+		WithFile("/home/test/backup.json", []byte(backupData))
+
+	originalHome := os.Getenv("HOME")
+	os.Setenv("HOME", "/home/test")
+	defer os.Setenv("HOME", originalHome)
+
+	h := NewHandler(nil, nil, nil, mockFS)
+	ctx := context.Background()
+
+	req := newRequest(map[string]interface{}{
+		"action": "import",
+		"path":   "/home/test/backup.json",
+	})
+	result, _ := h.ConfigImport(ctx, req)
+
+	text := getResultText(result)
+	if !strings.Contains(text, "scrubbed secrets") {
+		t.Errorf("Expected scrubbed secrets warning, got: %s", text)
+	}
+}
+
+func TestConfig_ExportImportRouting(t *testing.T) {
+	backupData := `{
+		"version": "1.0",
+		"exportedAt": "2025-12-22T12:00:00Z",
+		"servers": {},
+		"profiles": {}
+	}`
+	mockFS := NewMockFileSystem().
+		WithCwd("/home/test/project").
+		WithFile("/home/test/backup.json", []byte(backupData)).
+		WithFile("/home/test/.config/mcpm/servers.json", []byte(`{}`)).
+		WithFile("/home/test/.config/mcpm/profiles.json", []byte(`{}`))
+
+	originalHome := os.Getenv("HOME")
+	os.Setenv("HOME", "/home/test")
+	defer os.Setenv("HOME", originalHome)
+
+	h := NewHandler(nil, nil, nil, mockFS)
+	ctx := context.Background()
+
+	// Test export routing
+	req := newRequest(map[string]interface{}{
+		"action": "export",
+		"path":   "/home/test/backup2.json",
+	})
+	result, err := h.Config(ctx, req)
+	if err != nil {
+		t.Fatalf("Config() with export action returned error: %v", err)
+	}
+	if result.IsError {
+		t.Errorf("Expected success for export action, got error: %s", getResultText(result))
+	}
+
+	// Test import routing
+	req = newRequest(map[string]interface{}{
+		"action": "import",
+		"path":   "/home/test/backup.json",
+	})
+	result, err = h.Config(ctx, req)
+	if err != nil {
+		t.Fatalf("Config() with import action returned error: %v", err)
+	}
+	if result.IsError {
+		t.Errorf("Expected success for import action, got error: %s", getResultText(result))
+	}
+}
+
 func TestProject_ActionRouting(t *testing.T) {
 	git := NewMockGitRunner().
 		WithStatus("M  file.go").
@@ -1643,6 +1846,259 @@ func TestProject_InvalidAction(t *testing.T) {
 	}
 }
 
+// ==================== Phase 3: Test Runner Tests ====================
+
+func TestProjectTest_GoProject(t *testing.T) {
+	mockFS := NewMockFileSystem().
+		WithCwd("/home/test/goproject").
+		WithFile("/home/test/goproject/go.mod", []byte("module test"))
+	mockCmd := &MockCommandRunner{
+		Output: "ok  \ttest\t0.001s\n",
+	}
+
+	h := NewHandler(nil, nil, nil, mockFS)
+	h.Cmd = mockCmd
+	ctx := context.Background()
+
+	req := newRequest(map[string]interface{}{
+		"action":  "test",
+		"verbose": true,
+	})
+	result, err := h.ProjectTest(ctx, req)
+
+	if err != nil {
+		t.Fatalf("ProjectTest() returned error: %v", err)
+	}
+	if result.IsError {
+		t.Errorf("Expected success, got error: %s", getResultText(result))
+	}
+
+	text := getResultText(result)
+	if !strings.Contains(text, "go") {
+		t.Errorf("Expected go project type, got: %s", text)
+	}
+	if !strings.Contains(text, "Running Tests") {
+		t.Errorf("Expected running tests header, got: %s", text)
+	}
+}
+
+func TestProjectTest_PythonProject(t *testing.T) {
+	mockFS := NewMockFileSystem().
+		WithCwd("/home/test/pyproject").
+		WithFile("/home/test/pyproject/pyproject.toml", []byte("[project]"))
+	mockCmd := &MockCommandRunner{
+		Output: "collected 5 items\n5 passed\n",
+	}
+
+	h := NewHandler(nil, nil, nil, mockFS)
+	h.Cmd = mockCmd
+	ctx := context.Background()
+
+	req := newRequest(map[string]interface{}{
+		"action": "test",
+	})
+	result, err := h.ProjectTest(ctx, req)
+
+	if err != nil {
+		t.Fatalf("ProjectTest() returned error: %v", err)
+	}
+
+	text := getResultText(result)
+	if !strings.Contains(text, "python") {
+		t.Errorf("Expected python project type, got: %s", text)
+	}
+}
+
+func TestProjectTest_NodeProject(t *testing.T) {
+	mockFS := NewMockFileSystem().
+		WithCwd("/home/test/nodeproject").
+		WithFile("/home/test/nodeproject/package.json", []byte("{}"))
+	mockCmd := &MockCommandRunner{
+		Output: "Tests: 10 passed\n",
+	}
+
+	h := NewHandler(nil, nil, nil, mockFS)
+	h.Cmd = mockCmd
+	ctx := context.Background()
+
+	req := newRequest(map[string]interface{}{
+		"action": "test",
+	})
+	result, err := h.ProjectTest(ctx, req)
+
+	if err != nil {
+		t.Fatalf("ProjectTest() returned error: %v", err)
+	}
+
+	text := getResultText(result)
+	if !strings.Contains(text, "node") {
+		t.Errorf("Expected node project type, got: %s", text)
+	}
+}
+
+func TestProjectTest_TypeScriptProject(t *testing.T) {
+	mockFS := NewMockFileSystem().
+		WithCwd("/home/test/tsproject").
+		WithFile("/home/test/tsproject/package.json", []byte("{}")).
+		WithFile("/home/test/tsproject/tsconfig.json", []byte("{}"))
+	mockCmd := &MockCommandRunner{
+		Output: "Tests: 10 passed\n",
+	}
+
+	h := NewHandler(nil, nil, nil, mockFS)
+	h.Cmd = mockCmd
+	ctx := context.Background()
+
+	req := newRequest(map[string]interface{}{
+		"action": "test",
+	})
+	result, err := h.ProjectTest(ctx, req)
+
+	if err != nil {
+		t.Fatalf("ProjectTest() returned error: %v", err)
+	}
+
+	text := getResultText(result)
+	if !strings.Contains(text, "typescript") {
+		t.Errorf("Expected typescript project type, got: %s", text)
+	}
+}
+
+func TestProjectTest_UnknownProject(t *testing.T) {
+	mockFS := NewMockFileSystem().WithCwd("/home/test/unknown")
+
+	h := NewHandler(nil, nil, nil, mockFS)
+	ctx := context.Background()
+
+	req := newRequest(map[string]interface{}{
+		"action": "test",
+	})
+	result, _ := h.ProjectTest(ctx, req)
+
+	if !result.IsError {
+		t.Error("Expected error for unknown project type")
+	}
+
+	text := getResultText(result)
+	if !strings.Contains(text, "Could not detect project type") {
+		t.Errorf("Expected project type detection error, got: %s", text)
+	}
+}
+
+func TestProjectTest_ExplicitProjectType(t *testing.T) {
+	mockFS := NewMockFileSystem().WithCwd("/home/test/project")
+	mockCmd := &MockCommandRunner{
+		Output: "ok\n",
+	}
+
+	h := NewHandler(nil, nil, nil, mockFS)
+	h.Cmd = mockCmd
+	ctx := context.Background()
+
+	req := newRequest(map[string]interface{}{
+		"action":       "test",
+		"project_type": "go",
+	})
+	result, err := h.ProjectTest(ctx, req)
+
+	if err != nil {
+		t.Fatalf("ProjectTest() returned error: %v", err)
+	}
+	if result.IsError {
+		t.Errorf("Expected success with explicit project type, got error: %s", getResultText(result))
+	}
+}
+
+func TestProjectTest_WithPackage(t *testing.T) {
+	mockFS := NewMockFileSystem().
+		WithCwd("/home/test/goproject").
+		WithFile("/home/test/goproject/go.mod", []byte("module test"))
+	mockCmd := &MockCommandRunner{
+		Output: "ok\n",
+	}
+
+	h := NewHandler(nil, nil, nil, mockFS)
+	h.Cmd = mockCmd
+	ctx := context.Background()
+
+	req := newRequest(map[string]interface{}{
+		"action":  "test",
+		"package": "./handlers/...",
+	})
+	result, err := h.ProjectTest(ctx, req)
+
+	if err != nil {
+		t.Fatalf("ProjectTest() returned error: %v", err)
+	}
+
+	text := getResultText(result)
+	if !strings.Contains(text, "./handlers/...") {
+		t.Errorf("Expected package in output, got: %s", text)
+	}
+}
+
+func TestProjectTest_FailedTests(t *testing.T) {
+	mockFS := NewMockFileSystem().
+		WithCwd("/home/test/goproject").
+		WithFile("/home/test/goproject/go.mod", []byte("module test"))
+	mockCmd := &MockCommandRunner{
+		Output: "--- FAIL: TestSomething\n",
+		Error:  fmt.Errorf("exit status 1"),
+	}
+
+	h := NewHandler(nil, nil, nil, mockFS)
+	h.Cmd = mockCmd
+	ctx := context.Background()
+
+	req := newRequest(map[string]interface{}{
+		"action": "test",
+	})
+	result, err := h.ProjectTest(ctx, req)
+
+	if err != nil {
+		t.Fatalf("ProjectTest() returned error: %v", err)
+	}
+	// Should not be an error result, but should indicate test failure
+	if result.IsError {
+		t.Errorf("Expected success result with failure message, got error: %s", getResultText(result))
+	}
+
+	text := getResultText(result)
+	if !strings.Contains(text, "Tests Failed") {
+		t.Errorf("Expected Tests Failed message, got: %s", text)
+	}
+}
+
+func TestProject_TestActionRouting(t *testing.T) {
+	mockFS := NewMockFileSystem().
+		WithCwd("/home/test/goproject").
+		WithFile("/home/test/goproject/go.mod", []byte("module test"))
+	mockCmd := &MockCommandRunner{
+		Output: "ok\n",
+	}
+
+	h := NewHandler(nil, nil, nil, mockFS)
+	h.Cmd = mockCmd
+	ctx := context.Background()
+
+	req := newRequest(map[string]interface{}{
+		"action": "test",
+	})
+	result, err := h.Project(ctx, req)
+
+	if err != nil {
+		t.Fatalf("Project() with test action returned error: %v", err)
+	}
+	if result.IsError {
+		t.Errorf("Expected success, got error: %s", getResultText(result))
+	}
+
+	text := getResultText(result)
+	if !strings.Contains(text, "Running Tests") {
+		t.Errorf("Expected test output, got: %s", text)
+	}
+}
+
 func TestSystem_InvalidAction(t *testing.T) {
 	h := NewHandler(nil, nil, nil, nil)
 	ctx := context.Background()
@@ -1652,6 +2108,343 @@ func TestSystem_InvalidAction(t *testing.T) {
 
 	if result == nil || !result.IsError {
 		t.Error("Expected error result for invalid action")
+	}
+}
+
+// ==================== Phase 1: Enhanced Docker Operations Tests ====================
+
+func TestSystemRebuild_Success(t *testing.T) {
+	docker := NewMockDockerRunner().WithRunningContainers()
+	h := NewHandler(nil, docker, nil, nil)
+	ctx := context.Background()
+
+	req := newRequest(map[string]interface{}{
+		"action":   "rebuild",
+		"service":  "mcpm-daemon",
+		"no_cache": true,
+	})
+	result, err := h.SystemRebuild(ctx, req)
+
+	if err != nil {
+		t.Fatalf("SystemRebuild() returned error: %v", err)
+	}
+	if result.IsError {
+		t.Errorf("Expected success, got error: %s", getResultText(result))
+	}
+
+	text := getResultText(result)
+	if !strings.Contains(text, "Build completed") {
+		t.Errorf("Expected build completed message, got: %s", text)
+	}
+	if docker.BuildCount != 1 {
+		t.Errorf("Expected 1 build, got: %d", docker.BuildCount)
+	}
+}
+
+func TestSystemRebuild_BuildError(t *testing.T) {
+	docker := NewMockDockerRunner().WithComposeBuildError(fmt.Errorf("build failed"))
+	h := NewHandler(nil, docker, nil, nil)
+	ctx := context.Background()
+
+	req := newRequest(map[string]interface{}{"action": "rebuild"})
+	result, _ := h.SystemRebuild(ctx, req)
+
+	if !result.IsError {
+		t.Error("Expected error result when build fails")
+	}
+	text := getResultText(result)
+	if !strings.Contains(text, "Build failed") {
+		t.Errorf("Expected build failed message, got: %s", text)
+	}
+}
+
+func TestSystemStop_Success(t *testing.T) {
+	docker := NewMockDockerRunner().WithRunningContainers()
+	h := NewHandler(nil, docker, nil, nil)
+	ctx := context.Background()
+
+	req := newRequest(map[string]interface{}{
+		"action":  "stop",
+		"service": "mcpm-daemon",
+	})
+	result, err := h.SystemStop(ctx, req)
+
+	if err != nil {
+		t.Fatalf("SystemStop() returned error: %v", err)
+	}
+	if result.IsError {
+		t.Errorf("Expected success, got error: %s", getResultText(result))
+	}
+
+	text := getResultText(result)
+	if !strings.Contains(text, "Services stopped") {
+		t.Errorf("Expected services stopped message, got: %s", text)
+	}
+	if docker.ContainersRunning {
+		t.Error("Expected containers to be stopped")
+	}
+}
+
+func TestSystemStop_Error(t *testing.T) {
+	docker := NewMockDockerRunner().WithComposeStopError(fmt.Errorf("stop failed"))
+	h := NewHandler(nil, docker, nil, nil)
+	ctx := context.Background()
+
+	req := newRequest(map[string]interface{}{"action": "stop"})
+	result, _ := h.SystemStop(ctx, req)
+
+	if !result.IsError {
+		t.Error("Expected error result when stop fails")
+	}
+}
+
+func TestSystemStart_Success(t *testing.T) {
+	docker := NewMockDockerRunner()
+	h := NewHandler(nil, docker, nil, nil)
+	ctx := context.Background()
+
+	req := newRequest(map[string]interface{}{
+		"action":  "start",
+		"service": "mcpm-daemon",
+	})
+	result, err := h.SystemStart(ctx, req)
+
+	if err != nil {
+		t.Fatalf("SystemStart() returned error: %v", err)
+	}
+	if result.IsError {
+		t.Errorf("Expected success, got error: %s", getResultText(result))
+	}
+
+	text := getResultText(result)
+	if !strings.Contains(text, "Services started") {
+		t.Errorf("Expected services started message, got: %s", text)
+	}
+	if !docker.ContainersRunning {
+		t.Error("Expected containers to be running")
+	}
+}
+
+func TestSystemStart_Error(t *testing.T) {
+	docker := NewMockDockerRunner().WithComposeStartError(fmt.Errorf("start failed"))
+	h := NewHandler(nil, docker, nil, nil)
+	ctx := context.Background()
+
+	req := newRequest(map[string]interface{}{"action": "start"})
+	result, _ := h.SystemStart(ctx, req)
+
+	if !result.IsError {
+		t.Error("Expected error result when start fails")
+	}
+}
+
+func TestSystemDockerLogs_Success(t *testing.T) {
+	docker := NewMockDockerRunner().WithComposeLogsOutput("test log output line 1\ntest log output line 2")
+	h := NewHandler(nil, docker, nil, nil)
+	ctx := context.Background()
+
+	req := newRequest(map[string]interface{}{
+		"action":  "docker_logs",
+		"service": "mcpm-daemon",
+		"lines":   float64(50),
+	})
+	result, err := h.SystemDockerLogs(ctx, req)
+
+	if err != nil {
+		t.Fatalf("SystemDockerLogs() returned error: %v", err)
+	}
+	if result.IsError {
+		t.Errorf("Expected success, got error: %s", getResultText(result))
+	}
+
+	text := getResultText(result)
+	if !strings.Contains(text, "test log output") {
+		t.Errorf("Expected log output in result, got: %s", text)
+	}
+}
+
+func TestSystemDockerLogs_Error(t *testing.T) {
+	docker := NewMockDockerRunner().WithComposeLogsError(fmt.Errorf("logs failed"))
+	h := NewHandler(nil, docker, nil, nil)
+	ctx := context.Background()
+
+	req := newRequest(map[string]interface{}{"action": "docker_logs"})
+	result, _ := h.SystemDockerLogs(ctx, req)
+
+	if !result.IsError {
+		t.Error("Expected error result when logs retrieval fails")
+	}
+}
+
+func TestSystemDockerStatus_Success(t *testing.T) {
+	docker := NewMockDockerRunner().WithRunningContainers()
+	h := NewHandler(nil, docker, nil, nil)
+	ctx := context.Background()
+
+	req := newRequest(map[string]interface{}{"action": "docker_status"})
+	result, err := h.SystemDockerStatus(ctx, req)
+
+	if err != nil {
+		t.Fatalf("SystemDockerStatus() returned error: %v", err)
+	}
+	if result.IsError {
+		t.Errorf("Expected success, got error: %s", getResultText(result))
+	}
+
+	text := getResultText(result)
+	if !strings.Contains(text, "mcp-daemon") {
+		t.Errorf("Expected mcp-daemon in status, got: %s", text)
+	}
+	if !strings.Contains(text, "Running") {
+		t.Errorf("Expected Running status, got: %s", text)
+	}
+}
+
+func TestSystemDockerStatus_NoContainers(t *testing.T) {
+	docker := NewMockDockerRunner()
+	h := NewHandler(nil, docker, nil, nil)
+	ctx := context.Background()
+
+	req := newRequest(map[string]interface{}{"action": "docker_status"})
+	result, err := h.SystemDockerStatus(ctx, req)
+
+	if err != nil {
+		t.Fatalf("SystemDockerStatus() returned error: %v", err)
+	}
+
+	text := getResultText(result)
+	if !strings.Contains(text, "No containers running") {
+		t.Errorf("Expected no containers message, got: %s", text)
+	}
+}
+
+func TestSystemBuild_JarvisComponent(t *testing.T) {
+	docker := NewMockDockerRunner()
+	mockFS := NewMockFileSystem().
+		WithCwd("/home/test/project").
+		WithDir("/home/test/project/MCPM", nil).
+		WithDir("/home/test/project/Jarvis", nil)
+	mockCmd := &MockCommandRunner{
+		Output: "Build successful",
+	}
+
+	h := NewHandler(nil, docker, nil, mockFS)
+	h.Cmd = mockCmd
+	ctx := context.Background()
+
+	req := newRequest(map[string]interface{}{
+		"action":    "build",
+		"component": "jarvis",
+	})
+	result, err := h.SystemBuild(ctx, req)
+
+	if err != nil {
+		t.Fatalf("SystemBuild() returned error: %v", err)
+	}
+	if result.IsError {
+		t.Errorf("Expected success, got error: %s", getResultText(result))
+	}
+
+	text := getResultText(result)
+	if !strings.Contains(text, "Jarvis binary built successfully") {
+		t.Errorf("Expected Jarvis build success message, got: %s", text)
+	}
+}
+
+func TestSystemBuild_McpmDaemonComponent(t *testing.T) {
+	docker := NewMockDockerRunner()
+	mockFS := NewMockFileSystem().
+		WithCwd("/home/test/project").
+		WithDir("/home/test/project/MCPM", nil)
+
+	h := NewHandler(nil, docker, nil, mockFS)
+	ctx := context.Background()
+
+	req := newRequest(map[string]interface{}{
+		"action":    "build",
+		"component": "mcpm-daemon",
+		"no_cache":  true,
+	})
+	result, err := h.SystemBuild(ctx, req)
+
+	if err != nil {
+		t.Fatalf("SystemBuild() returned error: %v", err)
+	}
+	if result.IsError {
+		t.Errorf("Expected success, got error: %s", getResultText(result))
+	}
+
+	text := getResultText(result)
+	if !strings.Contains(text, "mcpm-daemon image built successfully") {
+		t.Errorf("Expected mcpm-daemon build success message, got: %s", text)
+	}
+	if docker.BuildCount != 1 {
+		t.Errorf("Expected 1 build, got: %d", docker.BuildCount)
+	}
+}
+
+func TestSystemBuild_InvalidComponent(t *testing.T) {
+	docker := NewMockDockerRunner()
+	mockFS := NewMockFileSystem().
+		WithCwd("/home/test/project").
+		WithDir("/home/test/project/MCPM", nil)
+
+	h := NewHandler(nil, docker, nil, mockFS)
+	ctx := context.Background()
+
+	req := newRequest(map[string]interface{}{
+		"action":    "build",
+		"component": "invalid",
+	})
+	result, _ := h.SystemBuild(ctx, req)
+
+	if !result.IsError {
+		t.Error("Expected error for invalid component")
+	}
+	text := getResultText(result)
+	if !strings.Contains(text, "Unknown component") {
+		t.Errorf("Expected unknown component error, got: %s", text)
+	}
+}
+
+func TestSystem_NewActionsRouting(t *testing.T) {
+	docker := NewMockDockerRunner().WithRunningContainers()
+	mockFS := NewMockFileSystem().
+		WithCwd("/home/test/project").
+		WithDir("/home/test/project/MCPM", nil)
+
+	h := NewHandler(nil, docker, nil, mockFS)
+	ctx := context.Background()
+
+	tests := []struct {
+		action string
+		valid  bool
+	}{
+		{"rebuild", true},
+		{"stop", true},
+		{"start", true},
+		{"docker_logs", true},
+		{"docker_status", true},
+		{"build", true},
+		{"invalid_action", false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.action, func(t *testing.T) {
+			req := newRequest(map[string]interface{}{"action": tt.action})
+			result, _ := h.System(ctx, req)
+
+			if tt.valid && result.IsError {
+				text := getResultText(result)
+				// build may fail due to missing project root, that's ok - just check routing works
+				if strings.Contains(text, "invalid action") {
+					t.Errorf("Action %s should be valid but got invalid action error", tt.action)
+				}
+			}
+			if !tt.valid && !result.IsError {
+				t.Errorf("Action %s should be invalid", tt.action)
+			}
+		})
 	}
 }
 
@@ -1840,8 +2633,9 @@ func TestToolDefinitions_PayloadSize(t *testing.T) {
 	totalSize += 20
 
 	// Target: significant reduction from original ~11KB
-	// With 9 tools instead of 24, and shorter descriptions, we expect ~5-6KB
-	const maxPayloadSize = 7000 // Conservative target (v3.1 added jarvis_diagnose)
+	// With 9 tools instead of 24, and shorter descriptions, we expect ~5-7KB
+	// Phase 1-5 enhancements added ~500 bytes for new parameters
+	const maxPayloadSize = 7500 // Updated for enhance-jarvis-operations
 	if totalSize > maxPayloadSize {
 		t.Errorf("Actual payload size %d exceeds target %d bytes", totalSize, maxPayloadSize)
 	}

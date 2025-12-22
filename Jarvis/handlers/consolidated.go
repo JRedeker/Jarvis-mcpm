@@ -105,7 +105,7 @@ func (h *Handler) Client(ctx context.Context, req mcp.CallToolRequest) (*mcp.Cal
 }
 
 // Config handles the consolidated jarvis_config tool
-// Actions: get, set, list, migrate
+// Actions: get, set, list, migrate, export, import
 func (h *Handler) Config(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	args, ok := req.Params.Arguments.(map[string]interface{})
 	if !ok {
@@ -114,7 +114,7 @@ func (h *Handler) Config(ctx context.Context, req mcp.CallToolRequest) (*mcp.Cal
 
 	action, ok := args["action"].(string)
 	if !ok || action == "" {
-		return mcp.NewToolResultError("action is required. Valid: get|set|list|migrate"), nil
+		return mcp.NewToolResultError("action is required. Valid: get|set|list|migrate|export|import"), nil
 	}
 
 	switch action {
@@ -125,13 +125,17 @@ func (h *Handler) Config(ctx context.Context, req mcp.CallToolRequest) (*mcp.Cal
 		return h.ManageConfig(ctx, req)
 	case "migrate":
 		return h.MigrateConfig(ctx, req)
+	case "export":
+		return h.ConfigExport(ctx, req)
+	case "import":
+		return h.ConfigImport(ctx, req)
 	default:
-		return mcp.NewToolResultError(fmt.Sprintf("invalid action '%s'. Valid: get|set|list|migrate", action)), nil
+		return mcp.NewToolResultError(fmt.Sprintf("invalid action '%s'. Valid: get|set|list|migrate|export|import", action)), nil
 	}
 }
 
 // Project handles the consolidated jarvis_project tool
-// Actions: analyze, diff, devops
+// Actions: analyze, diff, devops, test
 func (h *Handler) Project(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	args, ok := req.Params.Arguments.(map[string]interface{})
 	if !ok {
@@ -140,7 +144,7 @@ func (h *Handler) Project(ctx context.Context, req mcp.CallToolRequest) (*mcp.Ca
 
 	action, ok := args["action"].(string)
 	if !ok || action == "" {
-		return mcp.NewToolResultError("action is required. Valid: analyze|diff|devops"), nil
+		return mcp.NewToolResultError("action is required. Valid: analyze|diff|devops|test"), nil
 	}
 
 	switch action {
@@ -150,13 +154,15 @@ func (h *Handler) Project(ctx context.Context, req mcp.CallToolRequest) (*mcp.Ca
 		return h.FetchDiffContext(ctx, req)
 	case "devops":
 		return h.ApplyDevOpsStack(ctx, req)
+	case "test":
+		return h.ProjectTest(ctx, req)
 	default:
-		return mcp.NewToolResultError(fmt.Sprintf("invalid action '%s'. Valid: analyze|diff|devops", action)), nil
+		return mcp.NewToolResultError(fmt.Sprintf("invalid action '%s'. Valid: analyze|diff|devops|test", action)), nil
 	}
 }
 
 // System handles the consolidated jarvis_system tool
-// Actions: bootstrap, restart, restart_infra
+// Actions: bootstrap, restart, restart_infra, rebuild, stop, start, docker_logs, docker_status, build
 func (h *Handler) System(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	args, ok := req.Params.Arguments.(map[string]interface{})
 	if !ok {
@@ -165,7 +171,7 @@ func (h *Handler) System(ctx context.Context, req mcp.CallToolRequest) (*mcp.Cal
 
 	action, ok := args["action"].(string)
 	if !ok || action == "" {
-		return mcp.NewToolResultError("action is required. Valid: bootstrap|restart|restart_infra"), nil
+		return mcp.NewToolResultError("action is required. Valid: bootstrap|restart|restart_infra|rebuild|stop|start|docker_logs|docker_status|build"), nil
 	}
 
 	switch action {
@@ -175,8 +181,20 @@ func (h *Handler) System(ctx context.Context, req mcp.CallToolRequest) (*mcp.Cal
 		return h.RestartService(ctx, req)
 	case "restart_infra":
 		return h.RestartInfrastructure(ctx, req)
+	case "rebuild":
+		return h.SystemRebuild(ctx, req)
+	case "stop":
+		return h.SystemStop(ctx, req)
+	case "start":
+		return h.SystemStart(ctx, req)
+	case "docker_logs":
+		return h.SystemDockerLogs(ctx, req)
+	case "docker_status":
+		return h.SystemDockerStatus(ctx, req)
+	case "build":
+		return h.SystemBuild(ctx, req)
 	default:
-		return mcp.NewToolResultError(fmt.Sprintf("invalid action '%s'. Valid: bootstrap|restart|restart_infra", action)), nil
+		return mcp.NewToolResultError(fmt.Sprintf("invalid action '%s'. Valid: bootstrap|restart|restart_infra|rebuild|stop|start|docker_logs|docker_status|build", action)), nil
 	}
 }
 

@@ -30,6 +30,11 @@ type DockerRunner interface {
 	ComposeRestart(ctx context.Context, services ...string) error
 	ComposePs(ctx context.Context) ([]ContainerStatus, error)
 	ExecSupervisorctl(ctx context.Context, action, target string) (string, error)
+	// Phase 1: Enhanced Docker Operations
+	ComposeBuild(ctx context.Context, noCache bool, services ...string) error
+	ComposeStop(ctx context.Context, services ...string) error
+	ComposeStart(ctx context.Context, services ...string) error
+	ComposeLogs(ctx context.Context, service string, lines int) (string, error)
 }
 
 // ContainerStatus represents a Docker container's status
@@ -770,6 +775,209 @@ func (h *Handler) ManageConfig(ctx context.Context, request mcp.CallToolRequest)
 	return mcp.NewToolResultText(output), nil
 }
 
+// =============================================================================
+// Phase 5: Config Backup
+// =============================================================================
+
+// mcpmConfigPaths returns the MCPM config file paths
+func mcpmConfigPaths() (serversPath, profilesPath string, err error) {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return "", "", err
+	}
+	configDir := filepath.Join(home, ".config", "mcpm")
+	return filepath.Join(configDir, "servers.json"), filepath.Join(configDir, "profiles.json"), nil
+}
+
+// ConfigExport exports MCPM configuration to a backup file
+func (h *Handler) ConfigExport(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	args, _ := request.Params.Arguments.(map[string]interface{})
+	exportPath, _ := args["path"].(string)
+	includeSecrets, _ := args["include_secrets"].(bool)
+
+	var builder strings.Builder
+	builder.WriteString("## 📦 Configuration Export\n\n")
+
+	// Get config paths
+	serversPath, profilesPath, err := mcpmConfigPaths()
+	if err != nil {
+		return mcp.NewToolResultError(fmt.Sprintf("❌ Failed to determine config paths: %v", err)), nil
+	}
+
+	// Determine export path
+	if exportPath == "" {
+		cwd, _ := h.FS.Getwd()
+		exportPath = filepath.Join(cwd, "mcpm-config-backup.json")
+	}
+
+	// Read existing configs
+	serversData, err := h.FS.ReadFile(serversPath)
+	if err != nil {
+		return mcp.NewToolResultError(fmt.Sprintf("❌ Failed to read servers.json: %v", err)), nil
+	}
+
+	profilesData, err := h.FS.ReadFile(profilesPath)
+	if err != nil {
+		return mcp.NewToolResultError(fmt.Sprintf("❌ Failed to read profiles.json: %v", err)), nil
+	}
+
+	// Create backup structure
+	backup := map[string]interface{}{
+		"version":    "1.0",
+		"exportedAt": time.Now().Format(time.RFC3339),
+		"servers":    json.RawMessage(serversData),
+		"profiles":   json.RawMessage(profilesData),
+	}
+
+	// Optionally scrub secrets from environment variables
+	if !includeSecrets {
+		builder.WriteString("⚠️ Secrets excluded (use `include_secrets=true` to include)\n\n")
+		// Parse servers and scrub env vars containing sensitive patterns
+		var servers map[string]interface{}
+		if err := json.Unmarshal(serversData, &servers); err == nil {
+			scrubSecrets(servers)
+			scrubbed, _ := json.Marshal(servers)
+			backup["servers"] = json.RawMessage(scrubbed)
+		}
+	} else {
+		builder.WriteString("⚠️ **CAUTION:** Export includes secrets/API keys\n\n")
+	}
+
+	// Marshal and write
+	exportData, err := json.MarshalIndent(backup, "", "  ")
+	if err != nil {
+		return mcp.NewToolResultError(fmt.Sprintf("❌ Failed to marshal backup: %v", err)), nil
+	}
+
+	if err := h.FS.WriteFile(exportPath, exportData, 0600); err != nil {
+		return mcp.NewToolResultError(fmt.Sprintf("❌ Failed to write backup: %v", err)), nil
+	}
+
+	builder.WriteString(fmt.Sprintf("✅ Configuration exported to:\n`%s`\n\n", exportPath))
+	builder.WriteString("### Contents\n")
+	builder.WriteString(fmt.Sprintf("- servers.json: %d bytes\n", len(serversData)))
+	builder.WriteString(fmt.Sprintf("- profiles.json: %d bytes\n", len(profilesData)))
+	builder.WriteString(fmt.Sprintf("\n💡 Use `jarvis_config(action=\"import\", path=\"%s\")` to restore.\n", exportPath))
+
+	return mcp.NewToolResultText(builder.String()), nil
+}
+
+// scrubSecrets removes sensitive values from server configuration
+func scrubSecrets(servers map[string]interface{}) {
+	sensitivePatterns := []string{"API_KEY", "SECRET", "PASSWORD", "TOKEN", "CREDENTIALS"}
+
+	for _, serverData := range servers {
+		if server, ok := serverData.(map[string]interface{}); ok {
+			if env, ok := server["env"].(map[string]interface{}); ok {
+				for key := range env {
+					for _, pattern := range sensitivePatterns {
+						if strings.Contains(strings.ToUpper(key), pattern) {
+							env[key] = "[SCRUBBED]"
+							break
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+// ConfigImport imports MCPM configuration from a backup file
+func (h *Handler) ConfigImport(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	args, _ := request.Params.Arguments.(map[string]interface{})
+	importPath, _ := args["path"].(string)
+
+	var builder strings.Builder
+	builder.WriteString("## 📥 Configuration Import\n\n")
+
+	if importPath == "" {
+		return mcp.NewToolResultError("❌ path is required. Specify the backup file to import."), nil
+	}
+
+	// Read backup file
+	backupData, err := h.FS.ReadFile(importPath)
+	if err != nil {
+		return mcp.NewToolResultError(fmt.Sprintf("❌ Failed to read backup file: %v", err)), nil
+	}
+
+	// Parse backup
+	var backup struct {
+		Version    string          `json:"version"`
+		ExportedAt string          `json:"exportedAt"`
+		Servers    json.RawMessage `json:"servers"`
+		Profiles   json.RawMessage `json:"profiles"`
+	}
+
+	if err := json.Unmarshal(backupData, &backup); err != nil {
+		return mcp.NewToolResultError(fmt.Sprintf("❌ Invalid backup format: %v", err)), nil
+	}
+
+	builder.WriteString(fmt.Sprintf("Backup version: %s\n", backup.Version))
+	builder.WriteString(fmt.Sprintf("Exported at: %s\n\n", backup.ExportedAt))
+
+	// Get config paths
+	serversPath, profilesPath, err := mcpmConfigPaths()
+	if err != nil {
+		return mcp.NewToolResultError(fmt.Sprintf("❌ Failed to determine config paths: %v", err)), nil
+	}
+
+	// Check for scrubbed values
+	if strings.Contains(string(backup.Servers), "[SCRUBBED]") {
+		builder.WriteString("⚠️ **Warning:** Backup contains scrubbed secrets. You will need to manually add:\n")
+		builder.WriteString("- API keys\n")
+		builder.WriteString("- Passwords\n")
+		builder.WriteString("- Tokens\n\n")
+	}
+
+	// Backup existing configs
+	existingServers, _ := h.FS.ReadFile(serversPath)
+	existingProfiles, _ := h.FS.ReadFile(profilesPath)
+
+	if len(existingServers) > 0 {
+		backupPath := serversPath + ".bak"
+		if err := h.FS.WriteFile(backupPath, existingServers, 0600); err != nil {
+			builder.WriteString(fmt.Sprintf("⚠️ Failed to backup servers.json: %v\n", err))
+		} else {
+			builder.WriteString(fmt.Sprintf("📋 Backed up existing servers.json to %s\n", backupPath))
+		}
+	}
+
+	if len(existingProfiles) > 0 {
+		backupPath := profilesPath + ".bak"
+		if err := h.FS.WriteFile(backupPath, existingProfiles, 0600); err != nil {
+			builder.WriteString(fmt.Sprintf("⚠️ Failed to backup profiles.json: %v\n", err))
+		} else {
+			builder.WriteString(fmt.Sprintf("📋 Backed up existing profiles.json to %s\n", backupPath))
+		}
+	}
+
+	// Ensure config directory exists
+	configDir := filepath.Dir(serversPath)
+	if err := h.FS.MkdirAll(configDir, 0755); err != nil {
+		return mcp.NewToolResultError(fmt.Sprintf("❌ Failed to create config directory: %v", err)), nil
+	}
+
+	// Write new configs
+	if len(backup.Servers) > 0 {
+		if err := h.FS.WriteFile(serversPath, backup.Servers, 0600); err != nil {
+			return mcp.NewToolResultError(fmt.Sprintf("❌ Failed to write servers.json: %v", err)), nil
+		}
+		builder.WriteString(fmt.Sprintf("✅ Imported servers.json (%d bytes)\n", len(backup.Servers)))
+	}
+
+	if len(backup.Profiles) > 0 {
+		if err := h.FS.WriteFile(profilesPath, backup.Profiles, 0600); err != nil {
+			return mcp.NewToolResultError(fmt.Sprintf("❌ Failed to write profiles.json: %v", err)), nil
+		}
+		builder.WriteString(fmt.Sprintf("✅ Imported profiles.json (%d bytes)\n", len(backup.Profiles)))
+	}
+
+	builder.WriteString("\n💡 Restart profiles to apply changes:\n")
+	builder.WriteString("`jarvis_profile(action=\"restart\")`\n")
+
+	return mcp.NewToolResultText(builder.String()), nil
+}
+
 // EditServer handles the edit_server tool
 func (h *Handler) EditServer(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	args, ok := request.Params.Arguments.(map[string]interface{})
@@ -1261,6 +1469,131 @@ jobs:
 `
 }
 
+// =============================================================================
+// Phase 3: Test Runner
+// =============================================================================
+
+// ProjectTest runs tests for the current project based on detected language
+func (h *Handler) ProjectTest(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	args, _ := request.Params.Arguments.(map[string]interface{})
+	projectType, _ := args["project_type"].(string)
+	verbose, _ := args["verbose"].(bool)
+	pkg, _ := args["package"].(string)
+
+	cwd, err := h.FS.Getwd()
+	if err != nil {
+		return mcp.NewToolResultError(fmt.Sprintf("Failed to get CWD: %v", err)), nil
+	}
+
+	var builder strings.Builder
+	builder.WriteString("## 🧪 Running Tests\n\n")
+	builder.WriteString(fmt.Sprintf("Directory: `%s`\n\n", cwd))
+
+	// Auto-detect project type if not specified
+	if projectType == "" {
+		projectType = h.detectProjectType(cwd)
+	}
+
+	if projectType == "" {
+		return mcp.NewToolResultError("❌ Could not detect project type. Please specify project_type: go, python, node, typescript"), nil
+	}
+
+	builder.WriteString(fmt.Sprintf("Project Type: **%s**\n", projectType))
+	if pkg != "" {
+		builder.WriteString(fmt.Sprintf("Package: `%s`\n", pkg))
+	}
+	builder.WriteString("\n")
+
+	var cmd string
+	var cmdArgs []string
+
+	switch projectType {
+	case "go":
+		cmd = "go"
+		cmdArgs = []string{"test"}
+		if verbose {
+			cmdArgs = append(cmdArgs, "-v")
+		}
+		if pkg != "" {
+			cmdArgs = append(cmdArgs, pkg)
+		} else {
+			cmdArgs = append(cmdArgs, "./...")
+		}
+
+	case "python":
+		cmd = "pytest"
+		if verbose {
+			cmdArgs = []string{"-v"}
+		}
+		if pkg != "" {
+			cmdArgs = append(cmdArgs, pkg)
+		}
+
+	case "node", "typescript", "javascript":
+		cmd = "npm"
+		cmdArgs = []string{"test"}
+		if pkg != "" {
+			cmdArgs = append(cmdArgs, "--", pkg)
+		}
+
+	default:
+		return mcp.NewToolResultError(fmt.Sprintf("❌ Unknown project type '%s'. Supported: go, python, node, typescript", projectType)), nil
+	}
+
+	builder.WriteString(fmt.Sprintf("Command: `%s %s`\n\n", cmd, strings.Join(cmdArgs, " ")))
+	builder.WriteString("### Output\n```\n")
+
+	output, err := h.Cmd.RunInDir(ctx, cwd, cmd, cmdArgs...)
+
+	builder.WriteString(output)
+	builder.WriteString("\n```\n\n")
+
+	if err != nil {
+		builder.WriteString("### ❌ Tests Failed\n")
+		builder.WriteString(fmt.Sprintf("Exit error: %v\n\n", err))
+		builder.WriteString("💡 **Next steps:**\n")
+		builder.WriteString("- Review failing tests above\n")
+		builder.WriteString("- Use `jarvis_project(action=\"analyze\")` to understand project structure\n")
+	} else {
+		builder.WriteString("### ✅ Tests Passed\n")
+	}
+
+	return mcp.NewToolResultText(builder.String()), nil
+}
+
+// detectProjectType auto-detects the project type based on files in the directory
+func (h *Handler) detectProjectType(cwd string) string {
+	// Check for Go
+	if _, err := h.FS.Stat(filepath.Join(cwd, "go.mod")); err == nil {
+		return "go"
+	}
+
+	// Check for Python
+	if _, err := h.FS.Stat(filepath.Join(cwd, "pyproject.toml")); err == nil {
+		return "python"
+	}
+	if _, err := h.FS.Stat(filepath.Join(cwd, "setup.py")); err == nil {
+		return "python"
+	}
+	if _, err := h.FS.Stat(filepath.Join(cwd, "requirements.txt")); err == nil {
+		return "python"
+	}
+	if _, err := h.FS.Stat(filepath.Join(cwd, "pytest.ini")); err == nil {
+		return "python"
+	}
+
+	// Check for Node/TypeScript
+	if _, err := h.FS.Stat(filepath.Join(cwd, "package.json")); err == nil {
+		// Check if it's TypeScript
+		if _, err := h.FS.Stat(filepath.Join(cwd, "tsconfig.json")); err == nil {
+			return "typescript"
+		}
+		return "node"
+	}
+
+	return ""
+}
+
 // BootstrapSystem handles the bootstrap_system tool
 func (h *Handler) BootstrapSystem(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	cwd, err := h.FS.Getwd()
@@ -1360,6 +1693,271 @@ func (h *Handler) RestartInfrastructure(ctx context.Context, request mcp.CallToo
 	}
 
 	return mcp.NewToolResultText(fmt.Sprintf("Infrastructure restarted successfully.\nOutput:\n%s", output)), nil
+}
+
+// =============================================================================
+// Phase 1: Enhanced Docker Operations
+// =============================================================================
+
+// SystemRebuild rebuilds and restarts Docker services (compose build + up)
+func (h *Handler) SystemRebuild(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	args, _ := request.Params.Arguments.(map[string]interface{})
+	service, _ := args["service"].(string)
+	noCache, _ := args["no_cache"].(bool)
+
+	var builder strings.Builder
+	builder.WriteString("## 🔄 Rebuilding Docker Services\n\n")
+
+	// Determine services to rebuild
+	var services []string
+	if service != "" {
+		services = []string{service}
+		builder.WriteString(fmt.Sprintf("Target: %s\n", service))
+	} else {
+		builder.WriteString("Target: All services\n")
+	}
+
+	if noCache {
+		builder.WriteString("Mode: No cache (full rebuild)\n\n")
+	} else {
+		builder.WriteString("Mode: Incremental\n\n")
+	}
+
+	// Build
+	builder.WriteString("### Building...\n")
+	if err := h.Docker.ComposeBuild(ctx, noCache, services...); err != nil {
+		return mcp.NewToolResultError(fmt.Sprintf("❌ Build failed: %v", err)), nil
+	}
+	builder.WriteString("✅ Build completed\n\n")
+
+	// Bring up services
+	builder.WriteString("### Starting services...\n")
+	if err := h.Docker.ComposeUp(ctx, services...); err != nil {
+		return mcp.NewToolResultError(fmt.Sprintf("❌ Failed to start services: %v", err)), nil
+	}
+	builder.WriteString("✅ Services started\n\n")
+
+	// Get status
+	builder.WriteString("### Current Status\n")
+	statuses, err := h.Docker.ComposePs(ctx)
+	if err == nil {
+		for _, s := range statuses {
+			status := "⚪"
+			if s.Running {
+				status = "🟢"
+			}
+			builder.WriteString(fmt.Sprintf("- %s %s\n", status, s.Name))
+		}
+	}
+
+	return mcp.NewToolResultText(builder.String()), nil
+}
+
+// SystemStop stops Docker services without removing them
+func (h *Handler) SystemStop(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	args, _ := request.Params.Arguments.(map[string]interface{})
+	service, _ := args["service"].(string)
+
+	var builder strings.Builder
+	builder.WriteString("## ⏹️ Stopping Docker Services\n\n")
+
+	var services []string
+	if service != "" {
+		services = []string{service}
+		builder.WriteString(fmt.Sprintf("Target: %s\n\n", service))
+	} else {
+		builder.WriteString("Target: All services\n\n")
+	}
+
+	if err := h.Docker.ComposeStop(ctx, services...); err != nil {
+		return mcp.NewToolResultError(fmt.Sprintf("❌ Stop failed: %v", err)), nil
+	}
+
+	builder.WriteString("✅ Services stopped\n\n")
+	builder.WriteString("💡 Use `jarvis_system(action=\"start\")` to restart services without rebuilding.")
+
+	return mcp.NewToolResultText(builder.String()), nil
+}
+
+// SystemStart starts stopped Docker services
+func (h *Handler) SystemStart(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	args, _ := request.Params.Arguments.(map[string]interface{})
+	service, _ := args["service"].(string)
+
+	var builder strings.Builder
+	builder.WriteString("## ▶️ Starting Docker Services\n\n")
+
+	var services []string
+	if service != "" {
+		services = []string{service}
+		builder.WriteString(fmt.Sprintf("Target: %s\n\n", service))
+	} else {
+		builder.WriteString("Target: All services\n\n")
+	}
+
+	if err := h.Docker.ComposeStart(ctx, services...); err != nil {
+		return mcp.NewToolResultError(fmt.Sprintf("❌ Start failed: %v", err)), nil
+	}
+
+	builder.WriteString("✅ Services started\n\n")
+
+	// Get status
+	builder.WriteString("### Current Status\n")
+	statuses, err := h.Docker.ComposePs(ctx)
+	if err == nil {
+		for _, s := range statuses {
+			status := "⚪"
+			if s.Running {
+				status = "🟢"
+			}
+			builder.WriteString(fmt.Sprintf("- %s %s\n", status, s.Name))
+		}
+	}
+
+	return mcp.NewToolResultText(builder.String()), nil
+}
+
+// SystemDockerLogs retrieves logs from Docker services
+func (h *Handler) SystemDockerLogs(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	args, _ := request.Params.Arguments.(map[string]interface{})
+	service, _ := args["service"].(string)
+	lines := 100
+	if l, ok := args["lines"].(float64); ok && l > 0 {
+		lines = int(l)
+	}
+
+	var builder strings.Builder
+	builder.WriteString("## 📜 Docker Logs\n\n")
+
+	if service != "" {
+		builder.WriteString(fmt.Sprintf("Service: %s\n", service))
+	} else {
+		builder.WriteString("Service: All\n")
+	}
+	builder.WriteString(fmt.Sprintf("Lines: %d\n\n", lines))
+
+	output, err := h.Docker.ComposeLogs(ctx, service, lines)
+	if err != nil {
+		return mcp.NewToolResultError(fmt.Sprintf("❌ Failed to retrieve logs: %v", err)), nil
+	}
+
+	builder.WriteString("```\n")
+	builder.WriteString(output)
+	builder.WriteString("\n```")
+
+	return mcp.NewToolResultText(builder.String()), nil
+}
+
+// SystemDockerStatus returns detailed Docker container status
+func (h *Handler) SystemDockerStatus(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	var builder strings.Builder
+	builder.WriteString("## 🐳 Docker Status\n\n")
+
+	statuses, err := h.Docker.ComposePs(ctx)
+	if err != nil {
+		return mcp.NewToolResultError(fmt.Sprintf("❌ Failed to get status: %v", err)), nil
+	}
+
+	if len(statuses) == 0 {
+		builder.WriteString("No containers running.\n\n")
+		builder.WriteString("💡 Use `jarvis_system(action=\"bootstrap\")` to start infrastructure.")
+		return mcp.NewToolResultText(builder.String()), nil
+	}
+
+	builder.WriteString("| Container | Status | Health | Ports |\n")
+	builder.WriteString("|-----------|--------|--------|-------|\n")
+
+	for _, s := range statuses {
+		status := "⚪ Stopped"
+		if s.Running {
+			status = "🟢 Running"
+		}
+		health := s.Health
+		if health == "" {
+			health = "-"
+		}
+		ports := strings.Join(s.Ports, ", ")
+		if ports == "" {
+			ports = "-"
+		}
+		builder.WriteString(fmt.Sprintf("| %s | %s | %s | %s |\n", s.Name, status, health, ports))
+	}
+
+	return mcp.NewToolResultText(builder.String()), nil
+}
+
+// SystemBuild builds specific components (Jarvis binary, mcpm-daemon image)
+func (h *Handler) SystemBuild(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	args, _ := request.Params.Arguments.(map[string]interface{})
+	component, _ := args["component"].(string)
+	noCache, _ := args["no_cache"].(bool)
+
+	if component == "" {
+		component = "all"
+	}
+
+	var builder strings.Builder
+	builder.WriteString("## 🔨 Building Components\n\n")
+
+	cwd, err := h.FS.Getwd()
+	if err != nil {
+		return mcp.NewToolResultError(fmt.Sprintf("Failed to get CWD: %v", err)), nil
+	}
+
+	// Find project root
+	var rootDir string
+	if _, err := h.FS.Stat(filepath.Join(cwd, "MCPM")); err == nil {
+		rootDir = cwd
+	} else if _, err := h.FS.Stat(filepath.Join(cwd, "..", "MCPM")); err == nil {
+		rootDir = filepath.Join(cwd, "..")
+	} else {
+		return mcp.NewToolResultError("Could not locate project root."), nil
+	}
+
+	switch component {
+	case "jarvis":
+		builder.WriteString("### Building Jarvis\n")
+		jarvisDir := filepath.Join(rootDir, "Jarvis")
+		output, err := h.Cmd.RunInDir(ctx, jarvisDir, "go", "build", "-o", "jarvis", ".")
+		if err != nil {
+			return mcp.NewToolResultError(fmt.Sprintf("❌ Jarvis build failed: %v\n%s", err, output)), nil
+		}
+		builder.WriteString("✅ Jarvis binary built successfully\n")
+
+	case "mcpm-daemon":
+		builder.WriteString("### Building mcpm-daemon Docker image\n")
+		if noCache {
+			builder.WriteString("Mode: No cache\n\n")
+		}
+		if err := h.Docker.ComposeBuild(ctx, noCache, "mcpm-daemon"); err != nil {
+			return mcp.NewToolResultError(fmt.Sprintf("❌ Docker build failed: %v", err)), nil
+		}
+		builder.WriteString("✅ mcpm-daemon image built successfully\n")
+
+	case "all":
+		builder.WriteString("### Building Jarvis\n")
+		jarvisDir := filepath.Join(rootDir, "Jarvis")
+		output, err := h.Cmd.RunInDir(ctx, jarvisDir, "go", "build", "-o", "jarvis", ".")
+		if err != nil {
+			return mcp.NewToolResultError(fmt.Sprintf("❌ Jarvis build failed: %v\n%s", err, output)), nil
+		}
+		builder.WriteString("✅ Jarvis binary built successfully\n\n")
+
+		builder.WriteString("### Building Docker images\n")
+		if noCache {
+			builder.WriteString("Mode: No cache\n")
+		}
+		if err := h.Docker.ComposeBuild(ctx, noCache); err != nil {
+			return mcp.NewToolResultError(fmt.Sprintf("❌ Docker build failed: %v", err)), nil
+		}
+		builder.WriteString("✅ Docker images built successfully\n")
+
+	default:
+		return mcp.NewToolResultError(fmt.Sprintf("❌ Unknown component '%s'. Valid: jarvis, mcpm-daemon, all", component)), nil
+	}
+
+	builder.WriteString("\n💡 Use `jarvis_system(action=\"restart_infra\")` to apply changes.")
+	return mcp.NewToolResultText(builder.String()), nil
 }
 
 // ShareServer handles the share_server tool
@@ -1711,7 +2309,8 @@ func (h *Handler) DiagnoseTestEndpoint(ctx context.Context, request mcp.CallTool
 	return mcp.NewToolResultText(builder.String()), nil
 }
 
-// DiagnoseLogs retrieves subprocess logs from the mcp-daemon
+// DiagnoseLogs retrieves subprocess logs from the mcp-daemon using docker compose logs
+// Updated in Phase 2 to use ComposeLogs instead of supervisorctl for better log retrieval
 func (h *Handler) DiagnoseLogs(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	args, _ := request.Params.Arguments.(map[string]interface{})
 	profileName, _ := args["profile"].(string)
@@ -1723,31 +2322,45 @@ func (h *Handler) DiagnoseLogs(ctx context.Context, request mcp.CallToolRequest)
 	var builder strings.Builder
 	builder.WriteString("## MCP Subprocess Logs\n\n")
 
-	if profileName == "" {
-		// List available profiles
+	// If no profile specified, show logs from mcp-daemon container
+	service := "mcp-daemon"
+	if profileName != "" {
+		builder.WriteString(fmt.Sprintf("### Profile: %s\n", profileName))
+		builder.WriteString(fmt.Sprintf("(Logs from mcp-daemon container filtered for '%s')\n\n", profileName))
+	} else {
+		builder.WriteString("### All Container Logs\n")
+		builder.WriteString("(Showing mcp-daemon container logs)\n\n")
+		builder.WriteString("💡 Tip: Specify a profile with `jarvis_diagnose(action=\"logs\", profile=\"<name>\")`\n")
 		builder.WriteString("**Available profiles:** essentials, memory, dev-core, research, data, p-new\n\n")
-		builder.WriteString("Specify a profile with `jarvis_diagnose(action=\"logs\", profile=\"<name>\")`\n")
-		return mcp.NewToolResultText(builder.String()), nil
 	}
 
-	// Get stderr logs (where errors appear)
-	target := fmt.Sprintf("mcpm-%s", profileName)
-	output, err := h.Docker.ExecSupervisorctl(ctx, "tail", fmt.Sprintf("-f %s stderr", target))
+	// Use docker compose logs (Phase 2 enhancement)
+	output, err := h.Docker.ComposeLogs(ctx, service, lines)
 
-	// ExecSupervisorctl doesn't support tail -f well, use docker exec directly
-	cmd := fmt.Sprintf("docker exec mcp-daemon tail -%d /var/log/mcpm/%s.err.log 2>/dev/null || docker exec mcp-daemon supervisorctl tail %s stderr", lines, profileName, target)
-	output2, _ := exec.CommandContext(ctx, "sh", "-c", cmd).CombinedOutput()
-
-	if len(output2) > 0 {
-		output = string(output2)
+	// If profile specified, try to filter logs for that profile
+	if profileName != "" && err == nil && len(output) > 0 {
+		filtered := filterLogsForProfile(output, profileName)
+		if len(filtered) > 0 {
+			output = filtered
+		}
 	}
 
-	builder.WriteString(fmt.Sprintf("### Profile: %s (stderr)\n", profileName))
 	builder.WriteString("```\n")
-	if err != nil && len(output) == 0 {
+	if err != nil {
 		builder.WriteString(fmt.Sprintf("Error retrieving logs: %v\n", err))
+		// Fall back to supervisorctl for stderr logs
+		builder.WriteString("\nFallback: Attempting supervisorctl...\n")
+		if profileName != "" {
+			target := fmt.Sprintf("mcpm-%s", profileName)
+			supOutput, supErr := h.Docker.ExecSupervisorctl(ctx, "tail", fmt.Sprintf("%s stderr", target))
+			if supErr == nil && len(supOutput) > 0 {
+				builder.WriteString(supOutput)
+			} else {
+				builder.WriteString("(No supervisorctl output available)\n")
+			}
+		}
 	} else if len(output) == 0 {
-		builder.WriteString("(no stderr output)\n")
+		builder.WriteString("(no log output)\n")
 	} else {
 		// Limit output to last N lines
 		logLines := strings.Split(strings.TrimSpace(output), "\n")
@@ -1759,6 +2372,26 @@ func (h *Handler) DiagnoseLogs(ctx context.Context, request mcp.CallToolRequest)
 	builder.WriteString("\n```\n")
 
 	// Look for common error patterns and provide suggestions
+	h.appendLogErrorAnalysis(&builder, output)
+
+	return mcp.NewToolResultText(builder.String()), nil
+}
+
+// filterLogsForProfile filters log output to only show lines related to a specific profile
+func filterLogsForProfile(output, profile string) string {
+	lines := strings.Split(output, "\n")
+	var filtered []string
+	for _, line := range lines {
+		if strings.Contains(strings.ToLower(line), strings.ToLower(profile)) ||
+			strings.Contains(line, fmt.Sprintf("mcpm-%s", profile)) {
+			filtered = append(filtered, line)
+		}
+	}
+	return strings.Join(filtered, "\n")
+}
+
+// appendLogErrorAnalysis analyzes log output and appends helpful suggestions
+func (h *Handler) appendLogErrorAnalysis(builder *strings.Builder, output string) {
 	if strings.Contains(output, "ValueError") || strings.Contains(output, "ImportError") {
 		builder.WriteString("\n### ⚠️ Python Error Detected\n")
 		builder.WriteString("The subprocess crashed due to a Python error.\n")
@@ -1782,7 +2415,12 @@ func (h *Handler) DiagnoseLogs(ctx context.Context, request mcp.CallToolRequest)
 		builder.WriteString("**Fix:** Edit ~/.config/mcpm/servers.json and remove conflicting options.\n")
 	}
 
-	return mcp.NewToolResultText(builder.String()), nil
+	if strings.Contains(output, "error") || strings.Contains(output, "Error") || strings.Contains(output, "ERROR") {
+		builder.WriteString("\n### 💡 Next Steps\n")
+		builder.WriteString("- Check the error message above for specific issues\n")
+		builder.WriteString("- Use `jarvis_diagnose(action=\"profile_health\")` to check service status\n")
+		builder.WriteString("- Use `jarvis_profile(action=\"restart\", profile=\"<name>\")` to restart a profile\n")
+	}
 }
 
 // DiagnoseFull runs all diagnostics and provides a comprehensive report

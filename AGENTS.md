@@ -20,13 +20,13 @@ Keep this managed block so 'openspec update' can refresh the instructions.
 # Jarvis & MCPM Agent Instructions
 
 **Current Date:** December 22, 2025
-**Version:** 5.0 (Micro-Profiles Edition)
+**Version:** 5.1 (Enhanced Operations Edition)
 
 ## 🚨 Core Mandate: Use Jarvis Tools, Not Shell
 
 You are an advanced AI agent. You must **NOT** use `run_shell_command` to execute `mcpm` or `jarvis` binaries directly unless explicitly instructed or debugging a tool failure.
 
-**ALWAYS** use the provided MCP tools (consolidated in v3.0):
+**ALWAYS** use the provided MCP tools (consolidated in v3.0, enhanced in v5.1):
 
 | Tool | Actions | Example |
 |:-----|:--------|:--------|
@@ -34,9 +34,9 @@ You are an advanced AI agent. You must **NOT** use `run_shell_command` to execut
 | `jarvis_server` | list, info, install, uninstall, search, edit, create, usage | `jarvis_server(action="install", name="context7")` |
 | `jarvis_profile` | list, create, edit, delete, suggest, restart | `jarvis_profile(action="list")` |
 | `jarvis_client` | list, edit, import, config | `jarvis_client(action="edit", client_name="opencode", add_profile="memory")` |
-| `jarvis_config` | get, set, list, migrate | `jarvis_config(action="list")` |
-| `jarvis_project` | analyze, diff, devops | `jarvis_project(action="analyze")` |
-| `jarvis_system` | bootstrap, restart, restart_infra | `jarvis_system(action="bootstrap")` |
+| `jarvis_config` | get, set, list, migrate, **export**, **import** | `jarvis_config(action="export", path="backup.json")` |
+| `jarvis_project` | analyze, diff, devops, **test** | `jarvis_project(action="test", verbose=true)` |
+| `jarvis_system` | bootstrap, restart, restart_infra, **rebuild**, **stop**, **start**, **docker_logs**, **docker_status**, **build** | `jarvis_system(action="rebuild", no_cache=true)` |
 | `jarvis_share` | start, stop, list | `jarvis_share(action="list")` |
 | `jarvis_diagnose` | profile_health, test_endpoint, logs, full, config_sync | `jarvis_diagnose(action="profile_health")` |
 
@@ -234,4 +234,66 @@ jarvis_diagnose({ action: "config_sync" })
 
 // Auto-fix mismatches
 jarvis_diagnose({ action: "config_sync", auto_fix: true })
+```
+
+## 🆕 New in v5.1: Enhanced Operations
+
+### Docker Control (jarvis_system)
+
+New actions for granular Docker management:
+
+| Action | Purpose | Example |
+|:-------|:--------|:--------|
+| `rebuild` | Build & restart services | `jarvis_system(action="rebuild", no_cache=true)` |
+| `stop` | Stop without removing | `jarvis_system(action="stop", service="mcp-daemon")` |
+| `start` | Start stopped services | `jarvis_system(action="start")` |
+| `docker_logs` | Get container logs | `jarvis_system(action="docker_logs", service="mcp-daemon", lines=100)` |
+| `docker_status` | Detailed container status | `jarvis_system(action="docker_status")` |
+| `build` | Build components selectively | `jarvis_system(action="build", component="jarvis")` |
+
+### Test Runner (jarvis_project)
+
+Run tests directly from Jarvis with auto-detection:
+
+```javascript
+// Auto-detect project type and run tests
+jarvis_project({ action: "test" })
+
+// With verbose output
+jarvis_project({ action: "test", verbose: true })
+
+// Specific package
+jarvis_project({ action: "test", package: "./handlers/..." })
+
+// Override project type
+jarvis_project({ action: "test", project_type: "go" })
+```
+
+Supported project types: go, python, node, typescript
+
+### Config Backup (jarvis_config)
+
+Export and import MCPM configurations:
+
+```javascript
+// Export (scrubs secrets by default)
+jarvis_config({ action: "export", path: "backup.json" })
+
+// Export with secrets
+jarvis_config({ action: "export", path: "backup.json", include_secrets: true })
+
+// Import (creates backup of existing config)
+jarvis_config({ action: "import", path: "backup.json" })
+```
+
+### Enhanced Logging (jarvis_diagnose)
+
+Logs now use `docker compose logs` instead of supervisorctl for better output:
+
+```javascript
+// Get logs from mcp-daemon
+jarvis_diagnose({ action: "logs", lines: 100 })
+
+// Filter logs for a specific profile
+jarvis_diagnose({ action: "logs", profile: "research", lines: 50 })
 ```

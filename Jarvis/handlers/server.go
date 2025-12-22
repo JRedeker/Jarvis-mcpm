@@ -128,14 +128,14 @@ func GetToolDefinitions(h *Handler) []ToolDefinition {
 			Handler: h.Client,
 		},
 
-		// 5. jarvis_config - Configuration management (4 actions)
+		// 5. jarvis_config - Configuration management (6 actions)
 		{
 			Tool: mcp.NewTool("jarvis_config",
-				mcp.WithDescription("Manage MCPM config: get, set, list, migrate."),
+				mcp.WithDescription("Manage MCPM config: get, set, list, migrate, export, import."),
 				mcp.WithString("action",
 					mcp.Description("Operation to perform"),
 					mcp.Required(),
-					mcp.Enum("get", "set", "list", "migrate"),
+					mcp.Enum("get", "set", "list", "migrate", "export", "import"),
 				),
 				mcp.WithString("key",
 					mcp.Description("Config key (for get/set)"),
@@ -143,24 +143,30 @@ func GetToolDefinitions(h *Handler) []ToolDefinition {
 				mcp.WithString("value",
 					mcp.Description("Value to set (for set)"),
 				),
+				mcp.WithString("path",
+					mcp.Description("File path for export/import"),
+				),
+				mcp.WithBoolean("include_secrets",
+					mcp.Description("Include environment variables with secrets (for export)"),
+				),
 			),
 			Handler: h.Config,
 		},
 
-		// 6. jarvis_project - Project analysis (3 actions)
+		// 6. jarvis_project - Project analysis (4 actions)
 		{
 			Tool: mcp.NewTool("jarvis_project",
-				mcp.WithDescription("Project tools: analyze, diff, devops."),
+				mcp.WithDescription("Project tools: analyze, diff, devops, test."),
 				mcp.WithString("action",
 					mcp.Description("Operation to perform"),
 					mcp.Required(),
-					mcp.Enum("analyze", "diff", "devops"),
+					mcp.Enum("analyze", "diff", "devops", "test"),
 				),
 				mcp.WithBoolean("staged",
 					mcp.Description("Show only staged changes (for diff)"),
 				),
 				mcp.WithString("project_type",
-					mcp.Description("Override: python, go, node, typescript (for devops)"),
+					mcp.Description("Override: python, go, node, typescript (for devops/test)"),
 				),
 				mcp.WithBoolean("force",
 					mcp.Description("Overwrite existing configs (for devops)"),
@@ -168,18 +174,36 @@ func GetToolDefinitions(h *Handler) []ToolDefinition {
 				mcp.WithBoolean("enable_ai_review",
 					mcp.Description("Add PR Agent workflow (for devops)"),
 				),
+				mcp.WithBoolean("verbose",
+					mcp.Description("Show verbose test output (for test)"),
+				),
+				mcp.WithString("package",
+					mcp.Description("Specific package/path to test (for test)"),
+				),
 			),
 			Handler: h.Project,
 		},
 
-		// 7. jarvis_system - System operations (3 actions)
+		// 7. jarvis_system - System operations (9 actions)
 		{
 			Tool: mcp.NewTool("jarvis_system",
-				mcp.WithDescription("System ops: bootstrap, restart, restart_infra."),
+				mcp.WithDescription("System ops: bootstrap, restart, restart_infra, rebuild, stop, start, docker_logs, docker_status, build."),
 				mcp.WithString("action",
 					mcp.Description("Operation to perform"),
 					mcp.Required(),
-					mcp.Enum("bootstrap", "restart", "restart_infra"),
+					mcp.Enum("bootstrap", "restart", "restart_infra", "rebuild", "stop", "start", "docker_logs", "docker_status", "build"),
+				),
+				mcp.WithString("service",
+					mcp.Description("Service name for stop/start/docker_logs (e.g., 'mcp-daemon', 'mcpm-api')"),
+				),
+				mcp.WithNumber("lines",
+					mcp.Description("Number of log lines to retrieve (default: 100, for docker_logs)"),
+				),
+				mcp.WithBoolean("no_cache",
+					mcp.Description("Build without cache (for rebuild/build)"),
+				),
+				mcp.WithString("component",
+					mcp.Description("Component to build: 'jarvis', 'mcpm-daemon', 'all' (for build)"),
 				),
 			),
 			Handler: h.System,
@@ -298,6 +322,44 @@ func (r *RealDockerRunner) ComposePs(ctx context.Context) ([]ContainerStatus, er
 
 func (r *RealDockerRunner) ExecSupervisorctl(ctx context.Context, action, target string) (string, error) {
 	cmd := exec.CommandContext(ctx, "docker", "exec", "mcp-daemon", "supervisorctl", action, target)
+	output, err := cmd.CombinedOutput()
+	return string(output), err
+}
+
+// ComposeBuild builds or rebuilds services
+func (r *RealDockerRunner) ComposeBuild(ctx context.Context, noCache bool, services ...string) error {
+	args := []string{"compose", "build"}
+	if noCache {
+		args = append(args, "--no-cache")
+	}
+	args = append(args, services...)
+	cmd := exec.CommandContext(ctx, "docker", args...)
+	return cmd.Run()
+}
+
+// ComposeStop stops services without removing them
+func (r *RealDockerRunner) ComposeStop(ctx context.Context, services ...string) error {
+	args := []string{"compose", "stop"}
+	args = append(args, services...)
+	cmd := exec.CommandContext(ctx, "docker", args...)
+	return cmd.Run()
+}
+
+// ComposeStart starts existing stopped services
+func (r *RealDockerRunner) ComposeStart(ctx context.Context, services ...string) error {
+	args := []string{"compose", "start"}
+	args = append(args, services...)
+	cmd := exec.CommandContext(ctx, "docker", args...)
+	return cmd.Run()
+}
+
+// ComposeLogs retrieves logs from a service
+func (r *RealDockerRunner) ComposeLogs(ctx context.Context, service string, lines int) (string, error) {
+	args := []string{"compose", "logs", "--tail", fmt.Sprintf("%d", lines)}
+	if service != "" {
+		args = append(args, service)
+	}
+	cmd := exec.CommandContext(ctx, "docker", args...)
 	output, err := cmd.CombinedOutput()
 	return string(output), err
 }

@@ -100,8 +100,8 @@
   - Provide before/after examples
 
 ### 3.2 Update README
-- [ ] 3.2.1 Update tool listing in README if present
-- [ ] 3.2.2 Add context token reduction as a feature
+- [x] 3.2.1 Update tool listing in README if present
+- [x] 3.2.2 Add context token reduction as a feature
 
 ## 4. Validation
 

@@ -119,10 +119,17 @@ type MockDockerRunner struct {
 	ComposePsError      error
 	SupervisorctlOutput map[string]string
 	SupervisorctlError  error
+	// Phase 1: Enhanced Docker Operations
+	ComposeBuildError error
+	ComposeStopError  error
+	ComposeStartError error
+	ComposeLogsOutput string
+	ComposeLogsError  error
 
 	// State tracking
 	ContainersRunning bool
 	RestartCount      int
+	BuildCount        int
 
 	// Call tracking
 	Calls []MockCall
@@ -234,6 +241,84 @@ func (m *MockDockerRunner) WithSupervisorctlOutput(action, target, output string
 // WithSupervisorctlError configures an error for supervisorctl
 func (m *MockDockerRunner) WithSupervisorctlError(err error) *MockDockerRunner {
 	m.SupervisorctlError = err
+	return m
+}
+
+// ComposeBuild implements DockerRunner.ComposeBuild
+func (m *MockDockerRunner) ComposeBuild(ctx context.Context, noCache bool, services ...string) error {
+	m.recordCall("ComposeBuild", noCache, services)
+	if m.ComposeBuildError != nil {
+		return m.ComposeBuildError
+	}
+	m.mu.Lock()
+	m.BuildCount++
+	m.mu.Unlock()
+	return nil
+}
+
+// ComposeStop implements DockerRunner.ComposeStop
+func (m *MockDockerRunner) ComposeStop(ctx context.Context, services ...string) error {
+	m.recordCall("ComposeStop", services)
+	if m.ComposeStopError != nil {
+		return m.ComposeStopError
+	}
+	m.mu.Lock()
+	m.ContainersRunning = false
+	m.mu.Unlock()
+	return nil
+}
+
+// ComposeStart implements DockerRunner.ComposeStart
+func (m *MockDockerRunner) ComposeStart(ctx context.Context, services ...string) error {
+	m.recordCall("ComposeStart", services)
+	if m.ComposeStartError != nil {
+		return m.ComposeStartError
+	}
+	m.mu.Lock()
+	m.ContainersRunning = true
+	m.mu.Unlock()
+	return nil
+}
+
+// ComposeLogs implements DockerRunner.ComposeLogs
+func (m *MockDockerRunner) ComposeLogs(ctx context.Context, service string, lines int) (string, error) {
+	m.recordCall("ComposeLogs", service, lines)
+	if m.ComposeLogsError != nil {
+		return "", m.ComposeLogsError
+	}
+	if m.ComposeLogsOutput != "" {
+		return m.ComposeLogsOutput, nil
+	}
+	return fmt.Sprintf("[%s] Mock log output line 1\n[%s] Mock log output line 2\n", service, service), nil
+}
+
+// WithComposeBuildError configures an error for ComposeBuild
+func (m *MockDockerRunner) WithComposeBuildError(err error) *MockDockerRunner {
+	m.ComposeBuildError = err
+	return m
+}
+
+// WithComposeStopError configures an error for ComposeStop
+func (m *MockDockerRunner) WithComposeStopError(err error) *MockDockerRunner {
+	m.ComposeStopError = err
+	return m
+}
+
+// WithComposeStartError configures an error for ComposeStart
+func (m *MockDockerRunner) WithComposeStartError(err error) *MockDockerRunner {
+	m.ComposeStartError = err
+	return m
+}
+
+// WithComposeLogsOutput configures output for ComposeLogs
+func (m *MockDockerRunner) WithComposeLogsOutput(output string) *MockDockerRunner {
+	m.ComposeLogsOutput = output
+	return m
+}
+
+// WithComposeLogsError configures an error for ComposeLogs
+func (m *MockDockerRunner) WithComposeLogsError(err error) *MockDockerRunner {
+	m.ComposeLogsError = err
 	return m
 }
 
@@ -427,3 +512,25 @@ func (m *MockDirEntry) Name() string               { return m.EntryName }
 func (m *MockDirEntry) IsDir() bool                { return m.EntryIsDir }
 func (m *MockDirEntry) Type() fs.FileMode          { return 0 }
 func (m *MockDirEntry) Info() (fs.FileInfo, error) { return nil, nil }
+
+// MockCommandRunner is a mock implementation of CommandRunner for testing
+type MockCommandRunner struct {
+	Output string
+	Error  error
+	Calls  []MockCall
+}
+
+func (m *MockCommandRunner) Run(ctx context.Context, name string, args ...string) (string, error) {
+	m.Calls = append(m.Calls, MockCall{Method: "Run", Args: []interface{}{name, args}})
+	return m.Output, m.Error
+}
+
+func (m *MockCommandRunner) RunInDir(ctx context.Context, dir, name string, args ...string) (string, error) {
+	m.Calls = append(m.Calls, MockCall{Method: "RunInDir", Args: []interface{}{dir, name, args}})
+	return m.Output, m.Error
+}
+
+func (m *MockCommandRunner) StartBackground(ctx context.Context, name string, args ...string) (Process, error) {
+	m.Calls = append(m.Calls, MockCall{Method: "StartBackground", Args: []interface{}{name, args}})
+	return nil, m.Error
+}
